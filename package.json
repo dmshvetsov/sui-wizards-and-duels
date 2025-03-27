@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "magic-duel",
   "version": "1.0.0",
   "description": "",
@@ -8,5 +9,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "packageManager": "pnpm@8.14.0+sha512.5d4bf97b349faf1a51318aa1ba887e99d9c36e203dbcb55938a91fddd2454246cb00723d6642f54d463a0f52a2701dadf8de002a37fc613c9cdc94ed5675ddce",
+  "devDependencies": {
+    "prettier": "3.5.3"
+  }
 }
