@@ -10,8 +10,8 @@ React single page app.
 
 `npm run build` to build the react client
 
-# Demo
+## Based on
 
-[https://random-chat.netlify.app](https://random-chat.netlify.app/)
+[realtime chat supagase react app](https://github.com/shwosner/realtime-chat-supabase-react)
 
-!['demo'](https://random-chat.netlify.app/demo.png 'demo')
+demo [https://random-chat.netlify.app](https://random-chat.netlify.app/)
