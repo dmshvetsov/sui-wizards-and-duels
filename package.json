@@ -1,7 +1,6 @@
 {
   "private": true,
   "name": "magic-duel",
-  "version": "0.1.0",
   "description": "real time chat magic duels",
   "scripts": {},
   "keywords": [],
