@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "proof-of-concept",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index.js"
+  },
+  "author": "Dmitry Shvetsov <shvetsovdm+magic-duel@gmail.com>"
+}
