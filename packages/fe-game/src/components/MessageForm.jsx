@@ -5,7 +5,7 @@ import { useAppContext } from '../context/appContext';
 import supabase from '../supabaseClient';
 
 export default function MessageForm() {
-  const { username, country, session } = useAppContext();
+  const { username } = useAppContext();
   const [message, setMessage] = useState('');
   const toast = useToast();
   const [isSending, setIsSending] = useState(false);
@@ -22,8 +22,6 @@ export default function MessageForm() {
         {
           text: message,
           username,
-          country,
-          is_authenticated: session ? true : false,
         },
       ]);
 
@@ -38,9 +36,9 @@ export default function MessageForm() {
         });
         return;
       }
-      console.log('Sucsessfully sent!');
+      console.debug('Successfully sent!');
     } catch (error) {
-      console.log('error sending message:', error);
+      console.error('error sending message:', error);
     } finally {
       setIsSending(false);
     }
