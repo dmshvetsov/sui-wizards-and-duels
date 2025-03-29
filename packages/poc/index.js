@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const { SuiClient, getFullnodeUrl } = require('@mysten/sui/client');
 const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519');
-const { TransactionBlock } = require('@mysten/sui/transactions');
+const { Transaction } = require('@mysten/sui/transactions');
 const WebSocket = require('ws');
 
 // Constants
@@ -28,85 +28,97 @@ let duelId = null;
 async function createDuel() {
   console.log('Creating duel...');
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::create_duel`,
     arguments: [
-      tx.pure(wizard1Keypair.getPublicKey().toSuiAddress()),
-      tx.pure(wizard2Keypair.getPublicKey().toSuiAddress()),
+      tx.pure.address(wizard1Keypair.getPublicKey().toSuiAddress()),
+      tx.pure.address(wizard2Keypair.getPublicKey().toSuiAddress()),
     ],
   });
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
 
-  duelId = result.effects.created[0].objectId;
+  const createdObject = result.effects?.created?.[0];
+  if (!createdObject) {
+    throw new Error('Failed to create duel - no object was created');
+  }
+  duelId = createdObject.objectId;
   console.log(`Duel created with ID: ${duelId}`);
 }
 
 async function startDuel() {
   console.log('Starting duel...');
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::start_duel`,
     arguments: [tx.object(duelId)],
   });
 
-  await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
 }
 
 async function castSpell(playerKeypair) {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::cast_spell`,
     arguments: [tx.object(duelId)],
   });
 
-  await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: playerKeypair,
     options: { showEffects: true },
   });
 }
 
 async function getDuelState() {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::get_duel_state`,
     arguments: [tx.object(duelId)],
   });
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
 
-  return result.effects.returnValues[0];
+  const returnValue = result.effects?.returnValues?.[0];
+  if (!returnValue) {
+    throw new Error('Failed to get duel state - no return value');
+  }
+  return Number(returnValue);
 }
 
 async function getWizardForces() {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::get_wizard_forces`,
     arguments: [tx.object(duelId)],
   });
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
 
-  return result.effects.returnValues[0];
+  const returnValue = result.effects?.returnValues?.[0];
+  if (!returnValue) {
+    throw new Error('Failed to get wizard forces - no return value');
+  }
+  return returnValue.map(Number);
 }
 
 async function simulateDuel() {

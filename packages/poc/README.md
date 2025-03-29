@@ -30,6 +30,8 @@ in a first terminal session
 
     $ pnpm run start
 
+put deployed program address as PROGRAM_ID env variable to `.env` file inside POC root folder
+
 in a second terminall session
 
     $ pnpm run test
