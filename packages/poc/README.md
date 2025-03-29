@@ -3,8 +3,8 @@
 Simplest implementation of the idea to test if Sui blockchain and its infrastructure like RPC and existing connections are campable to provide great game experience.
 
 Use a script that simulates a game of two players that use set of predefined spells in form of words to win a duel. The script must:
-* connect to Sui RPC free devnet network using WebSockets 
-* initiate a duel state, duel state must be stored on Sui blockchain using the game dApp deployed to Sui devnet network, state consisto of
+* connect to Sui RPC free local network using WebSockets 
+* initiate a duel state, duel state must be stored on Sui blockchain using the game dApp deployed to Sui local network, state consisto of
     * state machine field has enum value with linear transition from "pending" to "action" to "finished"
     * each player has force measured in u16 number or similar
 * start the duel
@@ -24,4 +24,12 @@ The goal of this script is to find how fast players (bot that acts as two player
 
 ## how to run
 
+in a first terminal session
+
+    $ pnpm run setup
+
     $ pnpm run start
+
+in a second terminall session
+
+    $ pnpm run test

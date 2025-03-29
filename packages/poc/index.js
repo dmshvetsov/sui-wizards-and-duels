@@ -1,9 +1,9 @@
 // must be the first import
 require('dotenv').config();
 
-const { SuiClient, getFullnodeUrl } = require('@mysten/sui.js/client');
-const { Ed25519Keypair } = require('@mysten/sui.js/cryptography');
-const { TransactionBlock } = require('@mysten/sui.js/transactions');
+const { SuiClient, getFullnodeUrl } = require('@mysten/sui/client');
+const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519');
+const { TransactionBlock } = require('@mysten/sui/transactions');
 const WebSocket = require('ws');
 
 // Constants
@@ -13,13 +13,14 @@ const DUEL_STATES = {
   ACTION: 1,
   FINISHED: 2,
 };
+const LOOP_STEP_MS = 1000;
 
 // Initialize Sui client
-const client = new SuiClient({ url: getFullnodeUrl('devnet') });
+const client = new SuiClient({ url: getFullnodeUrl('localnet') });
 
 // Create two wizards with their keypairs
-const wizard1Keypair = Ed25519Keypair.generate();
-const wizard2Keypair = Ed25519Keypair.generate();
+const wizard1Keypair = new Ed25519Keypair();
+const wizard2Keypair = new Ed25519Keypair();
 
 // Duel state
 let duelId = null;
@@ -32,7 +33,7 @@ async function createDuel() {
     target: `${PID}::game::create_duel`,
     arguments: [
       tx.pure(wizard1Keypair.getPublicKey().toSuiAddress()),
-      tx.pure(wizard2Keypair.getPublicKey().toSuiAddress())
+      tx.pure(wizard2Keypair.getPublicKey().toSuiAddress()),
     ],
   });
 
@@ -109,42 +110,37 @@ async function getWizardForces() {
 }
 
 async function simulateDuel() {
-  try {
-    // Create duel
-    await createDuel();
-    
-    // Start duel
-    await startDuel();
-    
-    // Duel loop
-    while (true) {
-      const state = await getDuelState();
-      const [force1, force2] = await getWizardForces();
-      
-      console.log('\nCurrent duel state:');
-      console.log(`Wizard 1 force: ${force1}`);
-      console.log(`Wizard 2 force: ${force2}`);
-      
-      if (state === DUEL_STATES.FINISHED) {
-        console.log('\nDuel finished!');
-        break;
-      }
-      
-      // Randomly decide if wizards cast spells
-      if (Math.random() < 0.5) {
-        console.log('Wizard 1 casts spell!');
-        await castSpell(wizard1Keypair);
-      }
-      
-      if (Math.random() < 0.5) {
-        console.log('Wizard 2 casts spell!');
-        await castSpell(wizard2Keypair);
-      }
-      
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  // Create duel
+  await createDuel();
+
+  // Start duel
+  await startDuel();
+
+  // Duel loop
+  while (true) {
+    const state = await getDuelState();
+    const [force1, force2] = await getWizardForces();
+
+    console.log('\nCurrent duel state:');
+    console.log(`Wizard 1 force: ${force1}`);
+    console.log(`Wizard 2 force: ${force2}`);
+
+    if (state === DUEL_STATES.FINISHED) {
+      console.log('\nDuel finished!');
+      break;
     }
-  } catch (error) {
-    console.error('Error during duel:', error);
+
+    // Randomly decide if wizards cast spells
+    if (Math.random() < 0.45) {
+      console.log('Wizard 1 casts spell!');
+      await castSpell(wizard1Keypair);
+    }
+    if (Math.random() < 0.55) {
+      console.log('Wizard 2 casts spell!');
+      await castSpell(wizard2Keypair);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, LOOP_STEP_MS));
   }
 }
 

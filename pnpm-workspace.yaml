@@ -3,3 +3,5 @@ packages:
   - 'packages/fe-game'
   # exclude packages that are inside test directories
   - '!**/test/**'
+  # exclude a Proof of Concept package, not part of the final project
+  - '!packages/poc'
