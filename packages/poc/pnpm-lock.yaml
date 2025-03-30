@@ -8,9 +8,6 @@ dependencies:
   '@mysten/sui':
     specifier: 1.25.0
     version: 1.25.0(typescript@5.8.2)
-  dotenv:
-    specifier: 16.4.5
-    version: 16.4.5
   ws:
     specifier: 8.16.0
     version: 8.16.0
@@ -134,11 +131,6 @@ packages:
     dependencies:
       '@noble/hashes': 1.7.1
       '@scure/base': 1.2.4
-    dev: false
-
-  /dotenv@16.4.5:
-    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
-    engines: {node: '>=12'}
     dev: false
 
   /gql.tada@1.8.10(graphql@16.10.0)(typescript@5.8.2):

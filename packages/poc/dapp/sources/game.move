@@ -1,8 +1,11 @@
 ///  dapp to make proof of concept of the simplest implementation of a magic duel game
+///  NOTE: this smart contract were build without considering the best practices of on-chain programming, including security
+///  the sole purpose is to test a concept of using blockchain as a backend for a game
 module magic_duel::game {
-    use sui::object::{Self, ID, UID};
-    use sui::tx_context::{Self, TxContext};
     use sui::event;
+    use sui::object::{Self, ID, UID};
+    use sui::transfer;
+    use sui::tx_context::{Self, TxContext};
 
     const SPELL_TEREBRARETE_COST: u16 = 10;
     const SPELL_TEREBRARETE_DAMAGE: u16 = 14;
@@ -58,17 +61,22 @@ module magic_duel::game {
         wizard1_addr: address,
         wizard2_addr: address,
         ctx: &mut TxContext
-    ): Duel {
-        Duel {
+    ) {
+        let duel = Duel {
             id: object::new(ctx),
             state: STATE_PENDING,
             wizard1: Wizard { force: WIZARD_FORCE, address: wizard1_addr },
             wizard2: Wizard { force: WIZARD_FORCE, address: wizard2_addr },
-        }
+        };
+        transfer::share_object(duel);
     }
 
-    public fun start_duel(duel: &mut Duel) {
+    public fun start_duel(duel: &mut Duel, ctx: &mut TxContext) {
         assert!(duel.state == STATE_PENDING, EInvalidState);
+
+        let sender = tx_context::sender(ctx);
+        assert!(sender == duel.wizard1.address || sender == duel.wizard2.address, ENotWizard);
+
         duel.state = STATE_ACTION;
         
         event::emit(DuelStarted {
@@ -117,10 +125,13 @@ module magic_duel::game {
     }
 
     public fun get_duel_state(duel: &Duel): u8 {
-        duel.state
+        let state = duel.state;
+        state
     }
 
     public fun get_wizard_forces(duel: &Duel): (u16, u16) {
-        (duel.wizard1.force, duel.wizard2.force)
+        let force1 = duel.wizard1.force;
+        let force2 = duel.wizard2.force;
+        (force1, force2)
     }
 } 

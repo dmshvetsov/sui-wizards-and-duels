@@ -5,15 +5,14 @@
   "description": "Proof of concept for magic duel game on Sui blockchain",
   "main": "index.js",
   "scripts": {
-    "setup": "pnpm install --ignore-workspace && sui client faucet",
-    "start": "RUST_LOG='off,sui_node=info' sui start --with-faucet --force-regenesis && sui client publish ./dapp",
-    "publish": "sui client publish ./dapp",
+    "setup": "pnpm install --ignore-workspace",
+    "start": "RUST_LOG='off,sui_node=info' sui start --with-faucet --force-regenesis",
+    "dapp:publish": "sui client faucet && sui client publish ./dapp",
     "test": "node index.js"
   },
   "author": "Dmitry Shvetsov <shvetsovdm+magic-duel@gmail.com>",
   "dependencies": {
     "@mysten/sui": "1.25.0",
-    "ws": "8.16.0",
-    "dotenv": "16.4.5"
+    "ws": "8.16.0"
   }
 }

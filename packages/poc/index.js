@@ -1,19 +1,47 @@
 // must be the first import
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 
 const { SuiClient, getFullnodeUrl } = require('@mysten/sui/client');
 const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519');
 const { Transaction } = require('@mysten/sui/transactions');
 const WebSocket = require('ws');
+const util = require('util');
 
-// Constants
-const PID = process.env.PACKAGE_ID;
+function getPackageId() {
+  const moveLockPath = path.join(__dirname, 'dapp', 'Move.lock');
+  const moveLockContent = fs.readFileSync(moveLockPath, 'utf8');
+  const latestPublishedIdMatch = moveLockContent.match(/latest-published-id = "([^"]+)"/);
+  if (!latestPublishedIdMatch) {
+    throw new Error('Could not find latest-published-id in Move.lock');
+  }
+  return latestPublishedIdMatch[1];
+}
+
+const PID = getPackageId();
+
 const DUEL_STATES = {
   PENDING: 0,
   ACTION: 1,
   FINISHED: 2,
 };
 const LOOP_STEP_MS = 1000;
+
+// Helper function to log objects with full depth and colors
+function logObject(obj, label = '') {
+  const options = {
+    depth: null,
+    colors: true,
+    maxArrayLength: null,
+    maxStringLength: null,
+    showHidden: true,
+    compact: false,
+    sorted: true,
+    getters: true,
+    showProxy: true,
+  };
+  console.log(label + util.inspect(obj, options));
+}
 
 // Initialize Sui client
 const client = new SuiClient({ url: getFullnodeUrl('localnet') });
@@ -43,6 +71,8 @@ async function createDuel() {
     options: { showEffects: true },
   });
 
+  logObject(result, 'Transaction result: ');
+
   const createdObject = result.effects?.created?.[0];
   if (!createdObject) {
     throw new Error('Failed to create duel - no object was created');
@@ -60,11 +90,13 @@ async function startDuel() {
     arguments: [tx.object(duelId)],
   });
 
-  await client.signAndExecuteTransaction({
+  const result = await client.signAndExecuteTransaction({
     transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
+
+  logObject(result, 'Start duel result: ');
 }
 
 async function castSpell(playerKeypair) {
@@ -74,11 +106,13 @@ async function castSpell(playerKeypair) {
     arguments: [tx.object(duelId)],
   });
 
-  await client.signAndExecuteTransaction({
+  const result = await client.signAndExecuteTransaction({
     transaction: tx,
     signer: playerKeypair,
     options: { showEffects: true },
   });
+
+  logObject(result, 'Cast spell result: ');
 }
 
 async function getDuelState() {
@@ -93,6 +127,8 @@ async function getDuelState() {
     signer: wizard1Keypair,
     options: { showEffects: true },
   });
+
+  logObject(result, 'Get duel state result: ');
 
   const returnValue = result.effects?.returnValues?.[0];
   if (!returnValue) {
@@ -114,6 +150,8 @@ async function getWizardForces() {
     options: { showEffects: true },
   });
 
+  logObject(result, 'Get wizard forces result: ');
+
   const returnValue = result.effects?.returnValues?.[0];
   if (!returnValue) {
     throw new Error('Failed to get wizard forces - no return value');
@@ -134,6 +172,7 @@ async function simulateDuel() {
     const [force1, force2] = await getWizardForces();
 
     console.log('\nCurrent duel state:');
+    console.log(`State: ${state}`);
     console.log(`Wizard 1 force: ${force1}`);
     console.log(`Wizard 2 force: ${force2}`);
 
@@ -157,4 +196,4 @@ async function simulateDuel() {
 }
 
 // Start the duel simulation
-simulateDuel().catch(console.error);
+simulateDuel().catch(logObject);
