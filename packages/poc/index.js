@@ -35,7 +35,7 @@ const DUEL_ERRORS = {
   NOT_WIZARD: 2,
 };
 
-const LOOP_STEP_MS = 1000;
+const LOOP_STEP_MS = 300;
 
 function debugObject(obj, label = '') {
   if (!DEBUG) {
@@ -241,7 +241,7 @@ async function simulateDuel() {
     let maxTimeout = 0;
     
     if (Math.random() < 0.45) {
-      const timeout = Math.floor(Math.random() * 500); // Random delay up to 500ms
+      const timeout = Math.floor(Math.random() * 100); // Random delay up to 500ms
       maxTimeout = Math.max(maxTimeout, timeout);
       spellPromises.push(
         new Promise(resolve => setTimeout(resolve, timeout))
@@ -257,7 +257,7 @@ async function simulateDuel() {
     }
     
     if (Math.random() < 0.55) {
-      const timeout = Math.floor(Math.random() * 500); // Random delay up to 500ms
+      const timeout = Math.floor(Math.random() * 100); // Random delay up to 500ms
       maxTimeout = Math.max(maxTimeout, timeout);
       spellPromises.push(
         new Promise(resolve => setTimeout(resolve, timeout))
