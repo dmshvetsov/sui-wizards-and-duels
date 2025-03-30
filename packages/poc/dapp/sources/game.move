@@ -123,15 +123,4 @@ module magic_duel::game {
             });
         }
     }
-
-    public fun get_duel_state(duel: &Duel): u8 {
-        let state = duel.state;
-        state
-    }
-
-    public fun get_wizard_forces(duel: &Duel): (u16, u16) {
-        let force1 = duel.wizard1.force;
-        let force2 = duel.wizard2.force;
-        (force1, force2)
-    }
 } 
