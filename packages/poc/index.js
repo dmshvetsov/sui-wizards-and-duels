@@ -59,7 +59,6 @@ function logObject(obj, label = '') {
 }
 
 // Initialize Sui client
-// FIXME: try use websocket transport
 const client = new SuiClient({ url: getFullnodeUrl('localnet') });
 
 // Create two wizards with their keypairs
@@ -116,6 +115,11 @@ async function createDuel() {
   }
 
   console.log(`Duel created with ID: ${duelId}`);
+  
+  await client.waitForTransaction({
+    digest: result.digest,
+  });
+
   return duelId;
 }
 
@@ -132,6 +136,10 @@ async function startDuel(duelId) {
     transaction: tx,
     signer: wizard1Keypair,
     options: { showEffects: true },
+  });
+
+  await client.waitForTransaction({
+    digest: result.digest,
   });
 
   debugObject(result, 'Start duel result: ');
@@ -161,13 +169,17 @@ async function castSpell(playerKeypair, duelId) {
           throw new Error('Cannot cast spell: duel is not in ACTION state');
         case DUEL_ERRORS.INSUFFICIENT_FORCE:
           console.log(`Wizard ${playerKeypair.getPublicKey().toSuiAddress()} does not have enough force`);
+          break;
         case DUEL_ERRORS.NOT_WIZARD:
           throw new Error(`Cannot cast spell: ${playerKeypair.getPublicKey().toSuiAddress()} is not a participant in this duel`);
         default:
-          // do nothung, the error will be rethrown later
+          // unknown error, rethrow
+          throw error;
       }
+    } else {
+      // not a on-chain program error, rethrow
+      throw error;
     }
-    throw error;
   }
 }
 
@@ -204,14 +216,9 @@ async function simulateDuel() {
 
   // Create duel
   const duelId = await createDuel();
-  // FIXME: is there a better way to wait for the duel to be created?
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Start duel
   await startDuel(duelId);
-  // FIXME: is there a better way to wait for the duel state to be updated? try WaitForEffectsCert requestType
-  // or try https://sdk.mystenlabs.com/typescript/sui-client#waitfortransaction
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Duel loop
   while (true) {
