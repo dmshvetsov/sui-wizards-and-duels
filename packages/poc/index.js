@@ -236,19 +236,52 @@ async function simulateDuel() {
       break;
     }
 
-    // Randomly decide if wizards cast spells
-    // FIXME: must be called in parallel with Promise.allSettled and with random setTimeout for each spell cast. try WaitForEffectsCert requestType
-    // or try https://sdk.mystenlabs.com/typescript/sui-client#waitfortransaction
+    // Cast spells in parallel with random timeouts
+    const spellPromises = [];
+    let maxTimeout = 0;
+    
     if (Math.random() < 0.45) {
-      console.log('Wizard 1 casts spell!');
-      await castSpell(wizard1Keypair, duelId);
+      const timeout = Math.floor(Math.random() * 500); // Random delay up to 500ms
+      maxTimeout = Math.max(maxTimeout, timeout);
+      spellPromises.push(
+        new Promise(resolve => setTimeout(resolve, timeout))
+          .then(() => {
+            console.log('Wizard 1 casts spell!');
+            return castSpell(wizard1Keypair, duelId);
+          })
+          .catch(error => {
+            console.error('Wizard 1 spell failed:', error);
+            return null;
+          })
+      );
     }
+    
     if (Math.random() < 0.55) {
-      console.log('Wizard 2 casts spell!');
-      await castSpell(wizard2Keypair, duelId);
+      const timeout = Math.floor(Math.random() * 500); // Random delay up to 500ms
+      maxTimeout = Math.max(maxTimeout, timeout);
+      spellPromises.push(
+        new Promise(resolve => setTimeout(resolve, timeout))
+          .then(() => {
+            console.log('Wizard 2 casts spell!');
+            return castSpell(wizard2Keypair, duelId);
+          })
+          .catch(error => {
+            console.error('Wizard 2 spell failed:', error);
+            return null;
+          })
+      );
     }
 
-    await new Promise((resolve) => setTimeout(resolve, LOOP_STEP_MS));
+    // Wait for all spell casts to complete
+    if (spellPromises.length > 0) {
+      await Promise.allSettled(spellPromises);
+    }
+
+    // Wait for the remaining time after the longest spell cast
+    const remainingTime = Math.max(0, LOOP_STEP_MS - maxTimeout);
+    if (remainingTime > 0) {
+      await new Promise(resolve => setTimeout(resolve, remainingTime));
+    }
   }
 }
 
