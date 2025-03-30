@@ -19,6 +19,8 @@ function getPackageId() {
   return latestPublishedIdMatch[1];
 }
 
+const DEBUG = process.env.DEBUG === 'true';
+
 const PID = getPackageId();
 
 const DUEL_STATES = {
@@ -26,25 +28,38 @@ const DUEL_STATES = {
   ACTION: 1,
   FINISHED: 2,
 };
+
+const DUEL_ERRORS = {
+  INVALID_STATE: 0,
+  INSUFFICIENT_FORCE: 1,
+  NOT_WIZARD: 2,
+};
+
 const LOOP_STEP_MS = 1000;
 
-// Helper function to log objects with full depth and colors
+function debugObject(obj, label = '') {
+  if (!DEBUG) {
+    return;
+  }
+  logObject(obj, label);
+}
+
 function logObject(obj, label = '') {
-  const options = {
-    depth: null,
-    colors: true,
-    maxArrayLength: null,
-    maxStringLength: null,
-    showHidden: true,
-    compact: false,
-    sorted: true,
-    getters: true,
-    showProxy: true,
-  };
-  console.log(label + util.inspect(obj, options));
+  console.log(label + util.inspect(obj, {
+      depth: null,
+      colors: true,
+      maxArrayLength: null,
+      maxStringLength: null,
+      showHidden: true,
+      compact: false,
+      sorted: true,
+      getters: true,
+      showProxy: true,
+    }));
 }
 
 // Initialize Sui client
+// FIXME: try use websocket transport
 const client = new SuiClient({ url: getFullnodeUrl('localnet') });
 
 // Create two wizards with their keypairs
@@ -89,7 +104,7 @@ async function createDuel() {
     options: { showEffects: true },
   });
 
-  logObject(result, 'Transaction result: ');
+  debugObject(result, 'Transaction result: ');
 
   const createdObject = result.effects?.created?.[0];
   if (!createdObject) {
@@ -119,7 +134,7 @@ async function startDuel(duelId) {
     options: { showEffects: true },
   });
 
-  logObject(result, 'Start duel result: ');
+  debugObject(result, 'Start duel result: ');
 }
 
 async function castSpell(playerKeypair, duelId) {
@@ -129,13 +144,31 @@ async function castSpell(playerKeypair, duelId) {
     arguments: [tx.object(duelId)],
   });
 
-  const result = await client.signAndExecuteTransaction({
-    transaction: tx,
-    signer: playerKeypair,
-    options: { showEffects: true },
-  });
-
-  logObject(result, 'Cast spell result: ');
+  try {
+    const result = await client.signAndExecuteTransaction({
+      transaction: tx,
+      signer: playerKeypair,
+      options: { showEffects: true },
+    });
+    debugObject(result, 'Cast spell result: ');
+  } catch (error) {
+    // Extract error code from the error message
+    const errorMatch = error.cause.executionErrorSource.match(/VMError with status ABORTED with sub status (\d+)/)
+    if (errorMatch) {
+      const errorCode = Number(errorMatch[1]);
+      switch (errorCode) {
+        case DUEL_ERRORS.INVALID_STATE:
+          throw new Error('Cannot cast spell: duel is not in ACTION state');
+        case DUEL_ERRORS.INSUFFICIENT_FORCE:
+          console.log(`Wizard ${playerKeypair.getPublicKey().toSuiAddress()} does not have enough force`);
+        case DUEL_ERRORS.NOT_WIZARD:
+          throw new Error(`Cannot cast spell: ${playerKeypair.getPublicKey().toSuiAddress()} is not a participant in this duel`);
+        default:
+          // do nothung, the error will be rethrown later
+      }
+    }
+    throw error;
+  }
 }
 
 async function getDuel(duelId) {
@@ -144,7 +177,7 @@ async function getDuel(duelId) {
     options: { showContent: true },
   });
 
-  logObject(duel, 'Get duel state result: ');
+  debugObject(duel, 'Get duel state result: ');
 
   if (!duel.data?.content?.fields) {
     throw new Error('Failed to get duel state - no content fields');
@@ -176,7 +209,8 @@ async function simulateDuel() {
 
   // Start duel
   await startDuel(duelId);
-  // FIXME: is there a better way to wait for the duel state to be updated?
+  // FIXME: is there a better way to wait for the duel state to be updated? try WaitForEffectsCert requestType
+  // or try https://sdk.mystenlabs.com/typescript/sui-client#waitfortransaction
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Duel loop
@@ -196,7 +230,8 @@ async function simulateDuel() {
     }
 
     // Randomly decide if wizards cast spells
-    // FIXME: must be called in parallel with Promise.allSettled and with random setTimeout for each spell cast
+    // FIXME: must be called in parallel with Promise.allSettled and with random setTimeout for each spell cast. try WaitForEffectsCert requestType
+    // or try https://sdk.mystenlabs.com/typescript/sui-client#waitfortransaction
     if (Math.random() < 0.45) {
       console.log('Wizard 1 casts spell!');
       await castSpell(wizard1Keypair, duelId);
