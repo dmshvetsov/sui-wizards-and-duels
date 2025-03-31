@@ -35,3 +35,20 @@ put deployed program address as PROGRAM_ID env variable to `.env` file inside PO
 in a second terminall session
 
     $ pnpm run test
+
+## results
+
+### Duel as a shared object
+
+when a duel is a shared object the duel usually ends within below conditions
+
+Total iterations: 8
+Min time spent: 1615ms
+Max time spent: 1860ms
+Mean time spent: 1765.25ms
+P50 time spent: 1806ms
+P90 time spent: 1860ms
+P95 time spent: 1860ms
+
+tested from easter europe against Sui devnet
+

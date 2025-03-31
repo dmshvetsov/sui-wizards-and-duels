@@ -1,3 +1,8 @@
+/**
+ * A throw away script to make a proof of concept for a real time or almost real time game with Sui blockchain as a backend.
+ * author: Dmitry Shvtsov @dmshvetsov with help of Claude Sonnet AI
+ */
+
 // must be the first import
 const fs = require('fs');
 const path = require('path');
@@ -6,7 +11,6 @@ const { SuiClient, getFullnodeUrl } = require('@mysten/sui/client');
 const { getFaucetHost, requestSuiFromFaucetV0 } = require('@mysten/sui/faucet');
 const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519');
 const { Transaction } = require('@mysten/sui/transactions');
-const WebSocket = require('ws');
 const util = require('util');
 
 function getPackageId() {
@@ -59,7 +63,7 @@ function logObject(obj, label = '') {
 }
 
 // Initialize Sui client
-const client = new SuiClient({ url: getFullnodeUrl('localnet') });
+const client = new SuiClient({ url: getFullnodeUrl('devnet') });
 
 // Create two wizards with their keypairs
 const wizard1Keypair = new Ed25519Keypair();
@@ -68,7 +72,7 @@ const wizard2Keypair = new Ed25519Keypair();
 async function airdropSui(address) {
   console.log(`Requesting airdrop for address: ${address}`);
   return requestSuiFromFaucetV0({
-    host: getFaucetHost('localnet'),
+    host: getFaucetHost('devnet'),
     recipient: address,
   });
 }
@@ -210,6 +214,28 @@ function getWizardForcesFromDuel(duel) {
   ];
 }
 
+function logStatistics(spentTimes) {
+  // Calculate basic statistics
+  const minSpent = Math.min(...spentTimes);
+  const maxSpent = Math.max(...spentTimes);
+  const meanSpent = spentTimes.reduce((a, b) => a + b, 0) / spentTimes.length;
+  
+  // Calculate percentiles
+  const sortedTimes = [...spentTimes].sort((a, b) => a - b);
+  const p50Index = Math.floor(sortedTimes.length * 0.5);
+  const p90Index = Math.floor(sortedTimes.length * 0.9);
+  const p95Index = Math.floor(sortedTimes.length * 0.95);
+  
+  console.log('\nLoop Statistics:');
+  console.log(`Total iterations: ${spentTimes.length}`);
+  console.log(`Min time spent: ${minSpent}ms`);
+  console.log(`Max time spent: ${maxSpent}ms`);
+  console.log(`Mean time spent: ${meanSpent.toFixed(2)}ms`);
+  console.log(`P50 time spent: ${sortedTimes[p50Index]}ms`);
+  console.log(`P90 time spent: ${sortedTimes[p90Index]}ms`);
+  console.log(`P95 time spent: ${sortedTimes[p95Index]}ms`);
+}
+
 async function simulateDuel() {
   // Setup wizards with Sui coins
   await setupWizards();
@@ -219,6 +245,9 @@ async function simulateDuel() {
 
   // Start duel
   await startDuel(duelId);
+
+  // Statistics for loop iterations
+  const spentCastSpellTimes = [];
 
   // Duel loop
   while (true) {
@@ -238,11 +267,10 @@ async function simulateDuel() {
 
     // Cast spells in parallel with random timeouts
     const spellPromises = [];
-    let maxTimeout = 0;
+    let nowTs = Date.now();
     
-    if (Math.random() < 0.45) {
-      const timeout = Math.floor(Math.random() * 100); // Random delay up to 500ms
-      maxTimeout = Math.max(maxTimeout, timeout);
+    if (Math.random() < 0.45 && force2 > 25) {
+      const timeout = Math.floor(Math.random() * 250);
       spellPromises.push(
         new Promise(resolve => setTimeout(resolve, timeout))
           .then(() => {
@@ -257,8 +285,7 @@ async function simulateDuel() {
     }
     
     if (Math.random() < 0.55) {
-      const timeout = Math.floor(Math.random() * 100); // Random delay up to 500ms
-      maxTimeout = Math.max(maxTimeout, timeout);
+      const timeout = Math.floor(Math.random() * 250);
       spellPromises.push(
         new Promise(resolve => setTimeout(resolve, timeout))
           .then(() => {
@@ -278,11 +305,22 @@ async function simulateDuel() {
     }
 
     // Wait for the remaining time after the longest spell cast
-    const remainingTime = Math.max(0, LOOP_STEP_MS - maxTimeout);
+    const spentTs = Date.now() - nowTs;
+    const remainingTime = Math.max(0, LOOP_STEP_MS - spentTs);
+    console.log(`=== cast spells took ${spentTs}ms, waiting for ${remainingTime}ms before next loop`);
+    
+    // Collect statistics
+    if (spentTs > 0) {
+      spentCastSpellTimes.push(spentTs);
+    }
+    
     if (remainingTime > 0) {
       await new Promise(resolve => setTimeout(resolve, remainingTime));
     }
   }
+
+  // Log statistics
+  logStatistics(spentCastSpellTimes);
 }
 
 // Start the duel simulation
