@@ -3,36 +3,20 @@
 ///  the sole purpose is to test a concept of using blockchain as a backend for a game
 module magic_duel::game {
     use sui::event;
-    use sui::object::{Self, ID, UID};
+    use sui::object::{Self, UID};
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
 
-    const SPELL_TEREBRARETE_COST: u16 = 10;
     const SPELL_TEREBRARETE_DAMAGE: u16 = 14;
     const WIZARD_FORCE: u16 = 128;
 
-    /// Duel state enum
-    const STATE_PENDING: u8 = 0;
-    const STATE_ACTION: u8 = 1;
-    const STATE_FINISHED: u8 = 2;
-
     /// Error codes
-    const EInvalidState: u64 = 0;
-    const EInsufficientForce: u64 = 1;
     const ENotWizard: u64 = 2;
 
-    /// Represents a wizard in the duel
-    struct Wizard has store, copy, drop {
-        force: u16,
-        address: address,
-    }
-
-    /// Represents the duel state
-    struct Duel has key {
+    struct DuelistCap has key {
         id: UID,
-        state: u8,
-        wizard1: Wizard,
-        wizard2: Wizard,
+        opponent_force: u16,
+        opponent: address,
     }
 
     //
@@ -40,20 +24,18 @@ module magic_duel::game {
     // 
   
     struct DuelStarted has copy, drop {
-        duel_id: ID,
         wizard1: address,
         wizard2: address,
     }
 
     struct SpellCast has copy, drop {
-        duel_id: ID,
         caster: address,
+        target: address,
         spell: vector<u8>,
         damage: u16,
     }
 
     struct DuelFinished has copy, drop {
-        duel_id: ID,
         winner: address,
     }
 
@@ -62,64 +44,45 @@ module magic_duel::game {
         wizard2_addr: address,
         ctx: &mut TxContext
     ) {
-        let duel = Duel {
-            id: object::new(ctx),
-            state: STATE_PENDING,
-            wizard1: Wizard { force: WIZARD_FORCE, address: wizard1_addr },
-            wizard2: Wizard { force: WIZARD_FORCE, address: wizard2_addr },
-        };
-        transfer::share_object(duel);
-    }
-
-    public fun start_duel(duel: &mut Duel, ctx: &mut TxContext) {
-        assert!(duel.state == STATE_PENDING, EInvalidState);
-
         let sender = tx_context::sender(ctx);
-        assert!(sender == duel.wizard1.address || sender == duel.wizard2.address, ENotWizard);
+        assert!(sender == wizard1_addr || sender == wizard2_addr, ENotWizard);
 
-        duel.state = STATE_ACTION;
-        
+        transfer::transfer(DuelistCap {
+            id: object::new(ctx),
+            opponent_force: WIZARD_FORCE,
+            opponent: wizard2_addr,
+        }, wizard1_addr);
+        transfer::transfer(DuelistCap {
+            id: object::new(ctx),
+            opponent_force: WIZARD_FORCE,
+            opponent: wizard1_addr,
+        }, wizard2_addr);
         event::emit(DuelStarted {
-            duel_id: object::id(duel),
-            wizard1: duel.wizard1.address,
-            wizard2: duel.wizard2.address,
+            wizard1: wizard1_addr,
+            wizard2: wizard2_addr,
         });
     }
 
-    public fun cast_spell(duel: &mut Duel, ctx: &mut TxContext) {
-        assert!(duel.state == STATE_ACTION, EInvalidState);
-        
+    public fun cast_spell(caster_cap: &mut DuelistCap, ctx: &mut TxContext) {
         let sender = tx_context::sender(ctx);
-        assert!(sender == duel.wizard1.address || sender == duel.wizard2.address, ENotWizard);
-
-        let duel_id = object::id(duel);
-        let (caster, opponent) = if (sender == duel.wizard1.address) {
-            (&mut duel.wizard1, &mut duel.wizard2)
-        } else {
-            (&mut duel.wizard2, &mut duel.wizard1)
-        };
-
-        assert!(caster.force >= SPELL_TEREBRARETE_COST, EInsufficientForce);
-        caster.force = caster.force - SPELL_TEREBRARETE_COST;
 
         let damage = SPELL_TEREBRARETE_DAMAGE;
-        if (opponent.force <= damage) {
-            opponent.force = 0;
-            duel.state = STATE_FINISHED;
+        if (caster_cap.opponent_force <= damage) {
+            caster_cap.opponent_force = 0;
         } else {
-            opponent.force = opponent.force - damage;
+            caster_cap.opponent_force = caster_cap.opponent_force - damage;
         };
-        let caster_address = caster.address;
+        
         event::emit(SpellCast {
-            duel_id,
-            caster: caster_address,
+            caster: sender,
+            target: caster_cap.opponent,
             spell: b"terebrarete",
             damage
         });
-        if (opponent.force == 0) {
+
+        if (caster_cap.opponent_force == 0) {
             event::emit(DuelFinished {
-                duel_id,
-                winner: caster_address,
+                winner: sender,
             });
         }
     }

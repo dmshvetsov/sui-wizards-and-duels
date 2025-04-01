@@ -27,12 +27,6 @@ const DEBUG = process.env.DEBUG === 'true';
 
 const PID = getPackageId();
 
-const DUEL_STATES = {
-  PENDING: 0,
-  ACTION: 1,
-  FINISHED: 2,
-};
-
 const DUEL_ERRORS = {
   INVALID_STATE: 0,
   INSUFFICIENT_FORCE: 1,
@@ -127,13 +121,16 @@ async function createDuel() {
   return duelId;
 }
 
-async function startDuel(duelId) {
-  console.log(`Starting ${duelId} duel...`);
+async function startDuel() {
+  console.log(`Starting duel...`);
 
   const tx = new Transaction();
   tx.moveCall({
-    target: `${PID}::game::start_duel`,
-    arguments: [tx.object(duelId)],
+    target: `${PID}::game::create_duel`,
+    arguments: [
+      tx.pure.address(wizard1Keypair.getPublicKey().toSuiAddress()),
+      tx.pure.address(wizard2Keypair.getPublicKey().toSuiAddress()),
+    ],
   });
 
   const result = await client.signAndExecuteTransaction({
@@ -147,13 +144,27 @@ async function startDuel(duelId) {
   });
 
   debugObject(result, 'Start duel result: ');
+
+  // Get duelist caps created during start_duel
+  const cap1 = result.effects?.created?.[0];
+  const cap2 = result.effects?.created?.[1];
+  if (!cap1 || !cap2) {
+    throw new Error('Failed to start duel - no duelist caps were created');
+  }
+  logObject(cap1, 'Duelist cap 1: ');
+  logObject(cap2, 'Duelist cap 2: ');
+  if (cap1.owner.addressOwner === wizard1Keypair.getPublicKey().toSuiAddress()) {
+    return { duelistCap1Id: cap1.reference.objectId, duelistCap2Id: cap2.reference.objectId };
+  } else {
+    return { duelistCap1Id: cap2.reference.objectId, duelistCap2Id: cap1.reference.objectId };
+  }
 }
 
-async function castSpell(playerKeypair, duelId) {
+async function castSpell(playerKeypair, duelistCapId) {
   const tx = new Transaction();
   tx.moveCall({
     target: `${PID}::game::cast_spell`,
-    arguments: [tx.object(duelId)],
+    arguments: [tx.object(duelistCapId)],
   });
 
   try {
@@ -165,7 +176,7 @@ async function castSpell(playerKeypair, duelId) {
     debugObject(result, 'Cast spell result: ');
   } catch (error) {
     // Extract error code from the error message
-    const errorMatch = error.cause.executionErrorSource.match(/VMError with status ABORTED with sub status (\d+)/)
+    const errorMatch = error.cause?.executionErrorSource?.match(/VMError with status ABORTED with sub status (\d+)/)
     if (errorMatch) {
       const errorCode = Number(errorMatch[1]);
       switch (errorCode) {
@@ -202,15 +213,26 @@ async function getDuel(duelId) {
   return duel;
 }
 
-function getStateFromDuel(duel) {
-  return Number(duel.data.content.fields.state);
+async function getDuelistCap(duelistCapId) {
+  const duelistCap = await client.getObject({
+    id: duelistCapId,
+    options: { showContent: true },
+  });
+
+  debugObject(duelistCap, 'Get duelist cap result: ');
+
+  if (!duelistCap.data?.content?.fields) {
+    throw new Error('Failed to get duelist cap state - no content fields');
+  }
+
+  return duelistCap;
 }
 
-function getWizardForcesFromDuel(duel) {
-  const fields = duel.data.content.fields;
+function getForcesFromDuelistCap(duelistCap) {
+  const fields = duelistCap.data.content.fields;
   return [
-    Number(fields.wizard1.fields.force),
-    Number(fields.wizard2.fields.force)
+    Number(fields.opponent_force),
+    fields.opponent
   ];
 }
 
@@ -240,28 +262,24 @@ async function simulateDuel() {
   // Setup wizards with Sui coins
   await setupWizards();
 
-  // Create duel
-  const duelId = await createDuel();
-
-  // Start duel
-  await startDuel(duelId);
+  const { duelistCap1Id, duelistCap2Id } = await startDuel();
 
   // Statistics for loop iterations
   const spentCastSpellTimes = [];
 
   // Duel loop
   while (true) {
-    const duel = await getDuel(duelId);
-    const state = getStateFromDuel(duel);
-    const [force1, force2] = getWizardForcesFromDuel(duel);
+    // Get forces from duelist caps
+    const duelistCap1 = await getDuelistCap(duelistCap1Id);
+    const duelistCap2 = await getDuelistCap(duelistCap2Id);
+    const [force2] = getForcesFromDuelistCap(duelistCap1); // opponent_force of wizard1 is force of wizard2
+    const [force1] = getForcesFromDuelistCap(duelistCap2); // opponent_force of wizard2 is force of wizard1
 
-    console.log('\nCurrent duel state:');
-    console.log(`State: ${state}`);
     console.log(`Wizard 1 force: ${force1}`);
     console.log(`Wizard 2 force: ${force2}`);
 
-    if (state === DUEL_STATES.FINISHED) {
-      logObject(duel, 'Duel finished: ');
+    if (force1 === 0 || force2 === 0) {
+      logObject(duelistCap1, 'Duel finished: ');
       break;
     }
 
@@ -269,13 +287,13 @@ async function simulateDuel() {
     const spellPromises = [];
     let nowTs = Date.now();
     
-    if (Math.random() < 0.45 && force2 > 25) {
+    if (Math.random() < 0.45) {
       const timeout = Math.floor(Math.random() * 250);
       spellPromises.push(
         new Promise(resolve => setTimeout(resolve, timeout))
           .then(() => {
             console.log('Wizard 1 casts spell!');
-            return castSpell(wizard1Keypair, duelId);
+            return castSpell(wizard1Keypair, duelistCap1Id);
           })
           .catch(error => {
             console.error('Wizard 1 spell failed:', error);
@@ -290,7 +308,7 @@ async function simulateDuel() {
         new Promise(resolve => setTimeout(resolve, timeout))
           .then(() => {
             console.log('Wizard 2 casts spell!');
-            return castSpell(wizard2Keypair, duelId);
+            return castSpell(wizard2Keypair, duelistCap2Id);
           })
           .catch(error => {
             console.error('Wizard 2 spell failed:', error);

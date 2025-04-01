@@ -52,3 +52,12 @@ P95 time spent: 1860ms
 
 tested from easter europe against Sui devnet
 
+### Without Duel shared object, with DuelistCap
+
+Total iterations: 13
+Min time spent: 1ms
+Max time spent: 1768ms
+Mean time spent: 1462.38ms
+P50 time spent: 1586ms
+P90 time spent: 1655ms
+P95 time spent: 1768ms
