@@ -151,9 +151,7 @@ async function startDuel() {
   if (!cap1 || !cap2) {
     throw new Error('Failed to start duel - no duelist caps were created');
   }
-  logObject(cap1, 'Duelist cap 1: ');
-  logObject(cap2, 'Duelist cap 2: ');
-  if (cap1.owner.addressOwner === wizard1Keypair.getPublicKey().toSuiAddress()) {
+  if (cap1.owner.AddressOwner === wizard1Keypair.getPublicKey().toSuiAddress()) {
     return { duelistCap1Id: cap1.reference.objectId, duelistCap2Id: cap2.reference.objectId };
   } else {
     return { duelistCap1Id: cap2.reference.objectId, duelistCap2Id: cap1.reference.objectId };
