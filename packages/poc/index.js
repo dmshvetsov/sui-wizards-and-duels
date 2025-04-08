@@ -25,7 +25,12 @@ function getPackageId() {
 
 const DEBUG = process.env.DEBUG === 'true';
 
+if (!process.env.PRIVATE_KEY) {
+  throw new Error('PRIVATE_KEY environment variable is required');
+}
+
 const PID = getPackageId();
+const funderKeypair = Ed25519Keypair.fromSecretKey(process.env.PRIVATE_KEY);
 
 const DUEL_ERRORS = {
   INVALID_STATE: 0,
@@ -57,17 +62,27 @@ function logObject(obj, label = '') {
 }
 
 // Initialize Sui client
-const client = new SuiClient({ url: getFullnodeUrl('devnet') });
+const client = new SuiClient({ url: 'https://sui-testnet-rpc.publicnode.com' });
 
 // Create two wizards with their keypairs
 const wizard1Keypair = new Ed25519Keypair();
 const wizard2Keypair = new Ed25519Keypair();
 
-async function airdropSui(address) {
-  console.log(`Requesting airdrop for address: ${address}`);
-  return requestSuiFromFaucetV0({
-    host: getFaucetHost('devnet'),
-    recipient: address,
+async function fundWizard(address, amount) {
+  console.log(`Funding wizard at address: ${address} with ${amount} MIST`);
+  const tx = new Transaction();
+  const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(amount)]);
+  tx.transferObjects([coin], tx.pure.address(address));
+
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
+    signer: funderKeypair,
+    options: { showEffects: true },
+  });
+
+  debugObject(result, 'Fund wizard result: ');
+  await client.waitForTransaction({
+    digest: result.digest,
   });
 }
 
@@ -79,8 +94,9 @@ async function setupWizards() {
   console.log(`Wizard 1 address: ${wizard1Address}`);
   console.log(`Wizard 2 address: ${wizard2Address}`);
 
-  await airdropSui(wizard1Address);
-  await airdropSui(wizard2Address);
+  // Fund each wizard with 0.025 SUI
+  await fundWizard(wizard1Address, 25000000);
+  await fundWizard(wizard2Address, 25000000);
 }
 
 async function createDuel() {

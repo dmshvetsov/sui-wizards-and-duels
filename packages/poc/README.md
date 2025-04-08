@@ -62,7 +62,11 @@ P50 time spent: 1586ms
 P90 time spent: 1655ms
 P95 time spent: 1768ms
 
+tested from easter europe against Sui devnet
+
 ### Without Duel shared object and without Events, with DuelistCap
+
+#### in devnet
 
 Total iterations: 14
 Min time spent: 1395ms
@@ -71,3 +75,15 @@ Mean time spent: 1549.71ms
 P50 time spent: 1566ms
 P90 time spent: 1640ms
 P95 time spent: 1708ms
+
+tested from easter europe against Sui devnet
+
+#### in testnet
+
+Total iterations: 15
+Min time spent: 778ms
+Max time spent: 1960ms
+Mean time spent: 1343.73ms
+P50 time spent: 1330ms
+P90 time spent: 1738ms
+P95 time spent: 1960ms
