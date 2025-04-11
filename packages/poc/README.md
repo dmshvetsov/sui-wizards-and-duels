@@ -87,3 +87,14 @@ Mean time spent: 1343.73ms
 P50 time spent: 1330ms
 P90 time spent: 1738ms
 P95 time spent: 1960ms
+
+### Without Duel shared object and without Events, with DuelistCap and with predefinded gas limit and gas price
+
+Total iterations: 23
+Min time spent: 326ms
+Max time spent: 987ms
+Mean time spent: 622.30ms
+P50 time spent: 634ms
+P90 time spent: 868ms
+P95 time spent: 885ms
+
