@@ -147,7 +147,7 @@ async function castSpell(playerKeypair, duelistCap) {
   });
   // NOTE: optimization #2, must set gas limit explicitly otherwise client will make a dryRunTransactionBlock to an RPC
   // this must speed up the game and reduce PRC cost
-  tx.setGasBudget(4_000_000);
+  tx.setGasBudget(1_500_000);
   // NOTE: optimization #3, must set gas price otherwise client will make a getReferenceGasPrice to an RPC
   // this must speed up the game and reduce PRC cost
   tx.setGasPrice(1_000);
