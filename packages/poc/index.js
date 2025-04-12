@@ -38,6 +38,7 @@ const DUEL_ERRORS = {
 };
 
 const LOOP_STEP_MS = 300;
+const SPELL_TEREBRARETE_DAMAGE = 14;
 
 function debugObject(obj, label = '') {
   if (!DEBUG) {
@@ -141,6 +142,7 @@ async function castSpell(playerKeypair, duelistCap) {
       version: duelistCap.version,
     })
   );
+  debugObject(duelistCap, 'Duelist state before tx: ');
   tx.moveCall({
     target: `${PID}::game::cast_spell`,
     arguments: [duelistCapObjRef],
@@ -157,8 +159,27 @@ async function castSpell(playerKeypair, duelistCap) {
     const result = await client.signAndExecuteTransaction({
       transaction: tx,
       signer: playerKeypair,
+      options: { showEffects: true },
     });
     debugObject(result, 'Cast spell result: ');
+    const mutated = result?.effects?.mutated.find(obj => obj.reference.objectId === duelistCap.objectId);
+    if (!mutated) {
+      throw new Error('unable to find duelistCap mutated effect');
+    }
+
+    return {
+      ...duelistCap,
+      // version: String(BigInt(duelistCap.version) + 1n),
+      digest: mutated.reference.digest,
+      version: mutated.reference.version,
+      content: {
+        ...duelistCap.content,
+        fields: {
+          ...duelistCap.content.fields,
+          opponent_force: Math.max(0, duelistCap.content.fields.opponent_force - SPELL_TEREBRARETE_DAMAGE),
+        },
+      },
+    };
   } catch (error) {
     // Extract error code from the error message
     const errorMatch = error.cause?.executionErrorSource?.match(
@@ -203,12 +224,12 @@ async function getDuelistCap(duelistCapId) {
     throw new Error('Failed to get duelist cap state - no content fields');
   }
 
-  return duelistCap;
+  return duelistCap.data;
 }
 
-function getForcesFromDuelistCap(duelistCap) {
-  const fields = duelistCap.data.content.fields;
-  return [Number(fields.opponent_force), fields.opponent];
+function getOpponentForce(duelistCap) {
+  const fields = duelistCap.content.fields;
+  return Number(fields.opponent_force);
 }
 
 function logStatistics(spentTimes) {
@@ -242,9 +263,9 @@ async function simulateDuel() {
   console.log(`Wizard 2 address: ${wizard2Address}`);
 
   // Fund each wizard with 0.025 SUI
-  await fundWizard(wizard1Address, 25000000);
+  await fundWizard(wizard1Address, 20000000);
   await new Promise((resolve) => setTimeout(resolve, 2500));
-  await fundWizard(wizard2Address, 25000000);
+  await fundWizard(wizard2Address, 16000000);
   await new Promise((resolve) => setTimeout(resolve, 2500));
 
   const { duelistCap1Id, duelistCap2Id } = await startDuel();
@@ -253,19 +274,24 @@ async function simulateDuel() {
   // Statistics for loop iterations
   const spentCastSpellTimes = [];
 
+  let duelistCap1 = await getDuelistCap(duelistCap1Id);
+  let duelistCap2 = await getDuelistCap(duelistCap2Id);
+
   // Duel loop
   while (true) {
     // Get forces from duelist caps
-    const duelistCap1 = await getDuelistCap(duelistCap1Id);
-    const duelistCap2 = await getDuelistCap(duelistCap2Id);
-    const [force2] = getForcesFromDuelistCap(duelistCap1); // opponent_force of wizard1 is force of wizard2
-    const [force1] = getForcesFromDuelistCap(duelistCap2); // opponent_force of wizard2 is force of wizard1
+    const force2 = getOpponentForce(duelistCap1);
+    const force1 = getOpponentForce(duelistCap2);
 
     console.log(`Wizard 1 force: ${force1}`);
     console.log(`Wizard 2 force: ${force2}`);
 
-    if (force1 === 0 || force2 === 0) {
-      logObject(duelistCap1, 'Duel finished: ');
+    if (force1 <= 0 || force2 <= 0) {
+      const duelistCap1end = await getDuelistCap(duelistCap1Id);
+      const duelistCap2end = await getDuelistCap(duelistCap2Id);
+      console.log('Duel finished')
+      logObject(duelistCap1end);
+      logObject(duelistCap2end);
       break;
     }
 
@@ -279,7 +305,10 @@ async function simulateDuel() {
         new Promise((resolve) => setTimeout(resolve, timeout))
           .then(() => {
             console.log('Wizard 1 casts spell!');
-            return castSpell(wizard1Keypair, duelistCap1.data);
+            return castSpell(wizard1Keypair, duelistCap1);
+          })
+          .then((upd) => {
+            duelistCap1 = upd;
           })
           .catch((error) => {
             console.error('Wizard 1 spell failed:', error);
@@ -294,7 +323,10 @@ async function simulateDuel() {
         new Promise((resolve) => setTimeout(resolve, timeout))
           .then(() => {
             console.log('Wizard 2 casts spell!');
-            return castSpell(wizard2Keypair, duelistCap2.data);
+            return castSpell(wizard2Keypair, duelistCap2);
+          })
+          .then((upd) => {
+            duelistCap2 = upd;
           })
           .catch((error) => {
             console.error('Wizard 2 spell failed:', error);
