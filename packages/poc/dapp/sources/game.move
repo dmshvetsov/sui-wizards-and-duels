@@ -2,6 +2,7 @@
 ///  NOTE: this smart contract were build without considering the best practices of on-chain programming, including security
 ///  the sole purpose is to test a concept of using blockchain as a backend for a game
 module magic_duel::game {
+    use sui::dynamic_field as df;
     use sui::object::{Self, UID};
     use sui::transfer;
     use sui::tx_context::{Self, TxContext};
@@ -14,8 +15,11 @@ module magic_duel::game {
 
     struct DuelistCap has key {
         id: UID,
-        opponent_force: u16,
         opponent: address,
+    }
+
+    struct Opponent has store {
+        force: u16,
     }
 
     public fun create_duel(
@@ -26,24 +30,33 @@ module magic_duel::game {
         let sender = tx_context::sender(ctx);
         assert!(sender == wizard1_addr || sender == wizard2_addr, ENotWizard);
 
-        transfer::transfer(DuelistCap {
+        let cap1 = DuelistCap {
             id: object::new(ctx),
-            opponent_force: WIZARD_FORCE,
             opponent: wizard2_addr,
-        }, wizard1_addr);
-        transfer::transfer(DuelistCap {
+        };
+        df::add(&mut cap1.id, wizard2_addr, Opponent {
+            force: WIZARD_FORCE,
+        });
+        transfer::transfer(cap1, wizard1_addr);
+
+
+        let cap2 = DuelistCap {
             id: object::new(ctx),
-            opponent_force: WIZARD_FORCE,
             opponent: wizard1_addr,
-        }, wizard2_addr);
+        };
+        df::add(&mut cap2.id, wizard1_addr, Opponent {
+            force: WIZARD_FORCE
+        });
+        transfer::transfer(cap2, wizard2_addr);
     }
 
-    public fun cast_spell(caster_cap: &mut DuelistCap) {
+    public fun cast_spell(caster_cap: &DuelistCap) {
         let damage = SPELL_TEREBRARETE_DAMAGE;
-        if (caster_cap.opponent_force <= damage) {
-            caster_cap.opponent_force = 0;
+        let opponent: &mut Opponent = df::borrow_mut(&mut caster_cap.id, caster_cap.opponent);
+        if (opponent.force <= damage) {
+            opponent.force = 0;
         } else {
-            caster_cap.opponent_force = caster_cap.opponent_force - damage;
+            opponent.force = opponent.force - damage;
         };
     }
 } 

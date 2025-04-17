@@ -103,7 +103,7 @@ async function startDuel() {
       tx.pure.address(wizard2Keypair.getPublicKey().toSuiAddress()),
     ],
   });
-  tx.setGasBudget(6_000_000);
+  tx.setGasBudget(20_000_000);
   tx.setGasPrice(1_000);
 
   const result = await client.signAndExecuteTransaction({
@@ -162,23 +162,21 @@ async function castSpell(playerKeypair, duelistCap) {
       options: { showEffects: true },
     });
     debugObject(result, 'Cast spell result: ');
-    const mutated = result?.effects?.mutated.find(obj => obj.reference.objectId === duelistCap.objectId);
+    const mutated = result?.effects?.mutated.find(
+      (obj) => obj.reference.objectId === duelistCap.objectId
+    );
     if (!mutated) {
       throw new Error('unable to find duelistCap mutated effect');
+    }
+    const cache = duel[duelistCap.objectId];
+    if (cache) {
+      cache.force = cache.force - 14;
     }
 
     return {
       ...duelistCap,
-      // version: String(BigInt(duelistCap.version) + 1n),
       digest: mutated.reference.digest,
       version: mutated.reference.version,
-      content: {
-        ...duelistCap.content,
-        fields: {
-          ...duelistCap.content.fields,
-          opponent_force: Math.max(0, duelistCap.content.fields.opponent_force - SPELL_TEREBRARETE_DAMAGE),
-        },
-      },
     };
   } catch (error) {
     // Extract error code from the error message
@@ -227,9 +225,15 @@ async function getDuelistCap(duelistCapId) {
   return duelistCap.data;
 }
 
+const WIZARD_FORCE = 128;
+const duel = {};
 function getOpponentForce(duelistCap) {
-  const fields = duelistCap.content.fields;
-  return Number(fields.opponent_force);
+  const cache = duel[duelistCap.objectId];
+  if (cache) {
+    return cache.force;
+  }
+  duel[duelistCap.objectId] = { force: WIZARD_FORCE };
+  return WIZARD_FORCE;
 }
 
 function logStatistics(spentTimes) {
@@ -263,7 +267,7 @@ async function simulateDuel() {
   console.log(`Wizard 2 address: ${wizard2Address}`);
 
   // Fund each wizard with 0.025 SUI
-  await fundWizard(wizard1Address, 20000000);
+  await fundWizard(wizard1Address, 22000000);
   await new Promise((resolve) => setTimeout(resolve, 2500));
   await fundWizard(wizard2Address, 16000000);
   await new Promise((resolve) => setTimeout(resolve, 2500));
@@ -289,7 +293,7 @@ async function simulateDuel() {
     if (force1 <= 0 || force2 <= 0) {
       const duelistCap1end = await getDuelistCap(duelistCap1Id);
       const duelistCap2end = await getDuelistCap(duelistCap2Id);
-      console.log('Duel finished')
+      console.log('Duel finished');
       logObject(duelistCap1end);
       logObject(duelistCap2end);
       break;
