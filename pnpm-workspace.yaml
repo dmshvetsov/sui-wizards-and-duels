@@ -1,4 +1,5 @@
 packages:
+  - 'apps/game-chat'
   # all packages in direct subdirs of packages/
   - 'packages/fe-game'
   # exclude packages that are inside test directories
