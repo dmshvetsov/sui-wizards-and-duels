@@ -1,16 +1,12 @@
-import { RealtimeChat } from './components/realtime-chat'
+import { Authenticated } from './components/Authenticated'
+import { Game } from './components/Game'
 
 function App() {
-  const roomName = 'test'
-  const username = '@user9541'
-
   return (
     <div className="w-screen h-screen">
-      <div className="w-[460px] h-full mx-auto px-4">
-        <RealtimeChat roomName={roomName} username={username} />
-      </div>
+      <Authenticated component={Game} />
     </div>
-  )
+  );
 }
 
 export default App

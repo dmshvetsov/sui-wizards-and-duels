@@ -1,18 +1,12 @@
 'use client';
 
+import { ChatMessage } from '@/lib/message';
 import { createMessage, createRoom, getMessages, removeRoom } from '@/lib/supabase/client';
 import { useCallback, useEffect, useState } from 'react';
 
 interface UseRealtimeChatProps {
   roomName: string;
   username: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  text: string;
-  username: string;
-  timestamp: string;
 }
 
 const EVENT_MESSAGE_TYPE = 'message';

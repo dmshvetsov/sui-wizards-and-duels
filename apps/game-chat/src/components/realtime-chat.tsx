@@ -2,9 +2,9 @@ import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import {
-  type ChatMessage,
   useRealtimeChat,
 } from '@/hooks/use-realtime-chat'
+import { type ChatMessage } from '@/lib/message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send } from 'lucide-react'
