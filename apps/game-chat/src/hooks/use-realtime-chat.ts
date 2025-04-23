@@ -31,7 +31,7 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
 
     setChannel(newChannel);
 
-    getMessages().then((res) => {
+    getMessages(roomName).then((res) => {
       if (res.error) {
         console.error(res.error);
         return;
@@ -53,20 +53,19 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
         id: crypto.randomUUID(),
         text,
         username,
+        duel: roomName,
         timestamp: new Date().toISOString(),
       };
 
       // Update local state immediately for the sender
       setMessages((current) => [...current, message]);
 
-      createMessage(message).catch((err) => {
-        console.error('Failed to create message:', err);
+      await createMessage(message);
+      await channel.send({
+        type: 'broadcast',
+        event: EVENT_MESSAGE_TYPE,
+        payload: message,
       });
-      // await channel.send({
-      //   type: 'broadcast',
-      //   event: EVENT_MESSAGE_TYPE,
-      //   payload: message,
-      // });
     },
     [channel, isConnected, username]
   );
