@@ -72,6 +72,10 @@ h1 {
   line-height: 1.1;
 }
 
+h1, h2, h3 {
+  font-family: Georgia, serif;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

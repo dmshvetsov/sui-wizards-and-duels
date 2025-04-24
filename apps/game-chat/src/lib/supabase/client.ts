@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, RealtimeChannelOptions } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-export const createRoom = (roomName: string) => {
-  return supabase.channel(roomName)
+export const createRoom = (roomName: string, opts: RealtimeChannelOptions = { config: {} }) => {
+  return supabase.channel(roomName, opts)
 }
 export const removeRoom = (channel: ReturnType<typeof createRoom>) => {
   return supabase.removeChannel(channel)

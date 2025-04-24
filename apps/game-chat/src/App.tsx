@@ -1,6 +1,7 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Authenticated } from './components/Authenticated'
-import { Game } from './components/Game'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Game } from './game/Game'
+import { Waitroom } from './waitroom/Waitroom'
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <div className="w-screen h-screen">
         <Routes>
           <Route path="/d/:slug" element={<Authenticated component={Game} />} />
+          <Route path="/d" element={<Authenticated component={Waitroom} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

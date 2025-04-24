@@ -2,8 +2,13 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { ConnectButton } from '@mysten/dapp-kit'
 
 export type UserAccount = {
+  id: string
   username: string
   displayName: string
+}
+
+export interface AuthenticatedComponentProps {
+  userAccount: UserAccount
 }
 
 type AuthenticatedProps = {

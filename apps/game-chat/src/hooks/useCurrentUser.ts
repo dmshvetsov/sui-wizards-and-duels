@@ -9,6 +9,7 @@ export function useCurrentUser() {
     if (!address) return null
 
     return {
+      id: address,
       username: address,
       // displayName: useResolveSuiNSName(address).data,
       displayName: address?.slice(0, 6) + '..' + address?.slice(-4),
