@@ -1,0 +1,8 @@
+{
+    "cSpell.words": [
+        "Duelground",
+        "waitroom"
+    ],
+    "deno.enablePaths": ["./apps/game-server/supabase/functions"],
+    "deno.importMap": "./apps/game-server/supabase/functions/import_map.json"
+}

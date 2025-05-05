@@ -12,21 +12,26 @@ export const removeRoom = (channel: ReturnType<typeof createRoom>) => {
 }
 
 export const getMessages = (roomName: string) => {
-  return supabase.from('messages').select().eq('duel', roomName).range(0, 49).order('id', { ascending: false })
+  return supabase
+    .from('messages')
+    .select()
+    .eq('channel', roomName)
+    .range(0, 49)
+    .order('id', { ascending: false })
 }
 
 export const createMessage = async ({
   text,
   username,
-  duel,
+  channel,
 }: {
   text: string
   username: string
-  duel: string
+  channel: string
 }) => {
   return await supabase.from('messages').insert({
     text,
     username,
-    duel,
+    channel,
   })
 }

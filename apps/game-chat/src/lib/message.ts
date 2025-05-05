@@ -2,7 +2,7 @@ export interface ChatMessage {
   id: string;
   text: string;
   username: string;
-  duel: string;
+  channel: string;
   timestamp: string;
 }
 

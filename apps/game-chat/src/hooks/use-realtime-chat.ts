@@ -53,7 +53,7 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
         id: crypto.randomUUID(),
         text,
         username,
-        duel: roomName,
+        channel: roomName,
         timestamp: new Date().toISOString(),
       };
 

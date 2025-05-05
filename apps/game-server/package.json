@@ -1,0 +1,20 @@
+{
+  "name": "game-server",
+  "version": "0.1.0",
+  "description": "Supabase edge functions for Magic Duel game",
+  "main": "index.js",
+  "scripts": {
+    "dev": "supabase functions serve --no-verify-jwt",
+    "s:up": "supabase start",
+    "s:stop": "supabase stop",
+    "deploy": "supabase functions deploy waitroom-pairing",
+    "test": "node test-pairing.js"
+  },
+  "author": "Dmitry Shvetsov <shvetsovdm+magic-duel@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0",
+    "supabase": "2.22.6"
+  }
+}
