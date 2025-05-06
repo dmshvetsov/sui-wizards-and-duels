@@ -1,3 +1,4 @@
+import { displayName } from '@/lib/user'
 import { useCurrentAccount } from '@mysten/dapp-kit'
 import { useMemo } from 'react'
 
@@ -12,7 +13,7 @@ export function useCurrentUser() {
       id: address,
       username: address,
       // displayName: useResolveSuiNSName(address).data,
-      displayName: address?.slice(0, 6) + '..' + address?.slice(-4),
+      displayName: displayName(address),
     }
   }, [address])
 }

@@ -3,13 +3,15 @@ import { createRoom } from '@/lib/supabase/client'
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { useNavigate } from 'react-router-dom'
 
-const UNCONNECTED_COUNTER_STATE = 0;
+const UNCONNECTED_COUNTER_STATE = 0
 
 // Define the type for pairing payload
 interface PairingPayload {
-  player1Id: string;
-  player2Id: string;
-  duelLink: string;
+  pairs: Array<{
+    user1: string
+    user2: string
+    duelLink: string
+  }>
 }
 
 export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
@@ -35,13 +37,17 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         const pairingData = payload.payload as PairingPayload
         console.debug('Received pairing:', pairingData)
 
-        // Check if this user is part of the pair
-        if (pairingData.player1Id === userAccount.id || pairingData.player2Id === userAccount.id) {
+        // Find if this user is part of any pair
+        const userPair = pairingData.pairs.find(
+          (pair) => pair.user1 === userAccount.id || pair.user2 === userAccount.id
+        )
+
+        if (userPair) {
           setIsPairing(true)
 
           // Navigate to the duel page after a short delay
           setTimeout(() => {
-            navigate(pairingData.duelLink)
+            navigate(userPair.duelLink)
           }, 1500)
         }
       })
@@ -79,7 +85,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       {isPairing ? (
         <p className="mt-4">
           <span className="animate-pulse font-semibold text-green-600">
-            OPPONENT FOUND! PREPARING DUEL...
+            OPPONENT FOUND! PREPARE TO DUEL...
           </span>
         </p>
       ) : onlineCount > 1 ? (
