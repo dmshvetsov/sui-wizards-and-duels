@@ -1,4 +1,4 @@
-module wizard_and_duels::duel;
+module wizards_and_duels::duel;
 
 use sui::clock::Clock;
 
