@@ -7,6 +7,24 @@ export type DuelistCap = {
   opponent: string,
 }
 
+export type Spell = {
+  id: string
+  damage: number
+  cost: number
+}
+
+export type Duel = {
+  id: string
+  started_at: string
+  ended_at: string
+  wizard1: string
+  wizard2: string
+  // TODO: make it camel case
+  wizard1_force: number
+  // TODO: make it camel case
+  wizard2_force: number
+}
+
 const PACKAGE_ID_V1 = getPid()
 const PACKAGE_ID_LATEST = getPidLatest()
 
@@ -17,5 +35,6 @@ export const DUEL = Object.freeze({
   },
   type: {
     duelCap: `${PACKAGE_ID_V1}::duel::DuelistCap`,
+    spell: `${PACKAGE_ID_V1}::duel::Spell`,
   },
 })

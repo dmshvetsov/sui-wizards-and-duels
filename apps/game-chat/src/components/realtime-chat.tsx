@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 interface RealtimeChatProps {
   roomName: string
   username: string
-  onMessage?: (messages: ChatMessage[]) => void
+  onMessage?: (messages: string) => void
   messages?: ChatMessage[]
 }
 
@@ -57,12 +57,6 @@ export const RealtimeChat = ({
   }, [initialMessages, realtimeMessages])
 
   useEffect(() => {
-    if (onMessage) {
-      onMessage(allMessages)
-    }
-  }, [allMessages, onMessage])
-
-  useEffect(() => {
     // Scroll to bottom whenever messages change
     scrollToBottom()
   }, [allMessages, scrollToBottom])
@@ -73,6 +67,9 @@ export const RealtimeChat = ({
       if (!newMessage.trim() || !isConnected) return
 
       sendMessage(newMessage)
+      if (onMessage) {
+        onMessage(newMessage)
+      }
       setNewMessage('')
     },
     [newMessage, isConnected, sendMessage]
@@ -84,7 +81,7 @@ export const RealtimeChat = ({
       <div ref={containerRef} className="flex flex-col justify-end flex-1 overflow-y-auto p-4 space-y-4">
         {allMessages.length === 0 ? (
           <div className="text-center text-sm text-muted-foreground">
-            No messages yet. Start the conversation!
+            Let the Duel begin!
           </div>
         ) : null}
         <div className="space-y-1">
@@ -117,7 +114,7 @@ export const RealtimeChat = ({
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Type to cast a spell..."
           disabled={!isConnected}
         />
         {isConnected && newMessage.trim() && (

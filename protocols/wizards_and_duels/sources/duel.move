@@ -8,6 +8,7 @@ const EDuelNotInAction: u64 = 3;
 const EDuelFinished: u64 = 4;
 const ENotEnoughForce: u64 = 5;
 const EDuelExpired: u64 = 6;
+const EDuelStillInAction: u64 = 6;
 
 // default duel start countdown 30 seconds
 const DEFAULT_DUEL_START_COUNTDOWN_MS: u64 = 30_000;
@@ -17,6 +18,7 @@ const MAX_DUEL_START_COUNTDOWN_MS: u64 = 172_800_000;
 public struct Duel has key {
   id: UID,
   started_at: u64,
+  // TODO: remove, not needed
   ended_at: u64,
   wizard1: address,
   wizard2: address,
@@ -211,14 +213,14 @@ public fun cast_spell(
 ) {
   // TODO: check if start_timestamp is passed
   assert!(duel.started_at != 0, EDuelNotInAction);
-  assert!(duel.ended_at == 0, EDuelNotInAction);
-  assert!(duel.wizard1_force == 0 || duel.wizard2_force == 0, EBadTx);
+  assert!(duel.ended_at == 0, EDuelFinished);
+  assert!(duel.wizard1_force != 0 || duel.wizard2_force != 0, EDuelFinished);
 
   let caster = ctx.sender();
   assert!(casterCap.wizard == caster, ENotDuelWizard);
-  assert!(casterCap.opponent == duel.wizard1 || casterCap.opponent == duel.wizard2, ENotDuelWizard);
 
   if (caster == duel.wizard1) {
+    assert!(casterCap.wizard == duel.wizard1 && casterCap.opponent == duel.wizard2, ENotDuelWizard);
     assert!(duel.wizard1_force >= spell.cost, ENotEnoughForce);
     duel.wizard1_force = duel.wizard1_force - spell.cost;
     if (duel.wizard2_force <= spell.damage) {
@@ -227,6 +229,7 @@ public fun cast_spell(
       duel.wizard2_force = duel.wizard2_force - spell.damage;
     };
   } else {
+    assert!(casterCap.wizard == duel.wizard2 && casterCap.opponent == duel.wizard1, ENotDuelWizard);
     assert!(duel.wizard2_force >= spell.cost, ENotEnoughForce);
     duel.wizard2_force = duel.wizard2_force - spell.cost;
     if (duel.wizard1_force <= spell.damage) {
@@ -237,10 +240,36 @@ public fun cast_spell(
   }
 }
 
-public fun end(duel: &mut Duel, now: &Clock, _ctx: &mut TxContext) {
-  assert!(duel.ended_at == 0, EDuelFinished);
-  // TODO: winner takes staked Sui of the loser
-  duel.ended_at = now.timestamp_ms();
-}
+public fun end(duel: &mut Duel, _now: &Clock, ctx: &mut TxContext) {
+  assert!(duel.started_at != 0, EDuelNotInAction);
+  assert!(duel.wizard1_force == 0 || duel.wizard2_force == 0, EDuelStillInAction);
 
-// TODO ability to cancel duel that hasn't started and take back the stake (destroy duel and duelcap objects)
+  let sender = tx_context::sender(ctx);
+  if (duel.wizard1 == sender) {
+      // TODO: destroy duel cap
+  };
+  if (duel.wizard2 == sender) {
+      // TODO: destroy duel cap
+  };
+  if (duel.wizard1 == sender && duel.wizard1_force == 0) {
+      // TODO: winner takes staked Sui of the loser
+      // TODO: each player get reward points for the duel
+      return
+  };
+  if (duel.wizard1 == sender && duel.wizard2_force == 0) {
+      // TODO: winner takes staked Sui of the loser
+      // TODO: each player get reward points for the duel
+      return
+  };
+  if (duel.wizard2 == sender && duel.wizard1_force == 0) {
+      // TODO: winner takes staked Sui of the loser
+      // TODO: each player get reward points for the duel
+      return
+  };
+  if (duel.wizard2 == sender && duel.wizard2_force == 0) {
+      // TODO: winner takes staked Sui of the loser
+      // TODO: each player get reward points for the duel
+      return
+  };
+  abort(EBadTx)
+}
