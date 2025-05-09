@@ -9,6 +9,7 @@ import { ExecuteTransactionBlockParams, SuiClient } from '@mysten/sui/client'
 import { joinTx, leaveTx, Waitroom, waitroom } from '@/lib/protocol/waitroom'
 import { toast } from 'sonner'
 import { displayName } from '@/lib/user'
+import { Loader } from '@/components/Loader'
 
 const UNCONNECTED_COUNTER_STATE = 0
 
@@ -141,7 +142,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }, [signAndExecute])
 
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
-    return <div className="flex flex-col items-center justify-center h-full">Loading...</div>
+    return <Loader />
   }
 
   return (
