@@ -57,6 +57,35 @@ public fun setup_wizard(ctx: &mut TxContext) {
   }, ctx.sender());
 }
 
+public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
+  let duel = Duel {
+    id: object::new(ctx),
+    wizard1: player_1,
+    wizard2: player_2,
+    wizard1_force: 128,
+    wizard2_force: 128,
+    started_at: 0,
+    ended_at: 0,
+  };
+
+  let duel_id = duel.id.to_address().to_id();
+  transfer::share_object(duel);
+
+  transfer::transfer(DuelistCap {
+    id: object::new(ctx),
+    duel: duel_id,
+    wizard: player_1,
+    opponent: player_2,
+  }, player_1);
+
+  transfer::transfer(DuelistCap {
+    id: object::new(ctx),
+    duel: duel_id,
+    wizard: player_2,
+    opponent: player_1,
+  }, player_2);
+}
+
 public fun create_predefined(player_1: address, player_2: address, ctx: &mut TxContext) {
   let duel = Duel {
     id: object::new(ctx),
@@ -95,7 +124,7 @@ public fun create_with_invite(opponent: address, ctx: &mut TxContext): DuelistCa
 
 public fun create_open(ctx: &mut TxContext): DuelistCap {
   let sender = tx_context::sender(ctx);
-  // TODO move 128 force of Sui to the game treasury address in a separate new coin object
+  // TODO: move 128 force of Sui to the game treasury address in a separate new coin object
   let duel = Duel {
     id: object::new(ctx),
     wizard1: sender,
@@ -119,7 +148,7 @@ public fun join(duel: &mut Duel, now: &Clock, ctx: &mut TxContext): DuelistCap {
   assert!(duel.started_at <= now.timestamp_ms(), EDuelExpired);
 
   let sender = tx_context::sender(ctx);
-  // TODO move 128 force of Sui to the game treasury address in a separate new coin object
+  // TODO: move 128 force of Sui to the game treasury address in a separate new coin object
   if (duel.wizard1 == sender) {
     duel.wizard1_force = 128;
     return DuelistCap {
@@ -161,14 +190,15 @@ public fun join(duel: &mut Duel, now: &Clock, ctx: &mut TxContext): DuelistCap {
   abort (ENotDuelWizard)
 }
 
-public fun start(duel: &mut Duel, start_countdown_ms: u64, now: &Clock, _ctx: &mut TxContext) {
+public fun start(duel: &mut Duel, start_countdown_sec: u64, now: &Clock, _ctx: &mut TxContext) {
   assert!(duel.started_at == 0, EBadTx);
   assert!(duel.wizard1 != @0x0 && duel.wizard2 != @0x0, EBadTx);
+  // TODO: make checks that caps and wizards are from the duel
 
-  if (start_countdown_ms == 0 || start_countdown_ms > MAX_DUEL_START_COUNTDOWN_MS) {
+  if (start_countdown_sec == 0 || start_countdown_sec * 1000 > MAX_DUEL_START_COUNTDOWN_MS) {
     duel.started_at = now.timestamp_ms() + DEFAULT_DUEL_START_COUNTDOWN_MS;
   } else {
-    duel.started_at = now.timestamp_ms() + start_countdown_ms;
+    duel.started_at = now.timestamp_ms() + start_countdown_sec * 1000;
   }
   // TODO: add start_timestamp
 }
@@ -179,7 +209,7 @@ public fun cast_spell(
   spell: &Spell,
   ctx: &mut TxContext,
 ) {
-  // TODO check if start_timestamp is passed
+  // TODO: check if start_timestamp is passed
   assert!(duel.started_at != 0, EDuelNotInAction);
   assert!(duel.ended_at == 0, EDuelNotInAction);
   assert!(duel.wizard1_force == 0 || duel.wizard2_force == 0, EBadTx);
@@ -209,7 +239,7 @@ public fun cast_spell(
 
 public fun end(duel: &mut Duel, now: &Clock, _ctx: &mut TxContext) {
   assert!(duel.ended_at == 0, EDuelFinished);
-  // TODO winner takes staked Sui of the loser
+  // TODO: winner takes staked Sui of the loser
   duel.ended_at = now.timestamp_ms();
 }
 

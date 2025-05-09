@@ -18,7 +18,7 @@ interface RealtimeChatProps {
 }
 
 /**
- * Realtime chat component
+ * Real-time chat component
  * @param roomName - The name of the room to join. Each room is a unique chat.
  * @param username - The username of the user
  * @param onMessage - The callback function to handle the messages. Useful if you want to store the messages in a database.
@@ -43,7 +43,7 @@ export const RealtimeChat = ({
   })
   const [newMessage, setNewMessage] = useState('')
 
-  // Merge realtime messages with initial messages
+  // Merge real-time messages with initial messages
   const allMessages = useMemo(() => {
     const mergedMessages = [...initialMessages, ...realtimeMessages]
     // Remove duplicates based on message id

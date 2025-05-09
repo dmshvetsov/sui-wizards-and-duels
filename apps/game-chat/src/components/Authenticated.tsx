@@ -2,6 +2,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { ConnectButton } from '@mysten/dapp-kit'
 
 export type UserAccount = {
+  /** address of the user account */
   id: string
   username: string
   displayName: string

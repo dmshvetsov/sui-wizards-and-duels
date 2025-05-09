@@ -39,10 +39,10 @@ public fun init_config(init_cap: InitCap, ctx: &mut TxContext) {
 public fun join(waitroom: &mut Waitroom, ctx: &mut TxContext) {
   if (vector::length(&waitroom.queue) > 0) {
     let pairing = vector::pop_back(&mut waitroom.queue);
-    duel::create_predefined(pairing.wizard1, ctx.sender(), ctx);
+    duel::create(pairing.wizard1, ctx.sender(), ctx);
     return
   };
-  // TODO add ability to crrate a duel with invited address as an opponent
+  // TODO: add ability to crrate a duel with invited address as an opponent
   vector::push_back(&mut waitroom.queue, Pairing { wizard1: ctx.sender(), wizard2: @0x0 });
 }
 
