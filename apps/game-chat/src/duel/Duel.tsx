@@ -5,7 +5,7 @@ import { DuelProvider } from '@/context/DuelContext'
 import { useSuiClientQuery } from '@mysten/dapp-kit'
 import { useEffect } from 'react'
 
-export function Game({ userAccount }: { userAccount: UserAccount }) {
+export function Duel({ userAccount }: { userAccount: UserAccount }) {
   const { slug: duelId } = useParams<{ slug: string }>()
   const duelQuery = useSuiClientQuery(
     'getObject',
