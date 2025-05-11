@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@mysten/sui": "npm:@mysten/sui@^1.29.1"
+  }
+}

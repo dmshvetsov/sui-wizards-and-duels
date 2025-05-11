@@ -1,0 +1,287 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:@mysten/sui@^1.29.1": "npm:@mysten/sui@1.29.1_graphql@16.11.0",
+      "npm:supabase@^2.22.12": "npm:supabase@2.22.12"
+    },
+    "npm": {
+      "@0no-co/graphql.web@1.1.2_graphql@16.11.0": {
+        "integrity": "sha512-N2NGsU5FLBhT8NZ+3l2YrzZSHITjNXNuDhC4iDiikv0IujaJ0Xc6xIxQZ/Ek3Cb+rgPjnLHYyJm11tInuJn+cw==",
+        "dependencies": {
+          "graphql": "graphql@16.11.0"
+        }
+      },
+      "@0no-co/graphqlsp@1.12.16_graphql@16.11.0_typescript@5.8.3": {
+        "integrity": "sha512-B5pyYVH93Etv7xjT6IfB7QtMBdaaC07yjbhN6v8H7KgFStMkPvi+oWYBTibMFRMY89qwc9H8YixXg8SXDVgYWw==",
+        "dependencies": {
+          "@gql.tada/internal": "@gql.tada/internal@1.0.8_graphql@16.11.0_typescript@5.8.3",
+          "graphql": "graphql@16.11.0",
+          "typescript": "typescript@5.8.3"
+        }
+      },
+      "@gql.tada/cli-utils@1.6.3_@0no-co+graphqlsp@1.12.16__graphql@16.11.0__typescript@5.8.3_graphql@16.11.0_typescript@5.8.3": {
+        "integrity": "sha512-jFFSY8OxYeBxdKi58UzeMXG1tdm4FVjXa8WHIi66Gzu9JWtCE6mqom3a8xkmSw+mVaybFW5EN2WXf1WztJVNyQ==",
+        "dependencies": {
+          "@0no-co/graphqlsp": "@0no-co/graphqlsp@1.12.16_graphql@16.11.0_typescript@5.8.3",
+          "@gql.tada/internal": "@gql.tada/internal@1.0.8_graphql@16.11.0_typescript@5.8.3",
+          "graphql": "graphql@16.11.0",
+          "typescript": "typescript@5.8.3"
+        }
+      },
+      "@gql.tada/internal@1.0.8_graphql@16.11.0_typescript@5.8.3": {
+        "integrity": "sha512-XYdxJhtHC5WtZfdDqtKjcQ4d7R1s0d1rnlSs3OcBEUbYiPoJJfZU7tWsVXuv047Z6msvmr4ompJ7eLSK5Km57g==",
+        "dependencies": {
+          "@0no-co/graphql.web": "@0no-co/graphql.web@1.1.2_graphql@16.11.0",
+          "graphql": "graphql@16.11.0",
+          "typescript": "typescript@5.8.3"
+        }
+      },
+      "@graphql-typed-document-node/core@3.2.0_graphql@16.11.0": {
+        "integrity": "sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==",
+        "dependencies": {
+          "graphql": "graphql@16.11.0"
+        }
+      },
+      "@isaacs/fs-minipass@4.0.1": {
+        "integrity": "sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==",
+        "dependencies": {
+          "minipass": "minipass@7.1.2"
+        }
+      },
+      "@mysten/bcs@1.6.1": {
+        "integrity": "sha512-pywsl2+jxbib5CbteAjMpmJpnj1pcUco2ff+lXCK3hfppPbkyWEMbZDQn1jNngV6ADQ3IFIvPs0FaS7fKWPOLA==",
+        "dependencies": {
+          "@mysten/utils": "@mysten/utils@0.0.0",
+          "@scure/base": "@scure/base@1.2.5"
+        }
+      },
+      "@mysten/sui@1.29.1_graphql@16.11.0": {
+        "integrity": "sha512-VkmaLIgXpuRMBFe47SC0swHemDx9qfhGQyxybFr2r3dTnh42gTFi0BlyW3aLr0Y2GxWbNlLphB5C3ELR7aqacw==",
+        "dependencies": {
+          "@graphql-typed-document-node/core": "@graphql-typed-document-node/core@3.2.0_graphql@16.11.0",
+          "@mysten/bcs": "@mysten/bcs@1.6.1",
+          "@mysten/utils": "@mysten/utils@0.0.0",
+          "@noble/curves": "@noble/curves@1.9.0",
+          "@noble/hashes": "@noble/hashes@1.8.0",
+          "@scure/base": "@scure/base@1.2.5",
+          "@scure/bip32": "@scure/bip32@1.7.0",
+          "@scure/bip39": "@scure/bip39@1.6.0",
+          "gql.tada": "gql.tada@1.8.10_typescript@5.8.3_graphql@16.11.0_@0no-co+graphqlsp@1.12.16__graphql@16.11.0__typescript@5.8.3",
+          "graphql": "graphql@16.11.0",
+          "poseidon-lite": "poseidon-lite@0.2.1",
+          "valibot": "valibot@0.36.0"
+        }
+      },
+      "@mysten/utils@0.0.0": {
+        "integrity": "sha512-KRI57Qow3E7TGqczimazwGf7+fwukdOi+6a31igSCzz0kPjAXbyK1a1gXaxeLMF8xEZ07ouW3RnsWt+EaUuHUw==",
+        "dependencies": {
+          "@scure/base": "@scure/base@1.2.5"
+        }
+      },
+      "@noble/curves@1.9.0": {
+        "integrity": "sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==",
+        "dependencies": {
+          "@noble/hashes": "@noble/hashes@1.8.0"
+        }
+      },
+      "@noble/hashes@1.8.0": {
+        "integrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==",
+        "dependencies": {}
+      },
+      "@scure/base@1.2.5": {
+        "integrity": "sha512-9rE6EOVeIQzt5TSu4v+K523F8u6DhBsoZWPGKlnCshhlDhy0kJzUX4V+tr2dWmzF1GdekvThABoEQBGBQI7xZw==",
+        "dependencies": {}
+      },
+      "@scure/bip32@1.7.0": {
+        "integrity": "sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==",
+        "dependencies": {
+          "@noble/curves": "@noble/curves@1.9.0",
+          "@noble/hashes": "@noble/hashes@1.8.0",
+          "@scure/base": "@scure/base@1.2.5"
+        }
+      },
+      "@scure/bip39@1.6.0": {
+        "integrity": "sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==",
+        "dependencies": {
+          "@noble/hashes": "@noble/hashes@1.8.0",
+          "@scure/base": "@scure/base@1.2.5"
+        }
+      },
+      "agent-base@7.1.3": {
+        "integrity": "sha512-jRR5wdylq8CkOe6hei19GGZnxM6rBGwFl3Bg0YItGDimvjGtAvdZk4Pu6Cl4u4Igsws4a1fd1Vq3ezrhn4KmFw==",
+        "dependencies": {}
+      },
+      "bin-links@5.0.0": {
+        "integrity": "sha512-sdleLVfCjBtgO5cNjA2HVRvWBJAHs4zwenaCPMNJAJU0yNxpzj80IpjOIimkpkr+mhlA+how5poQtt53PygbHA==",
+        "dependencies": {
+          "cmd-shim": "cmd-shim@7.0.0",
+          "npm-normalize-package-bin": "npm-normalize-package-bin@4.0.0",
+          "proc-log": "proc-log@5.0.0",
+          "read-cmd-shim": "read-cmd-shim@5.0.0",
+          "write-file-atomic": "write-file-atomic@6.0.0"
+        }
+      },
+      "chownr@3.0.0": {
+        "integrity": "sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==",
+        "dependencies": {}
+      },
+      "cmd-shim@7.0.0": {
+        "integrity": "sha512-rtpaCbr164TPPh+zFdkWpCyZuKkjpAzODfaZCf/SVJZzJN+4bHQb/LP3Jzq5/+84um3XXY8r548XiWKSborwVw==",
+        "dependencies": {}
+      },
+      "data-uri-to-buffer@4.0.1": {
+        "integrity": "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==",
+        "dependencies": {}
+      },
+      "debug@4.4.0": {
+        "integrity": "sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==",
+        "dependencies": {
+          "ms": "ms@2.1.3"
+        }
+      },
+      "fetch-blob@3.2.0": {
+        "integrity": "sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==",
+        "dependencies": {
+          "node-domexception": "node-domexception@1.0.0",
+          "web-streams-polyfill": "web-streams-polyfill@3.3.3"
+        }
+      },
+      "formdata-polyfill@4.0.10": {
+        "integrity": "sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==",
+        "dependencies": {
+          "fetch-blob": "fetch-blob@3.2.0"
+        }
+      },
+      "gql.tada@1.8.10_typescript@5.8.3_graphql@16.11.0_@0no-co+graphqlsp@1.12.16__graphql@16.11.0__typescript@5.8.3": {
+        "integrity": "sha512-FrvSxgz838FYVPgZHGOSgbpOjhR+yq44rCzww3oOPJYi0OvBJjAgCiP6LEokZIYND2fUTXzQAyLgcvgw1yNP5A==",
+        "dependencies": {
+          "@0no-co/graphql.web": "@0no-co/graphql.web@1.1.2_graphql@16.11.0",
+          "@0no-co/graphqlsp": "@0no-co/graphqlsp@1.12.16_graphql@16.11.0_typescript@5.8.3",
+          "@gql.tada/cli-utils": "@gql.tada/cli-utils@1.6.3_@0no-co+graphqlsp@1.12.16__graphql@16.11.0__typescript@5.8.3_graphql@16.11.0_typescript@5.8.3",
+          "@gql.tada/internal": "@gql.tada/internal@1.0.8_graphql@16.11.0_typescript@5.8.3",
+          "typescript": "typescript@5.8.3"
+        }
+      },
+      "graphql@16.11.0": {
+        "integrity": "sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==",
+        "dependencies": {}
+      },
+      "https-proxy-agent@7.0.6": {
+        "integrity": "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==",
+        "dependencies": {
+          "agent-base": "agent-base@7.1.3",
+          "debug": "debug@4.4.0"
+        }
+      },
+      "imurmurhash@0.1.4": {
+        "integrity": "sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==",
+        "dependencies": {}
+      },
+      "minipass@7.1.2": {
+        "integrity": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==",
+        "dependencies": {}
+      },
+      "minizlib@3.0.2": {
+        "integrity": "sha512-oG62iEk+CYt5Xj2YqI5Xi9xWUeZhDI8jjQmC5oThVH5JGCTgIjr7ciJDzC7MBzYd//WvR1OTmP5Q38Q8ShQtVA==",
+        "dependencies": {
+          "minipass": "minipass@7.1.2"
+        }
+      },
+      "mkdirp@3.0.1": {
+        "integrity": "sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==",
+        "dependencies": {}
+      },
+      "ms@2.1.3": {
+        "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+        "dependencies": {}
+      },
+      "node-domexception@1.0.0": {
+        "integrity": "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==",
+        "dependencies": {}
+      },
+      "node-fetch@3.3.2": {
+        "integrity": "sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==",
+        "dependencies": {
+          "data-uri-to-buffer": "data-uri-to-buffer@4.0.1",
+          "fetch-blob": "fetch-blob@3.2.0",
+          "formdata-polyfill": "formdata-polyfill@4.0.10"
+        }
+      },
+      "npm-normalize-package-bin@4.0.0": {
+        "integrity": "sha512-TZKxPvItzai9kN9H/TkmCtx/ZN/hvr3vUycjlfmH0ootY9yFBzNOpiXAdIn1Iteqsvk4lQn6B5PTrt+n6h8k/w==",
+        "dependencies": {}
+      },
+      "poseidon-lite@0.2.1": {
+        "integrity": "sha512-xIr+G6HeYfOhCuswdqcFpSX47SPhm0EpisWJ6h7fHlWwaVIvH3dLnejpatrtw6Xc6HaLrpq05y7VRfvDmDGIog==",
+        "dependencies": {}
+      },
+      "proc-log@5.0.0": {
+        "integrity": "sha512-Azwzvl90HaF0aCz1JrDdXQykFakSSNPaPoiZ9fm5qJIMHioDZEi7OAdRwSm6rSoPtY3Qutnm3L7ogmg3dc+wbQ==",
+        "dependencies": {}
+      },
+      "read-cmd-shim@5.0.0": {
+        "integrity": "sha512-SEbJV7tohp3DAAILbEMPXavBjAnMN0tVnh4+9G8ihV4Pq3HYF9h8QNez9zkJ1ILkv9G2BjdzwctznGZXgu/HGw==",
+        "dependencies": {}
+      },
+      "signal-exit@4.1.0": {
+        "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+        "dependencies": {}
+      },
+      "supabase@2.22.12": {
+        "integrity": "sha512-PWQT+uzwAXcamM/FK60CaWRjVwsX2SGW5vF7edbiTQC6vsNvTBnSIvd1yiXsIpq32uzQFu+iOrayxaTQytNiTw==",
+        "dependencies": {
+          "bin-links": "bin-links@5.0.0",
+          "https-proxy-agent": "https-proxy-agent@7.0.6",
+          "node-fetch": "node-fetch@3.3.2",
+          "tar": "tar@7.4.3"
+        }
+      },
+      "tar@7.4.3": {
+        "integrity": "sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==",
+        "dependencies": {
+          "@isaacs/fs-minipass": "@isaacs/fs-minipass@4.0.1",
+          "chownr": "chownr@3.0.0",
+          "minipass": "minipass@7.1.2",
+          "minizlib": "minizlib@3.0.2",
+          "mkdirp": "mkdirp@3.0.1",
+          "yallist": "yallist@5.0.0"
+        }
+      },
+      "typescript@5.8.3": {
+        "integrity": "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==",
+        "dependencies": {}
+      },
+      "valibot@0.36.0": {
+        "integrity": "sha512-CjF1XN4sUce8sBK9TixrDqFM7RwNkuXdJu174/AwmQUB62QbCQADg5lLe8ldBalFgtj1uKj+pKwDJiNo4Mn+eQ==",
+        "dependencies": {}
+      },
+      "web-streams-polyfill@3.3.3": {
+        "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==",
+        "dependencies": {}
+      },
+      "write-file-atomic@6.0.0": {
+        "integrity": "sha512-GmqrO8WJ1NuzJ2DrziEI2o57jKAVIQNf8a18W3nCYU3H7PNWqCCVTeH6/NQE93CIllIgQS98rrmVkYgTX9fFJQ==",
+        "dependencies": {
+          "imurmurhash": "imurmurhash@0.1.4",
+          "signal-exit": "signal-exit@4.1.0"
+        }
+      },
+      "yallist@5.0.0": {
+        "integrity": "sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==",
+        "dependencies": {}
+      }
+    }
+  },
+  "remote": {},
+  "workspace": {
+    "dependencies": [
+      "npm:@mysten/sui@^1.29.1"
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:supabase@^2.22.12"
+      ]
+    }
+  }
+}
