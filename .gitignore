@@ -6,4 +6,5 @@
 .mf
 .wrangler
 .dev.vars*
+*.key
 
