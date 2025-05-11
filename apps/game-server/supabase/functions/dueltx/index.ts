@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   const message = new TextEncoder().encode(`Hello ${name}`)
 
   const autoSignerKeyPair = Ed25519Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(Deno.env.get('APK'))),
+    new Uint8Array(JSON.parse(Deno.env.get('APK') || '')),
     { skipValidation: true }
   )
   const playerPubKey = new Ed25519PublicKey(publicKeyAddres)
