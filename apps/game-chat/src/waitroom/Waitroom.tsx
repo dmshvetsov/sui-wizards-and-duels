@@ -1,25 +1,29 @@
-import { useCallback, useEffect, useState } from 'react'
-import { createRoom } from '@/lib/supabase/client'
-import { DUEL, DuelistCap } from '@/lib/protocol/duel'
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { useSignAndExecuteTransaction, useSuiClient, useSuiClientQuery } from '@mysten/dapp-kit'
-import { ExecuteTransactionBlockParams, SuiClient } from '@mysten/sui/client'
-import { joinTx, leaveTx, Waitroom, waitroom } from '@/lib/protocol/waitroom'
-import { toast } from 'sonner'
-import { displayName } from '@/lib/user'
 import { Loader } from '@/components/Loader'
+import { Button } from '@/components/ui/button'
+import { useAutosignWallet } from '@/hooks/useAutosignWallet'
+import { DUEL, DuelistCap } from '@/lib/protocol/duel'
+import { joinTx, leaveTx, Waitroom, waitroom } from '@/lib/protocol/waitroom'
+import { createRoom } from '@/lib/supabase/client'
+import { displayName } from '@/lib/user'
+import { useSuiClientQuery, useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import { Transaction } from '@mysten/sui/transactions'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const UNCONNECTED_COUNTER_STATE = 0
 
 const ONE_SECOND_IN_MS = 1000
 
-type WaitState = 'loading' | 'iddle' | 'waiting' | 'paired'
+type WaitState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'paired'
 
 export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const [onlineCount, setOnlineCount] = useState(UNCONNECTED_COUNTER_STATE)
   const [waitState, setWaitState] = useState<WaitState>('loading')
+  const [isFunding, setIsFunding] = useState(false)
+  const autoSignWallet = useAutosignWallet(userAccount.publicKey)
+  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const navigate = useNavigate()
 
@@ -34,11 +38,21 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const duelistCapQuery = useSuiClientQuery(
     'getOwnedObjects',
     {
-      owner: userAccount.id,
+      owner: autoSignWallet.address,
       filter: {
         StructType: DUEL.type.duelCap,
       },
       options: { showContent: true },
+    },
+    { refetchInterval: ONE_SECOND_IN_MS }
+  )
+
+  // Query to check the balance of the wizard wallet
+  const autoSignWalletBalanceQuery = useSuiClientQuery(
+    'getBalance',
+    {
+      owner: autoSignWallet.address,
+      coinType: '0x2::sui::SUI',
     },
     { refetchInterval: ONE_SECOND_IN_MS }
   )
@@ -94,6 +108,23 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     navigate(`/d/${duelId}`)
   }, [duelistCapQuery.data, navigate])
 
+  useEffect(() => {
+    // Check if the wallet has enough SUI
+    if (!autoSignWalletBalanceQuery.data) {
+      return
+    }
+
+    const balanceInMist = BigInt(autoSignWalletBalanceQuery.data.totalBalance)
+    const requiredBalanceInMist = 12800000n // 0.0128 SUI in MIST
+
+    console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
+
+    // If the wallet doesn't have enough SUI, set the state to needs_funding
+    if (balanceInMist < requiredBalanceInMist && waitState === 'iddle') {
+      setWaitState('needs_funding')
+    }
+  }, [autoSignWalletBalanceQuery.data, waitState])
+
   const waitroomState = waitroomQuery.data?.data;
   useEffect(() => {
     if (!waitroomState) {
@@ -106,21 +137,19 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
     console.debug('waitroom data', waitroomState)
     const queue = (waitroomState.content.fields as Waitroom).queue
-    const isInQueue = queue.find((pair) => pair.fields.wizard1 === userAccount.id) != null
+    const isInQueue = queue.find((pair) => pair.fields.wizard1 === autoSignWallet.address) != null
     if (isInQueue) {
       setWaitState('waiting')
     } else {
-      setWaitState('iddle')
+      // Only set to idle if not in needs_funding state
+      if (waitState !== 'needs_funding') {
+        setWaitState('iddle')
+      }
     }
-  }, [waitroomState, userAccount.id])
+  }, [waitroomState, autoSignWallet.address, waitState])
 
-  const client = useSuiClient()
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
-  })
-
-  const handleJoin = useCallback(() => {
-    signAndExecute(
+  const handleJoinWaitlist = useCallback(() => {
+    autoSignWallet.signAndExecute(
       { transaction: joinTx() },
       {
         onSuccess(_result) {
@@ -128,10 +157,10 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         },
       }
     )
-  }, [signAndExecute])
+  }, [autoSignWallet])
 
   const handleLeave = useCallback(() => {
-    signAndExecute(
+    autoSignWallet.signAndExecute(
       { transaction: leaveTx() },
       {
         onSuccess(_result) {
@@ -139,7 +168,44 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         },
       }
     )
-  }, [signAndExecute])
+  }, [autoSignWallet])
+
+  // Function to fund the wizard wallet with 0.0128 SUI
+  const handleFundWallet = useCallback(() => {
+    setIsFunding(true)
+
+    // Create a transaction to transfer 0.0128 SUI to the wizard wallet
+    const tx = new Transaction()
+    // Convert 0.0128 SUI to MIST (1 SUI = 10^9 MIST)
+    const amountInMist = 12800000 // 0.0128 SUI in MIST
+
+    // Split coins from the gas object and transfer to the wizard wallet
+    const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(amountInMist)])
+    tx.transferObjects([coin], tx.pure.address(autoSignWallet.address))
+
+    // Set gas budget and execute the transaction
+    tx.setGasBudget(3_500_000)
+
+    // Use the dapp-kit hook to sign and execute the transaction
+    signAndExecuteTransaction(
+      { transaction: tx },
+      {
+        onSuccess: (result) => {
+          console.debug('Fund wizard wallet transaction success:', result)
+          toast.success('Successfully funded wizard wallet with 0.0128 SUI!')
+          setWaitState('iddle') // Change to idle state to show the Play button
+          autoSignWalletBalanceQuery.refetch() // Refresh the balance
+        },
+        onError: (error) => {
+          console.error('Fund wizard wallet transaction error:', error)
+          toast.error('Failed to fund wizard wallet. Please try again.')
+        },
+        onSettled: () => {
+          setIsFunding(false)
+        }
+      }
+    )
+  }, [autoSignWallet.address, signAndExecuteTransaction, autoSignWalletBalanceQuery, setWaitState, setIsFunding])
 
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
     return <Loader />
@@ -168,9 +234,28 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
             Cancel
           </Button>
         </>
+      ) : waitState === 'needs_funding' ? (
+        <>
+          <div className="mt-4 p-4 border border-yellow-300 bg-yellow-50 rounded-md">
+            <h2 className="text-lg font-semibold text-yellow-800">Fund Wizard Wallet</h2>
+            <p className="mt-2 text-yellow-700">
+              Send Sui force to your wizard wallet to participate in duels.
+            </p>
+          </div>
+          <Button
+            className="mt-4 bg-yellow-500 hover:bg-yellow-600"
+            onClick={handleFundWallet}
+            disabled={isFunding}
+          >
+            {isFunding ? 'Funding...' : 'Fund Wizard Wallet'}
+          </Button>
+          <p className="mt-2 text-sm text-gray-600">
+            This will transfer 0.0128 SUI from your wallet to the wizard wallet.
+          </p>
+        </>
       ) : onlineCount > 1 ? (
         <>
-          <Button className="mt-4" onClick={handleJoin}>
+          <Button className="mt-4" onClick={handleJoinWaitlist}>
             Play
           </Button>
           <p className="mt-2">Join other player in Wizards Duels.</p>
@@ -182,15 +267,10 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           <span className="font-semibold">{window.location.toString()}</span>
         </p>
       )}
+      <div className='absolute top-0 py-4'>
+        <p className="text-sm text-gray-600 mt-2">you: {userAccount.displayName}</p>
+        <p className="text-sm text-gray-600 mt-2">wizard address: {autoSignWallet.address}</p>
+      </div>
     </div>
   )
-}
-
-function executeWith(client: SuiClient, opts: ExecuteTransactionBlockParams['options']) {
-  return ({ bytes, signature }: { bytes: string; signature: string }) =>
-    client.executeTransactionBlock({
-      transactionBlock: bytes,
-      signature,
-      options: opts,
-    })
 }

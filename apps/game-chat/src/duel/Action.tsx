@@ -1,20 +1,18 @@
+import { UserAccount } from '@/components/Authenticated'
 import { RealtimeChat } from '@/components/realtime-chat'
-import { useDuel } from '@/context/DuelContext'
-import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
-import { Transaction } from '@mysten/sui/transactions'
-import { toast } from 'sonner'
-import { getPidLatest } from '@/lib/protocol/package'
-import { useCallback } from 'react'
-import { executeWith } from '@/lib/sui/client'
 import { Button } from '@/components/ui/button'
+import { useDuel } from '@/context/DuelContext'
+import { useAutosignWallet } from '@/hooks/useAutosignWallet'
+import { AppError } from '@/lib/error'
 import { Duel } from '@/lib/protocol/duel'
+import { getPidLatest } from '@/lib/protocol/package'
+import { Transaction } from '@mysten/sui/transactions'
+import { useCallback } from 'react'
+import { toast } from 'sonner'
 
-export function Action(props: { duelId: string; username: string }) {
+export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { duel, duelistCap, spells, refetchSpells } = useDuel()
-  const client = useSuiClient()
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
-  })
+  const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
 
   const handleSetupWizard = useCallback(() => {
     if (!duel) {
@@ -28,7 +26,7 @@ export function Action(props: { duelId: string; username: string }) {
       arguments: [],
     })
 
-    signAndExecute(
+    autoSignWallet.signAndExecute(
       {
         transaction: tx,
       },
@@ -37,16 +35,17 @@ export function Action(props: { duelId: string; username: string }) {
           toast.success(`Setup wizard successfully!`)
           console.log('Setup wizard transaction result:', result)
         },
-        onError: (error) => {
-          toast.error(`Failed to setup wizard: ${error.message}`)
-          console.error('Setup wizard transaction error:', error)
+        onError: (err) => {
+          const appErr = new AppError('handleSetupWizard', err);
+          toast.error(`Failed to setup wizard with ${appErr.message}`)
+          appErr.log()
         },
         onSettled: () => {
           refetchSpells()
         },
       }
     )
-  }, [duel, signAndExecute, refetchSpells])
+  }, [duel, autoSignWallet, refetchSpells])
 
   const handleCastSpell = useCallback(
     (message: string) => {
@@ -80,7 +79,7 @@ export function Action(props: { duelId: string; username: string }) {
         })
         console.debug('cast spell tx', tx, duel.id, duelistCap.id, spells[0].id)
 
-        signAndExecute(
+        autoSignWallet.signAndExecute(
           {
             transaction: tx,
           },
@@ -89,15 +88,16 @@ export function Action(props: { duelId: string; username: string }) {
               toast.success(`Cast spell ${spellName} successfully!`)
               console.log('Cast spell transaction result:', result)
             },
-            onError: (error) => {
-              toast.warning(`Failed to cast spell: ${error.message}`)
-              console.error('Cast spell transaction error:', error)
+            onError: (err) => {
+              const appErr = new AppError('handleCastSpell', err);
+              toast.warning(`Failed to cast spell with ${appErr.message}`)
+              appErr.log()
             },
           }
         )
       }
     },
-    [duel, signAndExecute, duelistCap, spells]
+    [duel, autoSignWallet, duelistCap, spells]
   )
 
   if (spells && !spells.length) {
@@ -106,8 +106,12 @@ export function Action(props: { duelId: string; username: string }) {
 
   return (
     <>
-      {duel !== null && props.username && <div className='absolute top-0'><ForceBar duel={duel} currentWizard={props.username} /></div>}
-      <RealtimeChat roomName={props.duelId} username={props.username} onMessage={handleCastSpell} />
+      <div>
+        <p className="text-sm text-gray-600 mt-2">you: {props.userAccount.displayName}</p>
+        <p className="text-sm text-gray-600 mt-2">wizard address: {autoSignWallet.address}</p>
+      </div>
+      {duel !== null && props.userAccount && <div className='absolute top-0'><ForceBar duel={duel} currentWizard={props.userAccount.username} /></div>}
+      <RealtimeChat roomName={props.duelId} username={props.userAccount.username} onMessage={handleCastSpell} />
     </>
   )
 }

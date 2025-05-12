@@ -1,15 +1,16 @@
+import { UserAccount } from '@/components/Authenticated'
 import { Button } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
+import { useAutosignWallet } from '@/hooks/useAutosignWallet'
 import { displayName } from '@/lib/user'
-import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useState } from 'react'
 
-export function Start() {
-  const { duelData, startDuel } = useDuel()
+export function Start(props: { userAccount: UserAccount }) {
+  const { duel, startDuel } = useDuel()
   const [isStarting, setIsStarting] = useState(false)
-  const currentUser = useCurrentUser()
+  const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
 
-  if (!duelData) {
+  if (!duel) {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
         <p className="text-lg font-semibold text-gray-700">Loading duel data...</p>
@@ -26,18 +27,18 @@ export function Start() {
       onError: (error) => {
         console.error('Start duel transaction error:', error)
       },
-      onSettled: (_result) => {
+      onSettled: () => {
         setIsStarting(false)
       },
     })
   }
 
-  const wizard1 = duelData.wizard1
-  const wizard2 = duelData.wizard2
-  const wizard1Force = Number(duelData.wizard1_force)
-  const wizard2Force = Number(duelData.wizard2_force)
+  const wizard1 = duel.wizard1
+  const wizard2 = duel.wizard2
+  const wizard1Force = Number(duel.wizard1_force)
+  const wizard2Force = Number(duel.wizard2_force)
 
-  const isCurrentUserInDuel = currentUser?.id === wizard1 || currentUser?.id === wizard2
+  const isCurrentUserInDuel = autoSignWallet.address === wizard1 || autoSignWallet.address === wizard2
   const canStartDuel = isCurrentUserInDuel && !isStarting
 
   return (
@@ -49,7 +50,7 @@ export function Start() {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙</span>
           </div>
-          <p className="font-semibold">{currentUser?.id === wizard1 ? 'You' : displayName(wizard1)}</p>
+          <p className="font-semibold">{props.userAccount.id === wizard1 ? 'You' : displayName(wizard1)}</p>
           <p className="text-sm text-gray-600">Force: {wizard1Force}</p>
         </div>
 
@@ -59,7 +60,7 @@ export function Start() {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙‍♂️</span>
           </div>
-          <p className="font-semibold">{currentUser?.id === wizard2 ? 'You' : displayName(wizard2)}</p>
+          <p className="font-semibold">{props.userAccount.id === wizard2 ? 'You' : displayName(wizard2)}</p>
           <p className="text-sm text-gray-600">Force: {wizard2Force}</p>
         </div>
       </div>

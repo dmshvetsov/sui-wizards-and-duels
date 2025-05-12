@@ -1,11 +1,13 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { ConnectButton } from '@mysten/dapp-kit'
+import { PublicKey } from '@mysten/sui/cryptography'
 
 export type UserAccount = {
   /** address of the user account */
   id: string
   username: string
   displayName: string
+  publicKey: PublicKey
 }
 
 export interface AuthenticatedComponentProps {

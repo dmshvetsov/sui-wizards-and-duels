@@ -1,15 +1,14 @@
 import { createContext, useContext, PropsWithChildren, useState, useEffect } from 'react'
-import { useSuiClient, useSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import { SuiTransactionBlockResponse } from '@mysten/sui/client'
 import { Transaction } from '@mysten/sui/transactions'
 import { toast } from 'sonner'
 import { getPidLatest } from '@/lib/protocol/package'
 import { Duel, DuelistCap, Spell } from '@/lib/protocol/duel'
-import { executeWith } from '@/lib/sui/client'
 import { useDuelOnChainState } from '@/hooks/useDuelOnChainState'
 import { useDuelistCapOnChainState } from '@/hooks/useDuelistCapOnChainState'
 import { UserAccount } from '@/components/Authenticated'
 import { useSpellsOnChainState } from '@/hooks/useSpellsOnChainState'
+import { useAutosignWallet } from '@/hooks/useAutosignWallet'
 
 export type DuelState = 'pending' | 'started' | 'finished' | 'loading' | 'not-found'
 
@@ -23,14 +22,15 @@ type DuelContextValue = {
     args: { countdownSeconds: number },
     opts: {
       onSuccess?: (result: SuiTransactionBlockResponse) => void
-      onError?: (error: Error) => void
-      onSettled?: (result: SuiTransactionBlockResponse | undefined, err: Error | null) => void
+      onError?: (error: unknown) => void
+      onSettled?: (result: SuiTransactionBlockResponse | undefined, err: unknown| null) => void
     }
   ) => void
   /** @deprecated do not use will be removed */
   isCurrentUserWizard1: boolean
   /** current wizard duelist capability */
   duelistCap: DuelistCap | null
+  refetchDuelistCap: () => void
   /** spells of the current user */
   spells: Spell[] | null
   refetchSpells: () => void
@@ -46,6 +46,7 @@ const defaultContextValue: DuelContextValue = {
   startDuel: () => {},
   isCurrentUserWizard1: false,
   duelistCap: null,
+  refetchDuelistCap: () => {},
   spells: null,
   refetchSpells: () => {},
   winner: null,
@@ -65,16 +66,11 @@ export function DuelProvider({
   const [duelData, setDuelData] = useState<Duel | null>(null)
   const [winner, setWinner] = useState<string | null>(null)
   const [loser, setLoser] = useState<string | null>(null)
-
-  const client = useSuiClient()
-
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: executeWith(client, { showEffects: true, showObjectChanges: true }),
-  })
+  const autoSignWallet = useAutosignWallet(currentUser.publicKey)
 
   const duelOnChainState = useDuelOnChainState(duelId, { refetchInterval: 1000 })
-  const duelistCapState = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
-  const spellsState = useSpellsOnChainState(currentUser.id, { refetchInterval: 0 })
+  const duelistCapState = useDuelistCapOnChainState(autoSignWallet.address, { refetchInterval: 0 })
+  const spellsState = useSpellsOnChainState(autoSignWallet.address, { refetchInterval: 0 })
 
   useEffect(() => {
     if (duelOnChainState.isPending) {
@@ -138,19 +134,9 @@ export function DuelProvider({
       ],
     })
 
-    signAndExecute(
+    autoSignWallet.signAndExecute(
       { transaction: tx },
       opts
-      // {
-      //   onSuccess: (result) => {
-      //     toast.success('Duel started successfully!')
-      //     console.log('Start duel transaction result:', result)
-      //   },
-      //   onError: (error) => {
-      //     toast.error(`Failed to start duel: ${error.message}`)
-      //     console.error('Start duel transaction error:', error)
-      //   }
-      // }
     )
   }
 
@@ -166,6 +152,7 @@ export function DuelProvider({
         startDuel,
         isCurrentUserWizard1,
         duelistCap: duelistCapState.duelistCap,
+        refetchDuelistCap: duelistCapState.refetch,
         spells: spellsState.spells,
         refetchSpells: spellsState.refetch,
         winner,

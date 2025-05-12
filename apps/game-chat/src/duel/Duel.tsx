@@ -6,7 +6,7 @@ import { Start } from './Start'
 import { Action } from './Action'
 import { Result } from './Result'
 
-export function Duel({ userAccount }: { userAccount: UserAccount }) {
+export function DuelLayout({ userAccount }: { userAccount: UserAccount }) {
   const { slug: duelId } = useParams<{ slug: string }>()
 
   if (!duelId) {
@@ -16,13 +16,13 @@ export function Duel({ userAccount }: { userAccount: UserAccount }) {
   return (
     <div className="w-[460px] h-full mx-auto px-4">
       <DuelProvider duelId={duelId} currentUser={userAccount}>
-        <DuelContent username={userAccount.username} />
+        <Duel userAccount={userAccount} />
       </DuelProvider>
     </div>
   )
 }
 
-function DuelContent({ username }: { username: string }) {
+function Duel({ userAccount }: { userAccount: UserAccount }) {
   const { duelState, duelId } = useDuel()
 
   // Render different screens based on duel state
@@ -41,11 +41,11 @@ function DuelContent({ username }: { username: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      {duelState === 'pending' && <Start />}
+      {duelState === 'pending' && <Start userAccount={userAccount}/>}
 
-      {duelState === 'started' && <Action duelId={duelId} username={username} />}
+      {duelState === 'started' && <Action duelId={duelId} userAccount={userAccount} />}
 
-      {duelState === 'finished' && <Result />}
+      {duelState === 'finished' && <Result userAccount={userAccount}/>}
     </div>
   )
 }
