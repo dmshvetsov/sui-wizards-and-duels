@@ -1,20 +1,35 @@
 # Magic Duel Game on Sui Blockchain
 
+## GAME ROAD MAP
+
+- [ ] MVP with two-three spells
+- [ ] sponsored transactions with auto-signing of duel transaction, with each duel has know in advance spending for both players
+- [ ] demo duels against NPC
+- [ ] different force stake size duels and duels with "leveraged" prizes (stake is X time bigger that force used and a winner gets Sui prize from a loser)
+- [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
+- [ ] reward for players to play and duel
+- [ ] more spells and sophisticated strategies to win
+- [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
+- [ ] equipment and artifacts that can be created or won in a duel as loot
+
 ## Sui resources
 
 - https://notion.sui.io/overflow-2025-handbook hackathon handbook
+- https://move-book.com/ Move book
 
 ## Inspiration
 
 - last Overflow game track winner https://github.com/aresrpg
-- Coin flig single and multi-player game https://github.com/MystenLabs/satoshi-coin-flip
+- Supabase wallet login example PR https://github.com/supabase/auth/pull/282/files
+- Shinami sponsored transactions example https://github.com/shinamicorp/shinami-examples/tree/main/sui/typescript/dapp_kit_example
+- Coin flip single and multi-player game https://github.com/MystenLabs/satoshi-coin-flip
 - UNO game with react and socket.io https://github.com/guilhermebkel/uno-game
 - MERN stack chat app https://github.com/rtewari056/bitchat
 - react and socket.io chat app https://github.com/csmadhav/react-socket.io-chat-app
 - deno and websockets chat app https://github.com/thecodeholic/deno-websocket-chat
 - basic peer-to-peer websockets with Socket.io https://github.com/JamieWoodbury/simple-p2p-websockets
-- sui dev resources https://sui.io/developers
-- awesome sui https://github.com/sui-foundation/awesome-sui
+- Sui dev resources https://sui.io/developers
+- awesome Sui https://github.com/sui-foundation/awesome-sui
 
 ## Sui gaming related platforms
 
