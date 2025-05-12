@@ -9,14 +9,14 @@ import { Ed25519Keypair, Ed25519PublicKey } from 'npm:@mysten/sui/keypairs/ed255
 import { MultiSigPublicKey } from 'npm:@mysten/sui/multisig'
 
 Deno.serve(async (req) => {
-  const { name, publicKey: publicKeyAddres } = await req.json()
+  const { name, publicKey: public64Addres } = await req.json()
   const message = new TextEncoder().encode(`Hello ${name}`)
 
   const autoSignerKeyPair = Ed25519Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(Deno.env.get('APK') || '')),
     { skipValidation: true }
   )
-  const playerPubKey = new Ed25519PublicKey(publicKeyAddres)
+  const playerPubKey = new Ed25519PublicKey(public64Addres)
 
   const multiSigPublicKey = MultiSigPublicKey.fromPublicKeys({
     threshold: 1,
