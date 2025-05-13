@@ -9,7 +9,7 @@ import { SuiTransactionBlockResponse } from '@mysten/sui/client'
 // FIXME: must use either backend or safe KP storage or derive KP from a user input
 const APK = import.meta.env.VITE_WIZARDS_AND_DUELS_AUTOSIGNER_PRIVATE_KEY
 if (!APK) {
-  throw new Error('Configuration error APK is not defined')
+  console.warn('Configuration error APK is not defined')
 }
 
 export function useAutosignWallet(userWalllet: PublicKey) {

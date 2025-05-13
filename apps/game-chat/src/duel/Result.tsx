@@ -1,10 +1,11 @@
 import { UserAccount } from '@/components/Authenticated'
 import { Button } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
-import { useAutosignWallet } from '@/hooks/useAutosignWallet'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
+import { executeWith } from '@/lib/sui/client'
 import { displayName } from '@/lib/user'
+import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -13,7 +14,10 @@ import { toast } from 'sonner'
 export function Result(props: { userAccount: UserAccount }) {
   const { duel, duelistCap, refetchDuelistCap, winner, loser } = useDuel()
   const navigate = useNavigate()
-  const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
+  const client = useSuiClient()
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
+    execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
+  })
 
   const handleEndDuel = useCallback(() => {
     if (!duel) {
@@ -27,7 +31,7 @@ export function Result(props: { userAccount: UserAccount }) {
       arguments: [tx.object(duel.id), tx.object('0x6')],
     })
 
-    autoSignWallet.signAndExecute(
+    signAndExecute(
       {
         transaction: tx,
       },
@@ -46,7 +50,7 @@ export function Result(props: { userAccount: UserAccount }) {
         },
       }
     )
-  }, [duel, autoSignWallet, refetchDuelistCap])
+  }, [duel, refetchDuelistCap, signAndExecute])
 
   const handleNavigateToDuelgound = useCallback(() => {
     navigate('/d')

@@ -1,14 +1,13 @@
-import { createContext, useContext, PropsWithChildren, useState, useEffect } from 'react'
-import { SuiTransactionBlockResponse } from '@mysten/sui/client'
-import { Transaction } from '@mysten/sui/transactions'
-import { toast } from 'sonner'
-import { getPidLatest } from '@/lib/protocol/package'
-import { Duel, DuelistCap, Spell } from '@/lib/protocol/duel'
+import { UserAccount } from '@/components/Authenticated'
 import { useDuelOnChainState } from '@/hooks/useDuelOnChainState'
 import { useDuelistCapOnChainState } from '@/hooks/useDuelistCapOnChainState'
-import { UserAccount } from '@/components/Authenticated'
 import { useSpellsOnChainState } from '@/hooks/useSpellsOnChainState'
-import { useAutosignWallet } from '@/hooks/useAutosignWallet'
+import { Duel, DuelistCap, Spell } from '@/lib/protocol/duel'
+import { getPidLatest } from '@/lib/protocol/package'
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import { Transaction } from '@mysten/sui/transactions'
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export type DuelState = 'pending' | 'started' | 'finished' | 'loading' | 'not-found'
 
@@ -21,9 +20,9 @@ type DuelContextValue = {
   startDuel: (
     args: { countdownSeconds: number },
     opts: {
-      onSuccess?: (result: SuiTransactionBlockResponse) => void
+      onSuccess?: (result: nay) => void
       onError?: (error: unknown) => void
-      onSettled?: (result: SuiTransactionBlockResponse | undefined, err: unknown| null) => void
+      onSettled?: (result: any| undefined, err: unknown| null) => void
     }
   ) => void
   /** @deprecated do not use will be removed */
@@ -66,11 +65,11 @@ export function DuelProvider({
   const [duelData, setDuelData] = useState<Duel | null>(null)
   const [winner, setWinner] = useState<string | null>(null)
   const [loser, setLoser] = useState<string | null>(null)
-  const autoSignWallet = useAutosignWallet(currentUser.publicKey)
+  // const autoSignWallet = useAutosignWallet(currentUser.publicKey)
 
   const duelOnChainState = useDuelOnChainState(duelId, { refetchInterval: 1000 })
-  const duelistCapState = useDuelistCapOnChainState(autoSignWallet.address, { refetchInterval: 0 })
-  const spellsState = useSpellsOnChainState(autoSignWallet.address, { refetchInterval: 0 })
+  const duelistCapState = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
+  const spellsState = useSpellsOnChainState(currentUser.id, { refetchInterval: 0 })
 
   useEffect(() => {
     if (duelOnChainState.isPending) {
@@ -118,6 +117,7 @@ export function DuelProvider({
     }
   }, [duelOnChainState])
 
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction()
   const startDuel: DuelContextValue['startDuel'] = (args, opts = {}) => {
     if (!duelData) {
       toast.error('Duel data not available')
@@ -134,7 +134,7 @@ export function DuelProvider({
       ],
     })
 
-    autoSignWallet.signAndExecute(
+    signAndExecute(
       { transaction: tx },
       opts
     )

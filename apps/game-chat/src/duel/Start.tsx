@@ -1,14 +1,13 @@
 import { UserAccount } from '@/components/Authenticated'
 import { Button } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
-import { useAutosignWallet } from '@/hooks/useAutosignWallet'
 import { displayName } from '@/lib/user'
 import { useState } from 'react'
 
 export function Start(props: { userAccount: UserAccount }) {
   const { duel, startDuel } = useDuel()
   const [isStarting, setIsStarting] = useState(false)
-  const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
+  // const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
 
   if (!duel) {
     return (
@@ -20,17 +19,20 @@ export function Start(props: { userAccount: UserAccount }) {
 
   const handleStartDuel = () => {
     setIsStarting(true)
-    startDuel({ countdownSeconds: 10 }, {
-      onSuccess: (result) => {
-        console.debug('Start duel transaction result:', result)
-      },
-      onError: (error) => {
-        console.error('Start duel transaction error:', error)
-      },
-      onSettled: () => {
-        setIsStarting(false)
-      },
-    })
+    startDuel(
+      { countdownSeconds: 10 },
+      {
+        onSuccess: (result) => {
+          console.debug('Start duel transaction result:', result)
+        },
+        onError: (error) => {
+          console.error('Start duel transaction error:', error)
+        },
+        onSettled: () => {
+          setIsStarting(false)
+        },
+      }
+    )
   }
 
   const wizard1 = duel.wizard1
@@ -38,7 +40,7 @@ export function Start(props: { userAccount: UserAccount }) {
   const wizard1Force = Number(duel.wizard1_force)
   const wizard2Force = Number(duel.wizard2_force)
 
-  const isCurrentUserInDuel = autoSignWallet.address === wizard1 || autoSignWallet.address === wizard2
+  const isCurrentUserInDuel = props.userAccount.id === wizard1 || props.userAccount.id === wizard2
   const canStartDuel = isCurrentUserInDuel && !isStarting
 
   return (
@@ -50,7 +52,9 @@ export function Start(props: { userAccount: UserAccount }) {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙</span>
           </div>
-          <p className="font-semibold">{props.userAccount.id === wizard1 ? 'You' : displayName(wizard1)}</p>
+          <p className="font-semibold">
+            {props.userAccount.id === wizard1 ? 'You' : displayName(wizard1)}
+          </p>
           <p className="text-sm text-gray-600">Force: {wizard1Force}</p>
         </div>
 
@@ -60,19 +64,11 @@ export function Start(props: { userAccount: UserAccount }) {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙‍♂️</span>
           </div>
-          <p className="font-semibold">{props.userAccount.id === wizard2 ? 'You' : displayName(wizard2)}</p>
+          <p className="font-semibold">
+            {props.userAccount.id === wizard2 ? 'You' : displayName(wizard2)}
+          </p>
           <p className="text-sm text-gray-600">Force: {wizard2Force}</p>
         </div>
-      </div>
-
-      <div className="w-full bg-gray-200 h-2 rounded-full mb-4">
-        <div
-          className="bg-blue-500 h-2 rounded-full"
-          style={{
-            width: `${(wizard1Force / (wizard1Force + wizard2Force)) * 100}%`,
-            transition: 'width 0.5s ease-in-out'
-          }}
-        />
       </div>
 
       <div className="text-center mb-6">
@@ -85,11 +81,7 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       {canStartDuel ? (
-        <Button
-          onClick={handleStartDuel}
-          disabled={isStarting}
-          className="w-full"
-        >
+        <Button onClick={handleStartDuel} disabled={isStarting} className="w-full">
           {isStarting ? 'Starting Duel...' : 'Start Duel'}
         </Button>
       ) : (

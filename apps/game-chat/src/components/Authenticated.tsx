@@ -1,13 +1,20 @@
+import { LoginMenu } from '@/auth/LoginButton'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { ConnectButton } from '@mysten/dapp-kit'
+import { useDisconnectWallet } from '@mysten/dapp-kit'
 import { PublicKey } from '@mysten/sui/cryptography'
+import { Button } from './ui/button'
 
 export type UserAccount = {
-  /** address of the user account */
+  /** Uniq identifier of the user, piblic key address of the user account */
   id: string
+  /** @deprecated in game username, public key address of the user account by default */
   username: string
+  /** same as username but displayed in a more readable way, UI must use it */
   displayName: string
+  /** Public key of the of the connected user account wallet */
   publicKey: PublicKey
+  /** Whether this account is using zkLogin */
+  isZkLogin?: boolean
 }
 
 export interface AuthenticatedComponentProps {
@@ -20,14 +27,24 @@ type AuthenticatedProps = {
 
 export function Authenticated({ component: Component }: AuthenticatedProps) {
   const user = useCurrentUser()
-  
+  const { mutate: disconnect } = useDisconnectWallet()
+
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <ConnectButton />
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <LoginMenu />
+        </div>
       </div>
     )
   }
 
-  return <Component userAccount={user} />
+  return (
+    <>
+      <div className="absolute top-4 right-4">
+        <Button onClick={() => disconnect()}>Sign Out</Button>
+      </div>
+      <Component userAccount={user} />
+    </>
+  )
 }
