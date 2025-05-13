@@ -2,11 +2,10 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-
 import { Ed25519Keypair, Ed25519PublicKey } from 'npm:@mysten/sui/keypairs/ed25519'
 import { MultiSigPublicKey } from 'npm:@mysten/sui/multisig'
+
+import 'jsr:@std/dotenv/load'
 
 Deno.serve(async (req) => {
   const { name, publicKey: public64Addres } = await req.json()

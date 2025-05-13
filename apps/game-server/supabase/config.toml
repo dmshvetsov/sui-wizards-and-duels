@@ -317,3 +317,14 @@ entrypoint = "./functions/dueltx/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/dueltx/*.html" ]
+
+[auth.jwt]
+# The secret used to sign JWTs issued by the API.
+# Make sure this matches the secret used in your JWT creation function.
+secret = "your-jwt-secret"
+
+# The time in seconds that a JWT is valid for.
+expiry = 300 
+
+# A list of JWT issuers that are allowed to be used with the API.
+allowed_issuers = ["wallet-auth"]
