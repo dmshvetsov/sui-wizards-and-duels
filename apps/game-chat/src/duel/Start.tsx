@@ -1,5 +1,5 @@
 import { UserAccount } from '@/components/Authenticated'
-import { Button } from '@/components/ui/button'
+import { ButtonWithLoading } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { displayName } from '@/lib/user'
 import { useState } from 'react'
@@ -43,6 +43,8 @@ export function Start(props: { userAccount: UserAccount }) {
   const isCurrentUserInDuel = props.userAccount.id === wizard1 || props.userAccount.id === wizard2
   const canStartDuel = isCurrentUserInDuel && !isStarting
 
+  // TODO: add countdouwn
+
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center">Get ready for the Duel!</h2>
@@ -81,9 +83,14 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       {canStartDuel ? (
-        <Button onClick={handleStartDuel} disabled={isStarting} className="w-full">
+        <ButtonWithLoading
+          onClick={handleStartDuel}
+          disabled={isStarting}
+          className="w-full"
+          isLoading={isStarting}
+        >
           {isStarting ? 'Starting Duel...' : 'Start Duel'}
-        </Button>
+        </ButtonWithLoading>
       ) : (
         <p className="text-sm text-gray-500 italic">
           {isCurrentUserInDuel

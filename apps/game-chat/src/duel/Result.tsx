@@ -1,5 +1,5 @@
 import { UserAccount } from '@/components/Authenticated'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonWithLoading } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
@@ -15,7 +15,7 @@ export function Result(props: { userAccount: UserAccount }) {
   const { duel, duelistCap, refetchDuelistCap, winner, loser } = useDuel()
   const navigate = useNavigate()
   const client = useSuiClient()
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
+  const { mutate: signAndExecute, isPending: isTxInProgress } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
 
@@ -148,11 +148,11 @@ export function Result(props: { userAccount: UserAccount }) {
       )}
 
       {duelistCap != null ? (
-        <Button onClick={handleEndDuel} className="w-full">
+        <ButtonWithLoading onClick={handleEndDuel} className="w-full" disabled={isTxInProgress} isLoading={isTxInProgress}>
           {isCurrentUserWinner
             ? 'Claim your opponent force and reward'
             : 'Claim participation reward'}
-        </Button>
+        </ButtonWithLoading>
       ) : (
         <Button onClick={handleNavigateToDuelgound} className="w-full">
           Back to Duelground
