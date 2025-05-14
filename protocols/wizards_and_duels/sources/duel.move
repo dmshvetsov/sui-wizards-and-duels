@@ -18,8 +18,6 @@ const MAX_DUEL_START_COUNTDOWN_MS: u64 = 172_800_000;
 public struct Duel has key {
     id: UID,
     started_at: u64,
-    // TODO: remove, not needed
-    ended_at: u64,
     wizard1: address,
     wizard2: address,
     wizard1_force: u16,
@@ -67,7 +65,6 @@ public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
         wizard1_force: 128,
         wizard2_force: 128,
         started_at: 0,
-        ended_at: 0,
     };
 
     let duel_id = duel.id.to_address().to_id();
@@ -96,7 +93,6 @@ public fun create_predefined(player_1: address, player_2: address, ctx: &mut TxC
         wizard1_force: 0,
         wizard2_force: 0,
         started_at: 0,
-        ended_at: 0,
     };
     transfer::share_object(duel);
 }
@@ -112,7 +108,6 @@ public fun create_with_invite(opponent: address, ctx: &mut TxContext): DuelistCa
         wizard1_force: 128,
         wizard2_force: 0,
         started_at: 0,
-        ended_at: 0,
     };
     let duel_id = duel.id.to_address().to_id();
     transfer::share_object(duel);
@@ -134,7 +129,6 @@ public fun create_open(ctx: &mut TxContext): DuelistCap {
         wizard1_force: 128,
         wizard2_force: 0,
         started_at: 0,
-        ended_at: 0,
     };
     let duel_id = duel.id.to_address().to_id();
     transfer::share_object(duel);
@@ -213,7 +207,6 @@ public fun cast_spell(
 ) {
     // TODO: check if start_timestamp is passed
     assert!(duel.started_at != 0, EDuelNotInAction);
-    assert!(duel.ended_at == 0, EDuelFinished);
     assert!(duel.wizard1_force != 0 || duel.wizard2_force != 0, EDuelFinished);
 
     let caster = ctx.sender();
@@ -240,17 +233,14 @@ public fun cast_spell(
     }
 }
 
-public fun end(duel: &mut Duel, _now: &Clock, ctx: &mut TxContext) {
+public fun end(duel: &mut Duel, duelistCap: DuelistCap , ctx: &mut TxContext) {
     assert!(duel.started_at != 0, EDuelNotInAction);
     assert!(duel.wizard1_force == 0 || duel.wizard2_force == 0, EDuelStillInAction);
 
     let sender = tx_context::sender(ctx);
-    if (duel.wizard1 == sender) {
-        // TODO: destroy duel cap
-    };
-    if (duel.wizard2 == sender) {
-        // TODO: destroy duel cap
-    };
+    let DuelistCap { id, .. } = duelistCap;
+    object::delete(id);
+
     if (duel.wizard1 == sender && duel.wizard1_force == 0) {
         // TODO: winner takes staked Sui of the loser
         // TODO: each player get reward points for the duel

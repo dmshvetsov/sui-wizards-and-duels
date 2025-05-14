@@ -20,15 +20,19 @@ export function Result(props: { userAccount: UserAccount }) {
   })
 
   const handleEndDuel = useCallback(() => {
-    if (!duel) {
-      toast.error('Duel data not available')
+    if (!duel || !duelistCap) {
+      toast.error('Something went wrong')
+      new AppError('handleEndDuel', new Error('duel or duelistCap is null')).log()
       return
     }
 
     const tx = new Transaction()
     tx.moveCall({
       target: `${getPidLatest()}::duel::end`,
-      arguments: [tx.object(duel.id), tx.object('0x6')],
+      arguments: [
+        tx.object(duel.id), 
+        tx.object(duelistCap.id),
+      ],
     })
 
     signAndExecute(
@@ -50,7 +54,7 @@ export function Result(props: { userAccount: UserAccount }) {
         },
       }
     )
-  }, [duel, refetchDuelistCap, signAndExecute])
+  }, [duel, duelistCap, refetchDuelistCap, signAndExecute])
 
   const handleNavigateToDuelgound = useCallback(() => {
     navigate('/d')
