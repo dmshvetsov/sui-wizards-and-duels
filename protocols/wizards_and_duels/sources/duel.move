@@ -1,14 +1,15 @@
 module wizards_and_duels::duel;
 
 use sui::clock::Clock;
+use wizards_and_duels::force::{Self, Force};
 
 const EBadTx: u64 = 1;
 const ENotDuelWizard: u64 = 2;
 const EDuelNotInAction: u64 = 3;
-const EDuelFinished: u64 = 4;
-const ENotEnoughForce: u64 = 5;
-const EDuelExpired: u64 = 6;
-const EDuelStillInAction: u64 = 6;
+// const EDuelFinished: u64 = 4;
+const EDuelExpired: u64 = 5;
+const ENotEnoughForce: u64 = 6;
+const EDuelStillInAction: u64 = 7;
 
 // default duel start countdown 30 seconds
 const DEFAULT_DUEL_START_COUNTDOWN_MS: u64 = 30_000;
@@ -20,8 +21,8 @@ public struct Duel has key {
     started_at: u64,
     wizard1: address,
     wizard2: address,
-    wizard1_force: u16,
-    wizard2_force: u16,
+    wizard1_force: u64,
+    wizard2_force: u64,
 }
 
 public struct DuelistCap has key, store {
@@ -31,30 +32,8 @@ public struct DuelistCap has key, store {
     opponent: address,
 }
 
-public struct Spell has key {
-    id: UID,
-    //   name: vector<u8>,
-    damage: u16,
-    cost: u16,
-}
-
 public struct AdminCap has key {
     id: UID,
-}
-
-fun init(ctx: &mut TxContext) {
-    let adminCap = AdminCap {
-        id: object::new(ctx),
-    };
-    transfer::transfer(adminCap, ctx.sender());
-}
-
-public fun setup_wizard(ctx: &mut TxContext) {
-    transfer::transfer(Spell {
-        id: object::new(ctx),
-        damage: 12,
-        cost: 8,
-    }, ctx.sender());
 }
 
 public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
@@ -196,41 +175,41 @@ public fun start(duel: &mut Duel, start_countdown_sec: u64, now: &Clock, _ctx: &
     } else {
         duel.started_at = now.timestamp_ms() + start_countdown_sec * 1000;
     }
-    // TODO: add start_timestamp
 }
 
-public fun cast_spell(
-    duel: &mut Duel,
-    casterCap: &mut DuelistCap,
-    spell: &Spell,
-    ctx: &mut TxContext,
-) {
-    // TODO: check if start_timestamp is passed
-    assert!(duel.started_at != 0, EDuelNotInAction);
-    assert!(duel.wizard1_force != 0 || duel.wizard2_force != 0, EDuelFinished);
-
-    let caster = ctx.sender();
-    assert!(casterCap.wizard == caster, ENotDuelWizard);
-
-    if (caster == duel.wizard1) {
-        assert!(casterCap.wizard == duel.wizard1 && casterCap.opponent == duel.wizard2, ENotDuelWizard);
-        assert!(duel.wizard1_force >= spell.cost, ENotEnoughForce);
-        duel.wizard1_force = duel.wizard1_force - spell.cost;
-        if (duel.wizard2_force <= spell.damage) {
-            duel.wizard2_force = 0;
-        } else {
-            duel.wizard2_force = duel.wizard2_force - spell.damage;
-        };
+public fun use_force(duel: &mut Duel, duelistCap: &DuelistCap, amount: u64, ctx: &TxContext): Force {
+    let sender = tx_context::sender(ctx);
+    assert!(duelistCap.wizard == sender, ENotDuelWizard);
+    if (duel.wizard1 == sender) {
+        assert!(duel.wizard1_force > amount, ENotEnoughForce);
+        duel.wizard1_force = duel.wizard1_force - amount;
     } else {
-        assert!(casterCap.wizard == duel.wizard2 && casterCap.opponent == duel.wizard1, ENotDuelWizard);
-        assert!(duel.wizard2_force >= spell.cost, ENotEnoughForce);
-        duel.wizard2_force = duel.wizard2_force - spell.cost;
-        if (duel.wizard1_force <= spell.damage) {
+        assert!(duel.wizard2_force > amount, ENotEnoughForce);
+        duel.wizard2_force = duel.wizard2_force - amount;
+    };
+    force::create(amount, sender)
+}
+
+public fun cast_damage(duel: &mut Duel, caster: address, target: address, amount: u64) {
+    assert!(caster == duel.wizard1 || caster == duel.wizard2, ENotDuelWizard);
+
+    if (duel.wizard1 == target) {
+        if (duel.wizard1_force <= amount) {
             duel.wizard1_force = 0;
         } else {
-            duel.wizard1_force = duel.wizard1_force - spell.damage;
+            duel.wizard1_force = duel.wizard1_force - amount;
         };
-    }
+        return
+    };
+    if (duel.wizard2 == target) {
+        if (duel.wizard2_force <= amount) {
+            duel.wizard2_force = 0;
+        } else {
+            duel.wizard2_force = duel.wizard2_force - amount;
+        };
+        return
+    };
+    abort(ENotDuelWizard)
 }
 
 public fun end(duel: &mut Duel, duelistCap: DuelistCap , ctx: &mut TxContext) {
@@ -262,4 +241,15 @@ public fun end(duel: &mut Duel, duelistCap: DuelistCap , ctx: &mut TxContext) {
         return
     };
     abort(EBadTx)
+}
+
+//
+// # Initialization
+//
+
+fun init(ctx: &mut TxContext) {
+    let adminCap = AdminCap {
+        id: object::new(ctx),
+    };
+    transfer::transfer(adminCap, ctx.sender());
 }
