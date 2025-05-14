@@ -3,7 +3,7 @@
 ## GAME ROAD MAP
 
 - [ ] MVP with two-three spells
-- [ ] sponsored transactions with auto-signing of duel transaction, with each duel has know in advance spending for both players
+- [x] sponsored transactions with auto-signing of duel transaction, with each duel has know in advance spending for both players
 - [ ] demo duels against NPC
 - [ ] different force stake size duels and duels with "leveraged" prizes (stake is X time bigger that force used and a winner gets Sui prize from a loser)
 - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
@@ -16,6 +16,10 @@
 
 - https://notion.sui.io/overflow-2025-handbook hackathon handbook
 - https://move-book.com/ Move book
+
+## Sui Overflow hackathon resources
+
+- overflow project submission guide https://suifoundation.notion.site/Sui-Overflow-2025-Detailed-Submission-Guide-1c137af41c6e80918e3cc383131ccbbb
 
 ## Inspiration
 
@@ -30,6 +34,8 @@
 - basic peer-to-peer websockets with Socket.io https://github.com/JamieWoodbury/simple-p2p-websockets
 - Sui dev resources https://sui.io/developers
 - awesome Sui https://github.com/sui-foundation/awesome-sui
+- sign in with wallet standard example https://github.com/phantom/sign-in-with-solana and https://www.quicknode.com/guides/solana-development/dapps/how-to-authenticate-users-with-a-solana-wallet
+- verify if an address is a multisig https://blog.sui.io/write-multi-signature-multisig-move-contracts/
 
 ## Sui gaming related platforms
 
