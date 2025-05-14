@@ -2,6 +2,7 @@ import { LoginMenu } from '@/auth/LoginButton'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useDisconnectWallet } from '@mysten/dapp-kit'
 import { PublicKey } from '@mysten/sui/cryptography'
+import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 
 export type UserAccount = {
@@ -28,6 +29,12 @@ type AuthenticatedProps = {
 export function Authenticated({ component: Component }: AuthenticatedProps) {
   const user = useCurrentUser()
   const { mutate: disconnect } = useDisconnectWallet()
+  const navigate = useNavigate()
+
+  const handleSignOut = () => {
+    disconnect()
+    navigate('/d')
+  }
 
   if (!user) {
     return (
@@ -42,7 +49,7 @@ export function Authenticated({ component: Component }: AuthenticatedProps) {
   return (
     <>
       <div className="absolute top-4 right-4">
-        <Button onClick={() => disconnect()}>Sign Out</Button>
+        <Button onClick={handleSignOut}>Sign Out</Button>
       </div>
       <Component userAccount={user} />
     </>
