@@ -44,8 +44,8 @@ export function Result(props: { userAccount: UserAccount }) {
           toast.success(`Successfully claimed reward!`)
           console.debug('End duel transaction result:', result)
         },
-        onError: (er) => {
-          const appErr = new AppError('handleEndDuel', er)
+        onError: (err) => {
+          const appErr = new AppError('handleEndDuel', err)
           toast.error(`Failed to duel: ${appErr.message}`)
           appErr.log()
         },
