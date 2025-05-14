@@ -3,8 +3,11 @@
 ## GAME ROAD MAP
 
 - [ ] MVP with two-three spells
-- [x] sponsored transactions with auto-signing of duel transaction, with each duel has know in advance spending for both players
+- [x] auto-signing of duel transaction
+- [ ] sponsored transactions, players pay in advance Gas to fund their force
 - [ ] demo duels against NPC
+- [ ] spellbook with spells and their effects for read outside a duel
+- [ ] list available spells during duel
 - [ ] different force stake size duels and duels with "leveraged" prizes (stake is X time bigger that force used and a winner gets Sui prize from a loser)
 - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
 - [ ] reward for players to play and duel
@@ -23,6 +26,8 @@
 
 ## Inspiration
 
+### Software Engineering
+
 - last Overflow game track winner https://github.com/aresrpg
 - Supabase wallet login example PR https://github.com/supabase/auth/pull/282/files
 - Shinami sponsored transactions example https://github.com/shinamicorp/shinami-examples/tree/main/sui/typescript/dapp_kit_example
@@ -36,6 +41,10 @@
 - awesome Sui https://github.com/sui-foundation/awesome-sui
 - sign in with wallet standard example https://github.com/phantom/sign-in-with-solana and https://www.quicknode.com/guides/solana-development/dapps/how-to-authenticate-users-with-a-solana-wallet
 - verify if an address is a multisig https://blog.sui.io/write-multi-signature-multisig-move-contracts/
+
+### UI/UX
+
+- https://github.com/swyxio/spark-joy?tab=readme-ov-file
 
 ## Sui gaming related platforms
 

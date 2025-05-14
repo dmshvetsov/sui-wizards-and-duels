@@ -1,8 +1,7 @@
 import { UserAccount } from '@/components/Authenticated'
 import { useDuelOnChainState } from '@/hooks/useDuelOnChainState'
 import { useDuelistCapOnChainState } from '@/hooks/useDuelistCapOnChainState'
-import { useSpellsOnChainState } from '@/hooks/useSpellsOnChainState'
-import { Duel, DuelistCap, Spell } from '@/lib/protocol/duel'
+import { Duel, DuelistCap } from '@/lib/protocol/duel'
 import { getPidLatest } from '@/lib/protocol/package'
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
@@ -14,8 +13,6 @@ export type DuelState = 'pending' | 'started' | 'finished' | 'loading' | 'not-fo
 type DuelContextValue = {
   duelId: string
   duel: Duel | null
-  /** @deprecated use `duel` instead */
-  duelData: Duel | null
   duelState: DuelState
   startDuel: (
     args: { countdownSeconds: number },
@@ -25,14 +22,8 @@ type DuelContextValue = {
       onSettled?: (result: any| undefined, err: unknown| null) => void
     }
   ) => void
-  /** @deprecated do not use will be removed */
-  isCurrentUserWizard1: boolean
-  /** current wizard duelist capability */
   duelistCap: DuelistCap | null
   refetchDuelistCap: () => void
-  /** spells of the current user */
-  spells: Spell[] | null
-  refetchSpells: () => void
   winner: string | null
   loser: string | null
 }
@@ -40,14 +31,10 @@ type DuelContextValue = {
 const defaultContextValue: DuelContextValue = {
   duelId: '',
   duel: null,
-  duelData: null,
   duelState: 'loading',
   startDuel: () => {},
-  isCurrentUserWizard1: false,
   duelistCap: null,
   refetchDuelistCap: () => {},
-  spells: null,
-  refetchSpells: () => {},
   winner: null,
   loser: null,
 }
@@ -69,7 +56,6 @@ export function DuelProvider({
 
   const duelOnChainState = useDuelOnChainState(duelId, { refetchInterval: 1000 })
   const duelistCapState = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
-  const spellsState = useSpellsOnChainState(currentUser.id, { refetchInterval: 0 })
 
   useEffect(() => {
     if (duelOnChainState.isPending) {
@@ -87,8 +73,7 @@ export function DuelProvider({
     // Determine duel state based on started_at and ended_at timestamps
     if (
       duelOnChainState.duel.wizard2_force === 0 ||
-      duelOnChainState.duel.wizard1_force === 0 ||
-      duelOnChainState.duel.ended_at !== '0'
+      duelOnChainState.duel.wizard1_force === 0
     ) {
       setDuelState('finished')
 
@@ -140,21 +125,15 @@ export function DuelProvider({
     )
   }
 
-  const isCurrentUserWizard1 = currentUser?.id === duelData?.wizard1
-
   return (
     <DuelContext.Provider
       value={{
         duelId,
         duel: duelData,
-        duelData,
         duelState,
         startDuel,
-        isCurrentUserWizard1,
         duelistCap: duelistCapState.duelistCap,
         refetchDuelistCap: duelistCapState.refetch,
-        spells: spellsState.spells,
-        refetchSpells: spellsState.refetch,
         winner,
         loser,
       }}

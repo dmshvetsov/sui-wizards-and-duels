@@ -1,10 +1,10 @@
 import { UserAccount } from '@/components/Authenticated'
 import { RealtimeChat } from '@/components/realtime-chat'
-import { Button } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { Duel } from '@/lib/protocol/duel'
 import { getPidLatest } from '@/lib/protocol/package'
+import { getSpellName, spell } from '@/lib/spell'
 import { executeWith } from '@/lib/sui/client'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
@@ -12,45 +12,11 @@ import { useCallback } from 'react'
 import { toast } from 'sonner'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
-  const { duel, duelistCap, spells, refetchSpells } = useDuel()
-  // const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
+  const { duel, duelistCap } = useDuel()
   const client = useSuiClient()
   const { mutate: signAndExecute } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
-
-  const handleSetupWizard = useCallback(() => {
-    if (!duel) {
-      toast.error('Duel data not available')
-      return
-    }
-
-    const tx = new Transaction()
-    tx.moveCall({
-      target: `${getPidLatest()}::duel::setup_wizard`,
-      arguments: [],
-    })
-
-    signAndExecute(
-      {
-        transaction: tx,
-      },
-      {
-        onSuccess: (result) => {
-          toast.success(`Setup wizard successfully!`)
-          console.log('Setup wizard transaction result:', result)
-        },
-        onError: (err) => {
-          const appErr = new AppError('handleSetupWizard', err)
-          toast.error(`Failed to setup wizard with ${appErr.message}`)
-          appErr.log()
-        },
-        onSettled: () => {
-          refetchSpells()
-        },
-      }
-    )
-  }, [duel, refetchSpells, signAndExecute])
 
   const handleCastSpell = useCallback(
     (message: string) => {
@@ -59,59 +25,62 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       if (!message || !message.trim()) {
         return
       }
-      if (message.toLowerCase()) {
-        const spellName = message
-
-        if (!duel || !duelistCap) {
-          // TODO: better error message
-          toast.error('Duel data not available')
-          return
-        }
-
-        if (!spells || !spells.length) {
-          toast.error('No spells available')
-          return
-        }
-
-        // Create transaction to cast spell
-        const tx = new Transaction()
-        tx.moveCall({
-          target: `${getPidLatest()}::duel::cast_spell`,
-          arguments: [
-            tx.object(duel.id), // duel object
-            tx.object(duelistCap.id), // TODO: should use id, digest and version?
-            tx.object(spells[0].id), // TODO: Replace with actual Spell object ID
-          ],
-        })
-        console.debug('cast spell tx', tx, duel.id, duelistCap.id, spells[0].id)
-
-        signAndExecute(
-          {
-            transaction: tx,
-          },
-          {
-            onSuccess: (result) => {
-              toast.success(`Cast spell ${spellName} successfully!`)
-              console.debug('Cast spell transaction result:', result)
-            },
-            onError: (err) => {
-              const appErr = new AppError('handleCastSpell', err)
-              toast.warning(`Failed to cast spell with ${appErr.message}`)
-              appErr.log()
-            },
-            onSettled: () => {
-              console.debug(`[performance] | ${message} spell transaction settled in ${Date.now() - start} ms`)
-            },
-          }
-        )
+      const spellName = getSpellName(message)
+      if (!spellName) {
+        toast.warning(`${message} is not a spell`)
+        return
       }
-    },
-    [duel, duelistCap, spells, signAndExecute]
-  )
 
-  if (spells && !spells.length) {
-    return <Button onClick={handleSetupWizard}>Prepare spells</Button>
-  }
+      if (!duel || !duelistCap) {
+        toast.error('Something went wrong, refresh the page')
+        new AppError('handleCastSpell', new Error('duel or duelistCap is null or undefiend')).log()
+        return
+      }
+
+      // Create transaction to cast spell
+      const tx = new Transaction()
+      const [force] = tx.moveCall({
+        target: `${getPidLatest()}::duel::use_force`,
+        arguments: [
+          tx.object(duel.id),
+          tx.object(duelistCap.id),
+          tx.pure.u64(spell.cost[spellName]),
+        ],
+      })
+      const [damage] = tx.moveCall({
+        target: `${getPidLatest()}::spell::cast_${spellName}`,
+        arguments: [tx.object(force)],
+      })
+      tx.moveCall({
+        target: `${getPidLatest()}::damage::apply`,
+        arguments: [tx.object(damage), tx.object(duel.id), tx.pure.address(duelistCap.opponent)],
+      })
+      console.debug('cast spell tx', tx, duel.id, duelistCap.id, spellName)
+
+      signAndExecute(
+        {
+          transaction: tx,
+        },
+        {
+          onSuccess: (result) => {
+            toast.success(`Cast spell ${spellName} successfully!`)
+            console.debug('Cast spell transaction result:', result)
+          },
+          onError: (err) => {
+            const appErr = new AppError('handleCastSpell', err)
+            toast.warning(`Failed to cast spell with ${appErr.message}`)
+            appErr.log()
+          },
+          onSettled: () => {
+            console.debug(
+              `[performance] | ${message} spell transaction settled in ${Date.now() - start} ms`
+            )
+          },
+        }
+      )
+    },
+    [duel, duelistCap, signAndExecute]
+  )
 
   return (
     <>

@@ -7,16 +7,9 @@ export type DuelistCap = {
   opponent: string,
 }
 
-export type Spell = {
-  id: string
-  damage: number
-  cost: number
-}
-
 export type Duel = {
   id: string
   started_at: string
-  ended_at: string
   wizard1: string
   wizard2: string
   // TODO: make it camel case
