@@ -1,6 +1,7 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { Loader } from '@/components/Loader'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonWithLoading } from '@/components/ui/button'
+import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
 import { joinTx, leaveTx, Waitroom, waitroom } from '@/lib/protocol/waitroom'
@@ -27,7 +28,8 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const [waitState, setWaitState] = useState<WaitState>('loading')
   // const [isFunding, setIsFunding] = useState(false)
   // const autoSignWallet = useAutosignWallet(userAccount.publicKey)
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction()
+  const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
+    useSignAndExecuteTransaction()
 
   const navigate = useNavigate()
 
@@ -176,6 +178,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         onSuccess(_result) {
           console.debug('waitroom leave tx success', _result)
         },
+        onError(err) {
+          const appErr = new AppError('handleLeave', err)
+          toast.error('An error occurred, refresh the page and try again')
+          appErr.log()
+        },
       }
     )
   }, [signAndExecute])
@@ -240,9 +247,14 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           <p className="mt-4">
             <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
           </p>
-          <Button className="mt-4" onClick={handleLeave}>
+          <ButtonWithLoading
+            className="mt-4"
+            onClick={handleLeave}
+            disabled={isSigningAndExecuting}
+            isLoading={isSigningAndExecuting}
+          >
             Cancel
-          </Button>
+          </ButtonWithLoading>
         </>
       ) : waitState === 'needs_funding' ? (
         <>
@@ -263,23 +275,36 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
             This will transfer 0.0128 SUI from your wallet to the wizard wallet.
           </p>
         </>
-      ) : null}
+      ) : (
+        <>
+          <ButtonWithLoading
+            className="mt-4"
+            onClick={handleJoinWaitlist}
+            disabled={isSigningAndExecuting}
+            isLoading={isSigningAndExecuting}
+          >
+            Play
+          </ButtonWithLoading>
+          <p className="mt-2">Join other player in Wizards Duels.</p>
+          <p>Defeat your opponent to take away his Sui force.</p>
+        </>
+      )}
       {onlineCount === 1 && (
         <p className="mt-2">
           You are the only one in the Duelground. Wait for others to join or invite friends with the
           following link <span className="font-semibold">{window.location.toString()}</span>
         </p>
       )}
-      <Button className="mt-4" onClick={handleJoinWaitlist}>
-        Play
-      </Button>
-      <p className="mt-2">Join other player in Wizards Duels.</p>
-      <p>Defeat your opponent to take away his Sui force.</p>
-      <div className="absolute top-0 py-4">
-        <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
-        <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
-        {/* <p className="text-sm text-gray-600 mt-2">wizard address: {autoSignWallet.address}</p> */}
-      </div>
+      {isDevnetEnv && (
+        <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
+          <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
+          <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
+          <pre className="text-gray-600 mt-2">
+            waitroom: {JSON.stringify(waitroomState, null, 4)}
+          </pre>
+          {/* <p className="text-sm text-gray-600 mt-2">wizard address: {autoSignWallet.address}</p> */}
+        </div>
+      )}
     </div>
   )
 }
