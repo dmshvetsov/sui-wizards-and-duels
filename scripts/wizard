@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -e
+
+PID="0x67778b8d0cf7bff3676fbd5467c42a24e507673a160bf1e9d17a8fa30e6e93a0"
+WAITROOM_OID="0xf51498ef4e7a91cdc9a68fbb37f47f156c25c6738720279cc6b95630b186514e"
+
+#  module>::<method>
+MODULE_METHOD=$1
+# wizard public key
+WIZARD_ADDRESS=$2
+
+if [ -z "$MODULE_METHOD" ]; then
+  echo "Usage: $0 <MODULE_METHOD: no value> <WIZARD_ADDRESS: no value>"
+  exit 1
+fi
+
+if [ -z "$WIZARD_ADDRESS" ]; then
+  echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS: no value>"
+  exit 1
+fi
+
+echo "network: devnet"
+echo "package id: $PID"
+echo "waitroom oid: $WAITROOM_OID"
+
+PREV_ACTIVE_ADDRESS=$(sui client active-address)
+
+sui client switch --address $WIZARD_ADDRESS
+
+
+if [ $MODULE_METHOD = "faucet" ]; then
+  # NOTE: you must have httpie CLI installed, implicit dependency
+  http POST https://faucet.devnet.sui.io/v2/gas FixedAmountRequest:="{\"recipient\":\"$WIZARD_ADDRESS\"}"
+fi
+
+if [ $MODULE_METHOD = "duel::setup_wizard" ]; then
+  TARGET="$PID::duel::setup_wizard"
+
+  sui client ptb \
+    --move-call $TARGET \
+    --gas-budget 1000000000
+fi
+
+if [ $MODULE_METHOD = "waitroom::join" ]; then
+  TARGET="$PID::waitroom::join"
+
+  sui client ptb \
+    --move-call $TARGET @$WAITROOM_OID \
+    --gas-budget 1000000000
+fi
+
+sui client switch --address $PREV_ACTIVE_ADDRESS
