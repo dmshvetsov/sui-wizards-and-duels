@@ -25,10 +25,8 @@ export function Start(props: { userAccount: UserAccount }) {
         onSuccess: (result) => {
           console.debug('Start duel transaction result:', result)
         },
-        onError: (error) => {
-          console.error('Start duel transaction error:', error)
-        },
-        onSettled: () => {
+        onError: (err) => {
+          console.error('Start duel transaction error:', err)
           setIsStarting(false)
         },
       }
