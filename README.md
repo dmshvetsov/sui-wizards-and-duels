@@ -2,7 +2,7 @@
 
 ## GAME ROAD MAP
 
-- [ ] MVP with two-three spells
+- [x] MVP with two-three spells
 - [x] auto-signing of duel transaction
 - [ ] sponsored transactions, players pay in advance Gas to fund their force
 - [ ] demo duels against NPC

@@ -2,6 +2,8 @@ module wizards_and_duels::duel;
 
 use sui::clock::Clock;
 use wizards_and_duels::force::{Self, Force};
+use wizards_and_duels::effect::{Self, Effect};
+use wizards_and_duels::engine;
 
 const EBadTx: u64 = 1;
 const ENotDuelWizard: u64 = 2;
@@ -10,6 +12,7 @@ const EDuelNotInAction: u64 = 3;
 const EDuelExpired: u64 = 5;
 const ENotEnoughForce: u64 = 6;
 const EDuelStillInAction: u64 = 7;
+const ENotCaster: u64 = 8;
 
 // default duel start countdown 30 seconds
 const DEFAULT_DUEL_START_COUNTDOWN_MS: u64 = 30_000;
@@ -23,6 +26,8 @@ public struct Duel has key {
     wizard2: address,
     wizard1_force: u64,
     wizard2_force: u64,
+    wizard2_effects: vector<u8>,
+    wizard1_effects: vector<u8>,
 }
 
 public struct DuelistCap has key, store {
@@ -37,6 +42,7 @@ public struct AdminCap has key {
 }
 
 public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
+    // TODO: refactor this method is to expensive in gas for a player to execute, must be shared between 2 players
     let duel = Duel {
         id: object::new(ctx),
         wizard1: player_1,
@@ -44,6 +50,8 @@ public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
         wizard1_force: 128,
         wizard2_force: 128,
         started_at: 0,
+        wizard1_effects: effect::default_value(),
+        wizard2_effects: effect::default_value(),
     };
 
     let duel_id = duel.id.to_address().to_id();
@@ -72,6 +80,8 @@ public fun create_predefined(player_1: address, player_2: address, ctx: &mut TxC
         wizard1_force: 0,
         wizard2_force: 0,
         started_at: 0,
+        wizard1_effects: effect::default_value(),
+        wizard2_effects: effect::default_value(),
     };
     transfer::share_object(duel);
 }
@@ -87,6 +97,8 @@ public fun create_with_invite(opponent: address, ctx: &mut TxContext): DuelistCa
         wizard1_force: 128,
         wizard2_force: 0,
         started_at: 0,
+        wizard1_effects: effect::default_value(),
+        wizard2_effects: effect::default_value(),
     };
     let duel_id = duel.id.to_address().to_id();
     transfer::share_object(duel);
@@ -108,6 +120,8 @@ public fun create_open(ctx: &mut TxContext): DuelistCap {
         wizard1_force: 128,
         wizard2_force: 0,
         started_at: 0,
+        wizard1_effects: effect::default_value(),
+        wizard2_effects: effect::default_value(),
     };
     let duel_id = duel.id.to_address().to_id();
     transfer::share_object(duel);
@@ -190,23 +204,89 @@ public fun use_force(duel: &mut Duel, duelistCap: &DuelistCap, amount: u64, ctx:
     force::create(amount, sender)
 }
 
-public fun cast_damage(duel: &mut Duel, caster: address, target: address, amount: u64) {
+public(package) fun cast_damage(duel: &mut Duel, caster: address, target: address, amount: u64) {
     assert!(caster == duel.wizard1 || caster == duel.wizard2, ENotDuelWizard);
 
     if (duel.wizard1 == target) {
-        if (duel.wizard1_force <= amount) {
-            duel.wizard1_force = 0;
-        } else {
-            duel.wizard1_force = duel.wizard1_force - amount;
-        };
+        let (_, target_force, caster_effects, target_effects) = engine::settle(
+            caster,
+            target,
+            amount,
+            duel.wizard2_force,
+            duel.wizard1_force,
+            duel.wizard2_effects,
+            duel.wizard1_effects,
+        );
+        duel.wizard1_force = target_force;
+        duel.wizard1_effects = caster_effects;
+        duel.wizard2_effects = target_effects;
         return
     };
     if (duel.wizard2 == target) {
-        if (duel.wizard2_force <= amount) {
-            duel.wizard2_force = 0;
-        } else {
-            duel.wizard2_force = duel.wizard2_force - amount;
-        };
+        let (_, target_force, caster_effects, target_effects) = engine::settle(
+            caster,
+            target,
+            amount,
+            duel.wizard1_force,
+            duel.wizard2_force,
+            duel.wizard1_effects,
+            duel.wizard2_effects,
+        );
+        duel.wizard2_force = target_force;
+        duel.wizard1_effects = caster_effects;
+        duel.wizard2_effects = target_effects;
+        return
+    };
+    abort(ENotDuelWizard)
+}
+
+public fun cast_effect(duel: &mut Duel, effect: Effect, target: address, ctx: &TxContext) {
+    let caster = ctx.sender();
+    assert!(caster == duel.wizard1 || caster == duel.wizard2, ENotDuelWizard);
+    assert!(effect.is_caster(caster), ENotCaster);
+
+    if (duel.wizard1 == target) {
+        duel.wizard1_effects = effect.apply(duel.wizard1_effects);
+        let (_, target_force, caster_effects, target_effects) = engine::settle(
+            caster,
+            target,
+            0,
+            duel.wizard2_force,
+            duel.wizard1_force,
+            duel.wizard2_effects,
+            duel.wizard1_effects,
+        );
+        duel.wizard1_force = target_force;
+        duel.wizard1_effects = caster_effects;
+        duel.wizard2_effects = target_effects;
+        return
+    };
+    if (duel.wizard2 == target) {
+        duel.wizard2_effects = effect.apply(duel.wizard2_effects);
+        let (_, target_force, caster_effects, target_effects) = engine::settle(
+            caster,
+            target,
+            0,
+            duel.wizard1_force,
+            duel.wizard2_force,
+            duel.wizard1_effects,
+            duel.wizard2_effects,
+        );
+        duel.wizard2_force = target_force;
+        duel.wizard1_effects = caster_effects;
+        duel.wizard2_effects = target_effects;
+        return
+    };
+    abort(ENotDuelWizard)
+}
+
+public(package) fun defeat(duel: &mut Duel, target: address) {
+    if (duel.wizard1 == target) {
+        duel.wizard1_force = 0;
+        return
+    };
+    if (duel.wizard2 == target) {
+        duel.wizard2_force = 0;
         return
     };
     abort(ENotDuelWizard)

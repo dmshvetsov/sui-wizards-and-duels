@@ -4,7 +4,7 @@ import { RealtimeChat } from '@/components/realtime-chat'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
-import { getSpellName, spell } from '@/lib/spell'
+import { getSpellSpec } from '@/lib/protocol/spell'
 import { executeWith } from '@/lib/sui/client'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
@@ -27,15 +27,14 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       if (!message || !message.trim()) {
         return
       }
-      const spellName = getSpellName(message)
-      if (!spellName) {
-        toast.warning(`${message} is not a spell`)
-        return
-      }
-
       if (!duel || !duelistCap) {
         toast.error('Something went wrong, refresh the page')
         new AppError('handleCastSpell', new Error('duel or duelistCap is null or undefiend')).log()
+        return
+      }
+      const spellSpec = getSpellSpec(message)
+      if (!spellSpec) {
+        toast.warning(`${message} is not a spell`)
         return
       }
 
@@ -43,21 +42,20 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       const tx = new Transaction()
       const [force] = tx.moveCall({
         target: `${getPidLatest()}::duel::use_force`,
-        arguments: [
-          tx.object(duel.id),
-          tx.object(duelistCap.id),
-          tx.pure.u64(spell.cost[spellName]),
-        ],
+        arguments: [tx.object(duel.id), tx.object(duelistCap.id), tx.pure.u64(spellSpec.cost)],
       })
-      const [damage] = tx.moveCall({
-        target: `${getPidLatest()}::spell::cast_${spellName}`,
+      const [spell] = tx.moveCall({
+        target: spellSpec.castMethod,
         arguments: [tx.object(force)],
       })
       tx.moveCall({
-        target: `${getPidLatest()}::damage::apply`,
-        arguments: [tx.object(damage), tx.object(duel.id), tx.pure.address(duelistCap.opponent)],
+        target: spellSpec.applyMethod,
+        arguments:
+          spellSpec.module === 'damage'
+            ? [tx.object(spell), tx.object(duel.id), tx.pure.address(duelistCap.opponent)]
+            : [tx.object(duel.id), tx.object(spell), tx.pure.address(duelistCap.opponent)],
       })
-      console.debug('cast spell tx', tx, duel.id, duelistCap.id, spellName)
+      console.debug('cast spell tx', tx, duel.id, duelistCap.id, spellSpec)
 
       signAndExecute(
         {
@@ -65,7 +63,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         },
         {
           onSuccess: (result) => {
-            toast.success(`Cast spell ${spellName} successfully!`)
+            toast.success(`Cast spell ${message} successfully!`)
             console.debug('Cast spell transaction result:', result)
           },
           onError: (err) => {
@@ -91,7 +89,9 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
         <p className="text-lg font-semibold text-gray-700">Duel not found</p>
-        <Link className="mt-4" to="/d">Back to Duelground</Link>
+        <Link className="mt-4" to="/d">
+          Back to Duelground
+        </Link>
       </div>
     )
   }

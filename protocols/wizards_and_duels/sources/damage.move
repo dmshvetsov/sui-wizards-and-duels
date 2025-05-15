@@ -13,7 +13,7 @@ public(package) fun cast(value: u64, caster: address): Damage {
     Damage { value, caster }
 }
 
-public(package) fun apply(damage: Damage, duel: &mut Duel, target: address, ctx: &TxContext) {
+public fun apply(damage: Damage, duel: &mut Duel, target: address, ctx: &TxContext) {
     assert!(ctx.sender() == damage.caster, ENotCaster);
     let Damage { value, caster } = damage;
     duel.cast_damage(caster, target, value);
