@@ -11,6 +11,7 @@ import { Transaction } from '@mysten/sui/transactions'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
+import { Link } from '@/components/Link'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { duel, duelistCap, isLoading } = useDuel()
@@ -90,6 +91,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
         <p className="text-lg font-semibold text-gray-700">Duel not found</p>
+        <Link className="mt-4" to="/d">Back to Duelground</Link>
       </div>
     )
   }
