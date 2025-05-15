@@ -2,7 +2,6 @@ import { UserAccount } from '@/components/Authenticated'
 import { RealtimeChat } from '@/components/realtime-chat'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
-import { Duel } from '@/lib/protocol/duel'
 import { getPidLatest } from '@/lib/protocol/package'
 import { getSpellName, spell } from '@/lib/spell'
 import { executeWith } from '@/lib/sui/client'
@@ -10,6 +9,7 @@ import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
+import { ForceBar } from './ForceBar'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { duel, duelistCap } = useDuel()
@@ -99,30 +99,5 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         onMessage={handleCastSpell}
       />
     </>
-  )
-}
-
-function ForceBar({ duel, currentWizardId }: { duel: Duel; currentWizardId: string }) {
-  const forceRatio =
-    currentWizardId === duel.wizard1
-      ? (duel.wizard2_force / (duel.wizard2_force + duel.wizard1_force)) * 100
-      : (duel.wizard1_force / (duel.wizard2_force + duel.wizard1_force)) * 100
-  const currentWizardForce =
-    currentWizardId === duel.wizard1 ? duel.wizard1_force : duel.wizard2_force
-  const opponentForce = currentWizardId === duel.wizard1 ? duel.wizard2_force : duel.wizard1_force
-  return (
-    <div className="w-[400px] bg-white flex justify-between items-center gap-2 items-center py-4">
-      <div className="w-8">{opponentForce}</div>
-      <div className="w-full bg-blue-500 h-2 rounded-full">
-        <div
-          className="bg-gray-200 h-2"
-          style={{
-            width: `${forceRatio}%`,
-            transition: 'width 0.5s ease-in-out',
-          }}
-        />
-      </div>
-      <div className="w-8">{currentWizardForce}</div>
-    </div>
   )
 }
