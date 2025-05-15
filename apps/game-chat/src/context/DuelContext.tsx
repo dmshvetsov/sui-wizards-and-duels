@@ -26,6 +26,7 @@ type DuelContextValue = {
   refetchDuelistCap: () => void
   winner: string | null
   loser: string | null
+  isLoading: boolean
 }
 
 const defaultContextValue: DuelContextValue = {
@@ -37,6 +38,7 @@ const defaultContextValue: DuelContextValue = {
   refetchDuelistCap: () => {},
   winner: null,
   loser: null,
+  isLoading: true,
 }
 
 const DuelContext = createContext<DuelContextValue>(defaultContextValue)
@@ -136,6 +138,7 @@ export function DuelProvider({
         refetchDuelistCap: duelistCapState.refetch,
         winner,
         loser,
+        isLoading: duelOnChainState.isLoading || duelistCapState.isLoading,
       }}
     >
       {children}

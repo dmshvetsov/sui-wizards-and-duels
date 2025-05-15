@@ -1,4 +1,5 @@
 import { UserAccount } from '@/components/Authenticated'
+import { Loader } from '@/components/Loader'
 import { RealtimeChat } from '@/components/realtime-chat'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
@@ -12,7 +13,7 @@ import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
-  const { duel, duelistCap } = useDuel()
+  const { duel, duelistCap, isLoading } = useDuel()
   const client = useSuiClient()
   const { mutate: signAndExecute } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
@@ -81,6 +82,17 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     },
     [duel, duelistCap, signAndExecute]
   )
+
+  if (isLoading) {
+    return <Loader />
+  }
+  if (!duel || !duelistCap) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+        <p className="text-lg font-semibold text-gray-700">Duel not found</p>
+      </div>
+    )
+  }
 
   return (
     <>
