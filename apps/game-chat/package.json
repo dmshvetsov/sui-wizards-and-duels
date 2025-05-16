@@ -2,7 +2,6 @@
   "name": "game-chat",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@8.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
