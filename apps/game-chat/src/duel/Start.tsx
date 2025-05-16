@@ -20,7 +20,7 @@ export function Start(props: { userAccount: UserAccount }) {
   const handleStartDuel = () => {
     setIsStarting(true)
     startDuel(
-      { countdownSeconds: 10 },
+      { countdownSeconds: 15 },
       {
         onSuccess: (result) => {
           console.debug('Start duel transaction result:', result)
