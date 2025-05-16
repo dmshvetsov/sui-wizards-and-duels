@@ -6,10 +6,6 @@ public struct AdminCap has key {
     id: UID,
 }
 
-public struct InitCap has key {
-    id: UID,
-}
-
 public struct Pairing has store, drop {
     wizard1: address,
     wizard2: address,
@@ -22,6 +18,7 @@ public struct Waitroom has key {
 
 const ENotInWaitroom: u64 = 1;
 
+/// Join the wait room to be paired with the next player
 public fun join(waitroom: &mut Waitroom, ctx: &mut TxContext) {
     if (vector::length(&waitroom.queue) > 0) {
         let pairing = vector::pop_back(&mut waitroom.queue);
@@ -32,6 +29,7 @@ public fun join(waitroom: &mut Waitroom, ctx: &mut TxContext) {
     vector::push_back(&mut waitroom.queue, Pairing { wizard1: ctx.sender(), wizard2: @0x0 });
 }
 
+/// Leave the wait room to not be paired for a duel
 public fun leave(waitroom: &mut Waitroom, ctx: &mut TxContext) {
     let sender = ctx.sender();
     let mut pairing_idx = waitroom.queue.find_index!(|pairing| pairing.wizard1 == sender);
@@ -45,15 +43,7 @@ public fun leave(waitroom: &mut Waitroom, ctx: &mut TxContext) {
 
 fun init(ctx: &mut TxContext) {
     transfer::transfer(AdminCap { id: object::new(ctx) }, ctx.sender());
-    transfer::transfer(InitCap { id: object::new(ctx) }, ctx.sender());
-}
-
-public fun init_config(init_cap: InitCap, ctx: &mut TxContext) {
     let wr = Waitroom { id: object::new(ctx), queue: vector::empty() };
-
-    let InitCap { id } = init_cap;
-    object::delete(id);
-
     transfer::share_object(wr);
 }
 
