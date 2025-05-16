@@ -1,13 +1,11 @@
 import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
-import {
-  useRealtimeChat,
-} from '@/hooks/use-realtime-chat'
+import { useRealtimeChat } from '@/hooks/use-realtime-chat'
 import { type ChatMessage } from '@/lib/message'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send } from 'lucide-react'
+import { Wand } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface RealtimeChatProps {
@@ -72,28 +70,24 @@ export const RealtimeChat = ({
       }
       setNewMessage('')
     },
-    [newMessage, isConnected, sendMessage]
+    [newMessage, isConnected, sendMessage, onMessage]
   )
 
   return (
-    <div className="flex flex-col h-full w-full bg-background text-foreground antialiased">
+    <div className="flex flex-col h-3/5 w-full bg-background text-foreground antialiased">
       {/* Messages */}
-      <div ref={containerRef} className="flex flex-col justify-end flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={containerRef} className="flex flex-col justify-end flex-1 overflow-y-hidden">
+        {' '}
         {allMessages.length === 0 ? (
-          <div className="text-center text-sm text-muted-foreground">
-            Let the Duel begin!
-          </div>
+          <div className="text-center text-sm text-muted-foreground">Let the Duel begin!</div>
         ) : null}
         <div className="space-y-1">
-         {allMessages.map((message, index) => {
+          {allMessages.map((message, index) => {
             const prevMessage = index > 0 ? allMessages[index - 1] : null
             const showHeader = !prevMessage || prevMessage.username !== message.username
 
             return (
-              <div
-                key={message.id}
-                className="animate-in fade-in slide-in-from-top-4 duration-300"
-              >
+              <div key={message.id} className="animate-in fade-in slide-in-from-top-4 duration-380">
                 <ChatMessageItem
                   message={message}
                   isOwnMessage={message.username === username}
@@ -123,7 +117,7 @@ export const RealtimeChat = ({
             type="submit"
             disabled={!isConnected}
           >
-            <Send className="size-4" />
+            <Wand className="size-4" />
           </Button>
         )}
       </form>

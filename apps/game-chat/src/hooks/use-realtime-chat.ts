@@ -67,7 +67,7 @@ export function useRealtimeChat({ roomName, username }: UseRealtimeChatProps) {
         payload: message,
       });
     },
-    [channel, isConnected, username]
+    [channel, isConnected, roomName, username]
   );
 
   return { messages, sendMessage, isConnected };
