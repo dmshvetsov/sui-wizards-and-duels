@@ -76,7 +76,7 @@ export function DuelProvider({
           ? 'not-found'
           : duelData.wizard1_force === 0 || duelData.wizard2_force === 0
             ? 'finished'
-            : duelData.started_at <= Date.now()
+            : duelData.started_at !== 0 && Date.now() >= duelData.started_at
               ? 'started'
               : 'pending'
     setDuelState(duelState)
