@@ -30,7 +30,7 @@ public struct Duel has key {
     wizard1_effects: vector<u8>,
 }
 
-public struct DuelistCap has key, store {
+public struct DuelistCap has key {
     id: UID,
     duel: ID,
     wizard: address,
