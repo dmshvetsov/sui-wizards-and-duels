@@ -18,7 +18,7 @@ public(package) fun cast_choke(choke_value: u8, caster: address): Effect {
 /// If next spell is not deflected then deflect effect is removed from the target
 /// Summation of deflection effect does not enhance the effect
 public(package) fun cast_deflect(deflect_value: u8, caster: address): Effect {
-    Effect { value: new_value(0, deflect_value, 0), caster }
+    Effect { value: new_value(0, 0, deflect_value), caster }
 }
 
 public(package) fun caster(effect: &Effect): address {
