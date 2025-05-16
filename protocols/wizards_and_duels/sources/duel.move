@@ -8,7 +8,7 @@ use wizards_and_duels::engine;
 const EBadTx: u64 = 1;
 const ENotDuelWizard: u64 = 2;
 const EDuelNotInAction: u64 = 3;
-// const EDuelFinished: u64 = 4;
+// const EDuelFinished: u64 = 4; no longer in use
 const EDuelExpired: u64 = 5;
 const ENotEnoughForce: u64 = 6;
 const EDuelStillInAction: u64 = 7;
@@ -72,11 +72,11 @@ public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
     }, player_2);
 }
 
-public fun create_predefined(player_1: address, player_2: address, ctx: &mut TxContext) {
+public fun create_predefined(player1: address, player2: address, ctx: &mut TxContext) {
     let duel = Duel {
         id: object::new(ctx),
-        wizard1: player_1,
-        wizard2: player_2,
+        wizard1: player1,
+        wizard2: player2,
         wizard1_force: 0,
         wizard2_force: 0,
         started_at: 0,
@@ -179,10 +179,11 @@ public fun join(duel: &mut Duel, now: &Clock, ctx: &mut TxContext): DuelistCap {
     abort (ENotDuelWizard)
 }
 
-public fun start(duel: &mut Duel, start_countdown_sec: u64, now: &Clock, _ctx: &mut TxContext) {
+public fun start(duel: &mut Duel, start_countdown_sec: u64, now: &Clock, ctx: &mut TxContext) {
     assert!(duel.started_at == 0, EBadTx);
     assert!(duel.wizard1 != @0x0 && duel.wizard2 != @0x0, EBadTx);
-    // TODO: make checks that caps and wizards are from the duel
+    let sender = ctx.sender();
+    assert!(duel.wizard1 == sender || duel.wizard2 == sender, ENotDuelWizard);
 
     if (start_countdown_sec == 0 || start_countdown_sec * 1000 > MAX_DUEL_START_COUNTDOWN_MS) {
         duel.started_at = now.timestamp_ms() + DEFAULT_DUEL_START_COUNTDOWN_MS;
