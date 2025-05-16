@@ -22,11 +22,17 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
 
+  /** @param userInput- user message during duel
+   * spell message format to apply to opponent: @ spellName
+   * spell message format to apply to self: ! spellName
+   * simple chat message starts with any other character than ! or @
+   */
   const handleCastSpell = useCallback(
-    (message: string) => {
+    (userInput: string) => {
       const start = Date.now()
-      // Check if message is a command to cast a spell
-      if (!message || !message.trim()) {
+
+      const message = userInput.trim()
+      if (!message) {
         return
       }
       if (!duel || !duelistCap) {
@@ -34,13 +40,21 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         new AppError('handleCastSpell', new Error('duel or duelistCap is null or undefiend')).log()
         return
       }
-      const spellSpec = getSpellSpec(message)
-      if (!spellSpec) {
-        toast.warning(`${message} is not a spell`)
+
+      const targetChar = message[0]
+      const target = targetChar === '@' ? duelistCap.opponent : targetChar === '!' ? duelistCap.wizard : null
+      if (!target) {
+        // it is a chat message, do nothig
         return
       }
 
-      // Create transaction to cast spell
+      const spellName = message.slice(1).trim().toLowerCase()
+      const spellSpec = getSpellSpec(spellName)
+      if (!spellSpec) {
+        toast.warning(`${spellName} is not a spell`)
+        return
+      }
+
       const tx = new Transaction()
       const [force] = tx.moveCall({
         target: `${getPidLatest()}::duel::use_force`,
@@ -54,8 +68,8 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         target: spellSpec.applyMethod,
         arguments:
           spellSpec.module === 'damage'
-            ? [tx.object(spell), tx.object(duel.id), tx.pure.address(duelistCap.opponent)]
-            : [tx.object(duel.id), tx.object(spell), tx.pure.address(duelistCap.opponent)],
+            ? [tx.object(spell), tx.object(duel.id), tx.pure.address(target)]
+            : [tx.object(duel.id), tx.object(spell), tx.pure.address(target)],
       })
       console.debug('cast spell tx', tx, duel.id, duelistCap.id, spellSpec)
 
@@ -65,7 +79,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         },
         {
           onSuccess: (result) => {
-            toast.success(`Cast spell ${message} successfully!`)
+            toast.success(`Cast spell ${message} successfully! (${Date.now() - start} ms)`)
             console.debug('Cast spell transaction result:', result)
           },
           onError: (err) => {
