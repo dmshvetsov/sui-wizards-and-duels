@@ -9,7 +9,7 @@ export function ForceBar({ duel, currentWizardId }: { duel: Duel; currentWizardI
     currentWizardId === duel.wizard1 ? duel.wizard1_force : duel.wizard2_force
   const opponentForce = currentWizardId === duel.wizard1 ? duel.wizard2_force : duel.wizard1_force
   return (
-    <div className="w-[400px] bg-white flex justify-between items-center gap-2 items-center py-4">
+    <div className="w-full bg-white flex justify-between items-center gap-2 items-center px-4">
       <div className="w-8">{opponentForce}</div>
       <div className="w-full bg-blue-500 h-2 rounded-full">
         <div

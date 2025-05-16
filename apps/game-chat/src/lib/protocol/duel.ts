@@ -7,15 +7,18 @@ export type DuelistCap = {
   opponent: string,
 }
 
+// TODO: make it camel case
 export type Duel = {
   id: string
-  started_at: string
+  started_at: number
   wizard1: string
   wizard2: string
-  // TODO: make it camel case
   wizard1_force: number
-  // TODO: make it camel case
   wizard2_force: number
+  /** effects touple choke, throw, deflect */
+  wizard1_effects: [number, number, number]
+  /** effects touple choke, throw, deflect */
+  wizard2_effects: [number, number, number]
 }
 
 const PACKAGE_ID_V1 = getPid()

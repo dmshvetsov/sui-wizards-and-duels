@@ -5,6 +5,7 @@ import { UserAccount } from '../components/Authenticated'
 import { Start } from './Start'
 import { Action } from './Action'
 import { Result } from './Result'
+import { isDevnetEnv } from '@/lib/config'
 
 export function DuelLayout({ userAccount }: { userAccount: UserAccount }) {
   const { slug: duelId } = useParams<{ slug: string }>()
@@ -23,7 +24,7 @@ export function DuelLayout({ userAccount }: { userAccount: UserAccount }) {
 }
 
 function Duel({ userAccount }: { userAccount: UserAccount }) {
-  const { duelState, duelId } = useDuel()
+  const { duel, duelState, duelId } = useDuel()
 
   // Render different screens based on duel state
   if (duelState === 'loading') {
@@ -48,6 +49,15 @@ function Duel({ userAccount }: { userAccount: UserAccount }) {
       {duelState === 'started' && <Action duelId={duelId} userAccount={userAccount} /> }
 
       {duelState === 'finished' && <Result userAccount={userAccount} />}
+
+      {isDevnetEnv && (
+        <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
+          <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
+          <pre className="text-gray-600 mt-2">
+            duel: {JSON.stringify(duel, null, 4)}
+          </pre>
+        </div>
+      )}
     </div>
   )
 }

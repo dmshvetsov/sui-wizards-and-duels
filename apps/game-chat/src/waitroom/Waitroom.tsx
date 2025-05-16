@@ -302,7 +302,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           <pre className="text-gray-600 mt-2">
             waitroom: {JSON.stringify(waitroomState, null, 4)}
           </pre>
-          {/* <p className="text-sm text-gray-600 mt-2">wizard address: {autoSignWallet.address}</p> */}
         </div>
       )}
     </div>

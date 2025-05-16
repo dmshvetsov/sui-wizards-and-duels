@@ -11,7 +11,9 @@ import { Transaction } from '@mysten/sui/transactions'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
+import { WizardEffects } from './WizardEffects'
 import { Link } from '@/components/Link'
+import { displayName } from '@/lib/user'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { duel, duelistCap, isLoading } = useDuel()
@@ -96,22 +98,51 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     )
   }
 
+  // Get opponent ID
+  const opponentId = duelistCap?.opponent || ''
+  const wizardEffects =
+    props.userAccount.id === duel.wizard1 ? duel.wizard1_effects : duel.wizard2_effects
+  const opponentEffects =
+    props.userAccount.id === duel.wizard1 ? duel.wizard2_effects : duel.wizard1_effects
+
   return (
     <>
-      <div>
-        <p className="text-sm text-gray-600 mt-2">you: {props.userAccount.displayName}</p>
-        <p className="text-sm text-gray-600 mt-2">wizard address: {props.userAccount.id}</p>
-      </div>
-      {duel !== null && props.userAccount && (
-        <div className="absolute top-0">
-          <ForceBar duel={duel} currentWizardId={props.userAccount.id} />
-        </div>
-      )}
       <RealtimeChat
         roomName={props.duelId}
-        username={props.userAccount.username}
+        username={props.userAccount.displayName}
         onMessage={handleCastSpell}
       />
+      <div className="flex flex-col w-full">
+        {duel !== null && props.userAccount && (
+          <>
+            <ForceBar duel={duel} currentWizardId={props.userAccount.id} />
+
+            <div className="flex justify-between items-start py-8 px-4 w-full">
+              <div className="flex flex-col items-center w-1/3">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-xl">🧙</span>
+                </div>
+                <p className="font-semibold text-sm">{displayName(opponentId)}</p>
+                <div className="mt-2 min-h-[30px]">
+                  <WizardEffects effects={opponentEffects} />
+                </div>
+              </div>
+
+              <div className="text-lg font-bold flex items-center">VS</div>
+
+              <div className="flex flex-col items-center w-1/3">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-xl">🧙‍♂️</span>
+                </div>
+                <p className="font-semibold text-sm">{props.userAccount.displayName}</p>
+                <div className="mt-2 min-h-[30px]">
+                  <WizardEffects effects={wizardEffects} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </>
   )
 }
