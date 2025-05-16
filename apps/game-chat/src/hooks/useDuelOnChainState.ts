@@ -42,7 +42,7 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
 
     return {
       id: duelId,
-      started_at: Number(fields.started_at) + 15060000,
+      started_at: Number(fields.started_at),
       wizard1: fields.wizard1,
       wizard2: fields.wizard2,
       wizard1_force: Number(fields.wizard1_force),
