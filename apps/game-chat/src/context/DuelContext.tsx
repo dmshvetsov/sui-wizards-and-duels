@@ -8,7 +8,17 @@ import { Transaction } from '@mysten/sui/transactions'
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-export type DuelState = 'pending' | 'started' | 'finished' | 'loading' | 'not-found'
+export type DuelState =
+  /** duel created but not yet started or start time is not yet set */
+  | 'pending'
+  /** duel in action and spell can be casted */
+  | 'started'
+  /** duel has a winner */
+  | 'finished'
+  /** duel context is not loaded yet */
+  | 'loading'
+  /** duel context is loaded but some of all or some of data not found */
+  | 'not-found'
 
 type DuelContextValue = {
   duelId: string
@@ -17,9 +27,9 @@ type DuelContextValue = {
   startDuel: (
     args: { countdownSeconds: number },
     opts: {
-      onSuccess?: (result: nay) => void
+      onSuccess?: (result: any) => void
       onError?: (error: unknown) => void
-      onSettled?: (result: any| undefined, err: unknown| null) => void
+      onSettled?: (result: any | undefined, err: unknown | null) => void
     }
   ) => void
   duelistCap: DuelistCap | null
@@ -51,80 +61,72 @@ export function DuelProvider({
   currentUser,
 }: PropsWithChildren<{ duelId: string; currentUser: UserAccount }>) {
   const [duelState, setDuelState] = useState<DuelState>('loading')
-  const [duelData, setDuelData] = useState<Duel | null>(null)
-  const [winner, setWinner] = useState<string | null>(null)
-  const [loser, setLoser] = useState<string | null>(null)
-  // const autoSignWallet = useAutosignWallet(currentUser.publicKey)
 
-  const duelOnChainState = useDuelOnChainState(duelId, { refetchInterval: 1000 })
-  const duelistCapState = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
+  const duelOnChainStateQuery = useDuelOnChainState(duelId, { refetchInterval: 1000 })
+  const duelistCapStateQuery = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
+
+  const duelData = duelOnChainStateQuery.duel ?? null
 
   useEffect(() => {
-    if (duelOnChainState.isPending) {
-      setDuelState('loading')
-      return
+    console.debug('context tick')
+    const duelState: DuelState =
+      duelOnChainStateQuery.isPending || duelistCapStateQuery.isPending
+        ? 'loading'
+        : !duelData
+          ? 'not-found'
+          : duelData.wizard1_force === 0 || duelData.wizard2_force === 0
+            ? 'finished'
+            : duelData.started_at <= Date.now()
+              ? 'started'
+              : 'pending'
+    setDuelState(duelState)
+  }, [duelData, duelOnChainStateQuery.isPending, duelistCapStateQuery.isPending])
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout
+    if (duelState === 'pending') {
+      intervalId = setInterval(() => {
+        if (
+          duelData?.started_at &&
+          duelData.started_at !== 0 &&
+          Date.now() >= duelData.started_at
+        ) {
+          setDuelState('started')
+          clearInterval(intervalId)
+        }
+      }, 1000)
     }
+    return () => intervalId && clearInterval(intervalId)
+  }, [duelState, duelData])
 
-    if (duelOnChainState.isError || !duelOnChainState.duel) {
-      setDuelState('not-found')
-      return
-    }
-
-    setDuelData(duelOnChainState.duel)
-
-    // Determine duel state based on started_at and ended_at timestamps
-    if (
-      duelOnChainState.duel.wizard2_force === 0 ||
-      duelOnChainState.duel.wizard1_force === 0
-    ) {
-      setDuelState('finished')
-
-      // Determine winner and loser
-      if (Number(duelOnChainState.duel.wizard1_force) === 0) {
-        setWinner(duelOnChainState.duel.wizard2)
-        setLoser(duelOnChainState.duel.wizard1)
-      } else if (Number(duelOnChainState.duel.wizard2_force) === 0) {
-        setWinner(duelOnChainState.duel.wizard1)
-        setLoser(duelOnChainState.duel.wizard2)
-      } else if (
-        Number(duelOnChainState.duel.wizard1_force) > Number(duelOnChainState.duel.wizard2_force)
-      ) {
-        setWinner(duelOnChainState.duel.wizard1)
-        setLoser(duelOnChainState.duel.wizard2)
-      } else if (
-        Number(duelOnChainState.duel.wizard2_force) > Number(duelOnChainState.duel.wizard1_force)
-      ) {
-        setWinner(duelOnChainState.duel.wizard2)
-        setLoser(duelOnChainState.duel.wizard1)
-      }
-    } else if (duelOnChainState.duel.started_at !== '0') {
-      setDuelState('started')
-    } else {
-      setDuelState('pending')
-    }
-  }, [duelOnChainState])
+  const winner = !duelData
+    ? null
+    : duelData.wizard1_force === 0
+      ? duelData.wizard2
+      : duelData.wizard2_force === 0
+        ? duelData.wizard1
+        : null
+  const loser =
+    duelData == null || winner == null
+      ? null
+      : winner === duelData.wizard1
+        ? duelData.wizard2
+        : duelData.wizard1
 
   const { mutate: signAndExecute } = useSignAndExecuteTransaction()
   const startDuel: DuelContextValue['startDuel'] = (args, opts = {}) => {
     if (!duelData) {
-      toast.error('Duel data not available')
+      toast.error('something went wrong, refresh the page and try again')
       return
     }
 
     const tx = new Transaction()
     tx.moveCall({
       target: `${PACKAGE_ID_LATEST}::duel::start`,
-      arguments: [
-        tx.object(duelId),
-        tx.pure.u64(args.countdownSeconds),
-        tx.object('0x6'), // Clock object
-      ],
+      arguments: [tx.object(duelId), tx.pure.u64(args.countdownSeconds), tx.object.clock()],
     })
 
-    signAndExecute(
-      { transaction: tx },
-      opts
-    )
+    signAndExecute({ transaction: tx }, opts)
   }
 
   return (
@@ -134,11 +136,11 @@ export function DuelProvider({
         duel: duelData,
         duelState,
         startDuel,
-        duelistCap: duelistCapState.duelistCap,
-        refetchDuelistCap: duelistCapState.refetch,
+        duelistCap: duelistCapStateQuery.duelistCap,
+        refetchDuelistCap: duelistCapStateQuery.refetch,
         winner,
         loser,
-        isLoading: duelOnChainState.isLoading || duelistCapState.isLoading,
+        isLoading: duelState === 'loading',
       }}
     >
       {children}

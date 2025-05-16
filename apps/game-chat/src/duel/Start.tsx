@@ -1,4 +1,5 @@
 import { UserAccount } from '@/components/Authenticated'
+import { CountdownTimer } from '@/components/CountdownTimer'
 import { ButtonWithLoading } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { displayName } from '@/lib/user'
@@ -7,7 +8,6 @@ import { useState } from 'react'
 export function Start(props: { userAccount: UserAccount }) {
   const { duel, startDuel } = useDuel()
   const [isStarting, setIsStarting] = useState(false)
-  // const autoSignWallet = useAutosignWallet(props.userAccount.publicKey)
 
   if (!duel) {
     return (
@@ -39,9 +39,7 @@ export function Start(props: { userAccount: UserAccount }) {
   const wizard2Force = Number(duel.wizard2_force)
 
   const isCurrentUserInDuel = props.userAccount.id === wizard1 || props.userAccount.id === wizard2
-  const canStartDuel = isCurrentUserInDuel && !isStarting
-
-  // TODO: add countdouwn
+  const canStartDuel = isCurrentUserInDuel && !isStarting && duel.started_at === 0
 
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
@@ -72,12 +70,14 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       <div className="text-center mb-6">
-        <p className="text-gray-700 mb-2">
-          Both wizards have prepared their spells and are ready to duel.
-        </p>
-        <p className="text-gray-700">
-          The first wizard to reduce their opponent's force to zero wins!
-        </p>
+        <>
+          <p className="text-gray-700 mb-2">
+            Both wizards have prepared their spells and are ready to duel.
+          </p>
+          <p className="text-gray-700">
+            The first wizard to reduce their opponent's force to zero wins!
+          </p>
+        </>
       </div>
 
       {canStartDuel ? (
@@ -89,6 +89,8 @@ export function Start(props: { userAccount: UserAccount }) {
         >
           {isStarting ? 'Starting Duel...' : 'Start Duel'}
         </ButtonWithLoading>
+      ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
+        <CountdownTimer to={duel.started_at} size="md" className="mt-4" />
       ) : (
         <p className="text-sm text-gray-500 italic">
           {isCurrentUserInDuel

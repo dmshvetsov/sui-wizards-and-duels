@@ -39,10 +39,10 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
 
     // Extract the duel data from the Sui object response
     const fields = objectData.data.content.fields as unknown as Duel;
-    
+
     return {
       id: duelId,
-      started_at: fields.started_at,
+      started_at: Number(fields.started_at) + 15060000,
       wizard1: fields.wizard1,
       wizard2: fields.wizard2,
       wizard1_force: Number(fields.wizard1_force),

@@ -34,18 +34,20 @@ function Duel({ userAccount }: { userAccount: UserAccount }) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <p className="text-lg font-semibold text-red-600">Duel not found</p>
-        <p className="text-sm text-gray-600 mt-2">The duel you're looking for doesn't exist or has been removed.</p>
+        <p className="text-sm text-gray-600 mt-2">
+          The duel you're looking for doesn't exist or has been removed.
+        </p>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col h-full">
-      {duelState === 'pending' && <Start userAccount={userAccount}/>}
+      {duelState === 'pending' && <Start userAccount={userAccount} />}
 
-      {duelState === 'started' && <Action duelId={duelId} userAccount={userAccount} />}
+      {duelState === 'started' && <Action duelId={duelId} userAccount={userAccount} /> }
 
-      {duelState === 'finished' && <Result userAccount={userAccount}/>}
+      {duelState === 'finished' && <Result userAccount={userAccount} />}
     </div>
   )
 }
