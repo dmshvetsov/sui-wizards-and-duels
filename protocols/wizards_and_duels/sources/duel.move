@@ -246,25 +246,9 @@ public fun cast_effect(duel: &mut Duel, effect: Effect, target: address, ctx: &T
     assert!(caster == duel.wizard1 || caster == duel.wizard2, ENotDuelWizard);
     assert!(effect.is_caster(caster), ENotCaster);
 
-    if (duel.wizard1 == target) {
-        duel.wizard1_effects = effect.apply(duel.wizard1_effects);
-        let (_, target_force, caster_effects, target_effects) = engine::settle(
-            caster,
-            target,
-            0,
-            duel.wizard2_force,
-            duel.wizard1_force,
-            duel.wizard2_effects,
-            duel.wizard1_effects,
-        );
-        duel.wizard1_force = target_force;
-        duel.wizard1_effects = caster_effects;
-        duel.wizard2_effects = target_effects;
-        return
-    };
-    if (duel.wizard2 == target) {
+    if (duel.wizard1 == caster && duel.wizard2 == target) {
         duel.wizard2_effects = effect.apply(duel.wizard2_effects);
-        let (_, target_force, caster_effects, target_effects) = engine::settle(
+        let (_, target_force, caster_effects, target_effects) =engine::settle(
             caster,
             target,
             0,
@@ -276,9 +260,49 @@ public fun cast_effect(duel: &mut Duel, effect: Effect, target: address, ctx: &T
         duel.wizard2_force = target_force;
         duel.wizard1_effects = caster_effects;
         duel.wizard2_effects = target_effects;
-        return
-    };
-    abort(ENotDuelWizard)
+    } else if (duel.wizard2 == caster && duel.wizard1 == target) {
+        duel.wizard1_effects = effect.apply(duel.wizard1_effects);
+        let (_, target_force, caster_effects, target_effects) =engine::settle(
+            caster,
+            target,
+            0,
+            duel.wizard2_force,
+            duel.wizard1_force,
+            duel.wizard2_effects,
+            duel.wizard1_effects,
+        );
+        duel.wizard1_force = target_force;
+        duel.wizard2_effects = caster_effects;
+        duel.wizard1_effects = target_effects;
+    } else if (duel.wizard1 == caster && duel.wizard1 == target) {
+        duel.wizard1_effects = effect.apply(duel.wizard1_effects);
+        let (_, target_force, _, target_effects) =engine::settle(
+            caster,
+            target,
+            0,
+            duel.wizard1_force,
+            duel.wizard1_force,
+            duel.wizard1_effects,
+            duel.wizard1_effects,
+        );
+        duel.wizard1_force = target_force;
+        duel.wizard1_effects = target_effects;
+    } else if (duel.wizard2 == caster && duel.wizard2 == target) {
+        duel.wizard2_effects = effect.apply(duel.wizard2_effects);
+        let (_, target_force, _, target_effects) =engine::settle(
+            caster,
+            target,
+            0,
+            duel.wizard2_force,
+            duel.wizard2_force,
+            duel.wizard2_effects,
+            duel.wizard2_effects,
+        );
+        duel.wizard2_force = target_force;
+        duel.wizard2_effects = target_effects;
+    } else {
+        abort(ENotDuelWizard)
+    }
 }
 
 public(package) fun defeat(duel: &mut Duel, target: address) {

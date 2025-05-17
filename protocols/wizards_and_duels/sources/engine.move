@@ -51,7 +51,7 @@ public(package) fun settle(
     let mut new_target_deflect = target_deflect;
     let mut new_target_thrown = target_thrown;
 
-    if (target_deflect > 0) {
+    if (target_deflect > 0 && mut_damage > 0) {
         // use target deflect to defend the target from arrow damage or throw effect
         mut_damage = 0;
         new_target_thrown = 0;
@@ -86,12 +86,12 @@ public(package) fun settle(
     };
 
     // Reset some effects if they are not casted in current action
-    // if caster deflect or taget thrown by caster then current caster action is not choke, reset target's choke
-    let is_current_action_choke = target_thrown == 0 && caster_deflect == 0;
+    // if caster deflect or taget thrown by caster or caster produced damage then current caster action is not choke, reset target's choke
+    let is_current_action_choke = target_thrown == 0 && caster_deflect == 0 && mut_damage == 0;
     if (!is_current_action_choke) {
         new_target_choke = 0;
     };
-    let is_current_action_deflect = target_choke == 0 && caster_deflect == 0;
+    let is_current_action_deflect = target_choke == 0 && caster_deflect == 0 && mut_damage == 0;
     if (!is_current_action_deflect) {
         new_caster_deflect = 0;
     };
