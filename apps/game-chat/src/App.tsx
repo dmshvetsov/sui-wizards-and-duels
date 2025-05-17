@@ -2,8 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { Authenticated } from './components/Authenticated'
 import { DuelLayout } from './duel/Duel'
-import { WaitRoom } from './waitroom/Waitroom'
 import { Landing } from './landing/Landing'
+import { Signing } from './signing/Signin'
+import { WaitRoom } from './waitroom/Waitroom'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Routes>
           <Route path="/d/:slug" element={<Authenticated component={DuelLayout} />} />
           <Route path="/d" element={<Authenticated component={WaitRoom} />} />
+          <Route path="/signin" element={<Signing />} />
           <Route path="/" element={<Landing />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

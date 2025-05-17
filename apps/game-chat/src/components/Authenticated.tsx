@@ -1,9 +1,10 @@
-import { LoginMenu } from '@/auth/LoginButton'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { useDisconnectWallet } from '@mysten/dapp-kit'
 import { PublicKey } from '@mysten/sui/cryptography'
 import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
+import { Loader } from './Loader'
+import { useEffect } from 'react'
 
 export type UserAccount = {
   /** Uniq identifier of the user, piblic key address of the user account */
@@ -31,19 +32,19 @@ export function Authenticated({ component: Component }: AuthenticatedProps) {
   const { mutate: disconnect } = useDisconnectWallet()
   const navigate = useNavigate()
 
+  useEffect(() => {
+    if (!user) {
+      navigate('/signin')
+    }
+  }, [user, navigate])
+
   const handleSignOut = () => {
     disconnect()
     navigate('/d')
   }
 
   if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center">
-          <LoginMenu />
-        </div>
-      </div>
-    )
+    return <Loader />
   }
 
   return (

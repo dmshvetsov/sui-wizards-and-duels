@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { EnokiSetup } from './auth/EnokiProvider'
+import { appUrl } from './lib/utils.ts'
 
 import '@mysten/dapp-kit/dist/index.css'
 import './index.css'
@@ -12,7 +13,7 @@ const DEFAULT_NETWORK = import.meta.env.VITE_DEFAULT_NETWORK || 'localnet'
 
 const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-if (!ENOKI_API_KEY || !GOOGLE_CLIENT_ID) {
+if (!ENOKI_API_KEY || typeof GOOGLE_CLIENT_ID !== 'string' || GOOGLE_CLIENT_ID.length === 0) {
   throw new Error('missing configuration for ZKLogin')
 }
 
@@ -23,6 +24,10 @@ const { networkConfig } = createNetworkConfig({
   testnet: { url: getFullnodeUrl('testnet') },
   devnet: { url: getFullnodeUrl('devnet') },
 })
+
+const authProviders = {
+  google: { clientId: GOOGLE_CLIENT_ID, redirectUrl: appUrl('/d') },
+}
 
 const queryClient = new QueryClient()
 const rootElement = document.getElementById('root')
@@ -36,9 +41,7 @@ createRoot(rootElement).render(
     <SuiClientProvider networks={networkConfig} defaultNetwork={DEFAULT_NETWORK}>
       <EnokiSetup
         apiKey={ENOKI_API_KEY}
-        providers={{
-          google: { clientId: GOOGLE_CLIENT_ID },
-        }}
+        providers={authProviders}
       />
       <WalletProvider autoConnect>
         <App />

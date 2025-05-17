@@ -1,6 +1,6 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { Loader } from '@/components/Loader'
-import { Button, ButtonWithLoading } from '@/components/ui/button'
+import { ButtonWithLoading } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'

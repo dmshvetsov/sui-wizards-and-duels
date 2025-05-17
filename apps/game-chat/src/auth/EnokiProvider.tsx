@@ -8,6 +8,7 @@ interface EnokiProviderProps {
   providers: {
     google?: {
       clientId: string
+      redirectUrl?: string
     }
   }
 }
