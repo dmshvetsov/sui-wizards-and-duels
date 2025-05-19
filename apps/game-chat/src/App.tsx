@@ -5,6 +5,7 @@ import { DuelLayout } from './duel/Duel'
 import { Landing } from './landing/Landing'
 import { Signing } from './signing/Signin'
 import { WaitRoom } from './waitroom/Waitroom'
+import { ClaimWelcomeReward } from './welcome-reward/ClaimWelcomReward'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/d/:slug" element={<Authenticated component={DuelLayout} />} />
           <Route path="/d" element={<Authenticated component={WaitRoom} />} />
           <Route path="/signin" element={<Signing />} />
+          <Route path="/welcome-reward" element={<Authenticated component={ClaimWelcomeReward} />} />
           <Route path="/" element={<Landing />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
