@@ -1,10 +1,9 @@
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useDisconnectWallet } from '@mysten/dapp-kit'
 import { PublicKey } from '@mysten/sui/cryptography'
-import { useNavigate } from 'react-router-dom'
-import { Button } from './ui/button'
-import { Loader } from './Loader'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Loader } from './Loader'
+import { GameMenu } from './GameMenu'
 
 export type UserAccount = {
   /** Uniq identifier of the user, piblic key address of the user account */
@@ -29,7 +28,6 @@ type AuthenticatedProps = {
 
 export function Authenticated({ component: Component }: AuthenticatedProps) {
   const user = useCurrentUser()
-  const { mutate: disconnect } = useDisconnectWallet()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -38,20 +36,13 @@ export function Authenticated({ component: Component }: AuthenticatedProps) {
     }
   }, [user, navigate])
 
-  const handleSignOut = () => {
-    disconnect()
-    navigate('/d')
-  }
-
   if (!user) {
     return <Loader />
   }
 
   return (
     <>
-      <div className="absolute top-4 right-4">
-        <Button onClick={handleSignOut}>Sign Out</Button>
-      </div>
+      <GameMenu userAccount={user} />
       <Component userAccount={user} />
     </>
   )
