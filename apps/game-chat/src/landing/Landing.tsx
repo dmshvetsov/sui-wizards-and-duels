@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export function Landing() {
   const navigate = useNavigate()
-  const handleLaunchGmae = () => navigate('/d')
+  const handleLaunchGmae = () => navigate('/practice')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-200">

@@ -15,6 +15,7 @@ module wizards_and_duels::engine;
 /// * `(u64, u64, vector<u8>, vector<u8>)` - Updated (caster_force, target_force, caster_effects, target_effects)
 ///
 /// Rules:
+/// if caster's trhown > 0 then if damage is 0 then set caster's deflect to 0 else set caster's deflect to 0
 /// if target's deflect > 0 set damage to 0 and set caster's thrown to 0 and set deflect to 0
 /// if damage > 0 set caster's thrown to 0 and caster's choke to 0 and reduce target_force by damage but not less than 0
 /// if target's choke > 0 them set target's deflect to 0
