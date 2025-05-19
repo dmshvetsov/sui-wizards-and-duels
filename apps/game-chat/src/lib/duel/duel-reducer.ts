@@ -4,9 +4,9 @@
 
 export type WizardEffects = [
   /** choke */
-  number, 
+  number,
   /** deflect */
-  number, 
+  number,
   /** throw  */
   number
 ]
@@ -83,6 +83,20 @@ export type DuelAction =
         casterId: string
         spellName: string
         targetId: string
+      }
+    }
+  | {
+      type: 'SET_OPPONENT'
+      payload: {
+        name: string
+        force: number
+      }
+    }
+  | {
+      type: 'RESET_DUEL'
+      payload: {
+        wizard1Force?: number
+        wizard2Force?: number
       }
     }
 
@@ -358,6 +372,40 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
       }
 
       return newState
+    }
+
+    case 'SET_OPPONENT': {
+      const { name, force } = action.payload
+
+      // Create a new state with updated opponent name and force
+      return {
+        ...state,
+        wizard2: {
+          ...state.wizard2,
+          id: name, // Use the name as the ID for display purposes
+          force: force,
+        },
+      }
+    }
+
+    case 'RESET_DUEL': {
+      const { wizard1Force = 128, wizard2Force = 128 } = action.payload
+
+      // Reset the duel state but keep the wizard IDs
+      return {
+        ...state,
+        wizard1: {
+          ...state.wizard1,
+          force: wizard1Force,
+          effects: [0, 0, 0],
+        },
+        wizard2: {
+          ...state.wizard2,
+          force: wizard2Force,
+          effects: [0, 0, 0],
+        },
+        startedAt: state.startedAt, // Keep the duel started
+      }
     }
 
     default:
