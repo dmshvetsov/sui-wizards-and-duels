@@ -1,6 +1,7 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
+import { FundWallet } from '@/components/FundWallet'
 import { Loader } from '@/components/Loader'
-import { ButtonWithLoading } from '@/components/ui/button'
+import { Button, ButtonWithLoading } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
@@ -26,8 +27,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const suiContext = useSuiClientContext()
   const [onlineCount, setOnlineCount] = useState(UNCONNECTED_COUNTER_STATE)
   const [waitState, setWaitState] = useState<WaitState>('loading')
-  // const [isFunding, setIsFunding] = useState(false)
-  // const autoSignWallet = useAutosignWallet(userAccount.publicKey)
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
 
@@ -120,7 +119,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     }
 
     const balanceInMist = BigInt(playerBalance.data.totalBalance)
-    // FIXME: alsow need take into account that waitlist and/or duel and caps creation takes gas
+    // FIXME: also need take into account that waitlist and/or duel and caps creation takes gas
     const requiredBalanceInMist = 12800000n // 0.0128 SUI in MIST
 
     console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
@@ -187,43 +186,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     )
   }, [signAndExecute])
 
-  // // Function to fund the wizard wallet with 0.0128 SUI
-  // const handleFundWallet = useCallback(() => {
-  //   setIsFunding(true)
-  //
-  //   // Create a transaction to transfer 0.0128 SUI to the wizard wallet
-  //   const tx = new Transaction()
-  //   // Convert 0.0128 SUI to MIST (1 SUI = 10^9 MIST)
-  //   const amountInMist = 12800000 // 0.0128 SUI in MIST
-  //
-  //   // Split coins from the gas object and transfer to the wizard wallet
-  //   const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(amountInMist)])
-  //   tx.transferObjects([coin], tx.pure.address(autoSignWallet.address))
-  //
-  //   // Set gas budget and execute the transaction
-  //   tx.setGasBudget(3_500_000)
-  //
-  //   // Use the dapp-kit hook to sign and execute the transaction
-  //   signAndExecuteTransaction(
-  //     { transaction: tx },
-  //     {
-  //       onSuccess: (result) => {
-  //         console.debug('Fund wizard wallet transaction success:', result)
-  //         toast.success('Successfully funded wizard wallet with 0.0128 SUI!')
-  //         setWaitState('iddle') // Change to idle state to show the Play button
-  //         autoSignWalletBalanceQuery.refetch() // Refresh the balance
-  //       },
-  //       onError: (error) => {
-  //         console.error('Fund wizard wallet transaction error:', error)
-  //         toast.error('Failed to fund wizard wallet. Please try again.')
-  //       },
-  //       onSettled: () => {
-  //         setIsFunding(false)
-  //       }
-  //     }
-  //   )
-  // }, [autoSignWallet.address, signAndExecuteTransaction, autoSignWalletBalanceQuery, setWaitState, setIsFunding])
-
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
     return <Loader />
   }
@@ -257,24 +219,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           </ButtonWithLoading>
         </>
       ) : waitState === 'needs_funding' ? (
-        <>
-          <div className="mt-4 p-4 border border-yellow-300 bg-yellow-50 rounded-md">
-            <h2 className="text-lg font-semibold text-yellow-800">Fund Wizard Wallet</h2>
-            <p className="mt-2 text-yellow-700">
-              Send Sui force to your {userAccount.id} wizard wallet to participate in duels.
-            </p>
-          </div>
-          {/* <Button */}
-          {/*   className="mt-4 bg-yellow-500 hover:bg-yellow-600" */}
-          {/*   onClick={handleFundWallet} */}
-          {/*   disabled={isFunding} */}
-          {/* > */}
-          {/*   {isFunding ? 'Funding...' : 'Fund Wizard Wallet'} */}
-          {/* </Button> */}
-          <p className="mt-2 text-sm text-gray-600">
-            This will transfer 0.0128 SUI from your wallet to the wizard wallet.
-          </p>
-        </>
+        <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
       ) : (
         <>
           <ButtonWithLoading
