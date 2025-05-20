@@ -8,7 +8,7 @@ export type WizardEffects = [
   /** deflect */
   number,
   /** throw  */
-  number
+  number,
 ]
 
 export type SpellType = 'damage' | 'effect'
@@ -247,72 +247,135 @@ function applyEffect(
   effectType: 'choke' | 'throw' | 'deflect',
   value: number
 ): DuelState {
-  // Create a new state to avoid mutations
-  const newState = { ...state }
+  console.debug('apply effect', state, caster, target, effectType, value)
 
   // Get new references to wizards
-  const newCaster: DuelWizard =
-    caster.id === state.wizard1.id
-      ? { ...newState.wizard1, effects: [...newState.wizard1.effects] }
-      : { ...newState.wizard2, effects: [...newState.wizard2.effects] }
+  const newCasterEffects: WizardEffects =
+    caster.id === state.wizard1.id ? [...state.wizard1.effects] : [...state.wizard2.effects]
 
-  const newTarget: DuelWizard =
-    target.id === state.wizard1.id
-      ? { ...newState.wizard1, effects: [...newState.wizard1.effects] }
-      : { ...newState.wizard2, effects: [...newState.wizard2.effects] }
-
-  // Update the state with new wizard references
-  if (newCaster.id === newState.wizard1.id) {
-    newState.wizard1 = newCaster
-  } else {
-    newState.wizard2 = newCaster
-  }
-
-  if (newTarget.id === newState.wizard1.id) {
-    newState.wizard1 = newTarget
-  } else {
-    newState.wizard2 = newTarget
-  }
+  const newTargetEffects: WizardEffects =
+    target.id === state.wizard1.id ? [...state.wizard1.effects] : [...state.wizard2.effects]
 
   switch (effectType) {
     case 'choke':
       // Choke is applied to the target and is compoundable up to 3
-      newTarget.effects[0] = Math.min(3, newTarget.effects[0] + value)
+      newTargetEffects[0] = Math.min(3, newTargetEffects[0] + value)
 
       // If choke is applied, remove deflect
-      if (newTarget.effects[0] > 0) {
-        newTarget.effects[2] = 0 // Remove deflect
+      if (newTargetEffects[0] > 0) {
+        newTargetEffects[2] = 0 // Remove deflect
       }
 
       // If choke reaches level 3, reduce force to 0
-      if (newTarget.effects[0] >= 3) {
-        newTarget.force = 0
+      if (newTargetEffects[0] >= 3) {
+        // newTargetEffects.force = 0
+        return {
+          ...state,
+          wizard1: {
+            ...state.wizard1,
+            effects:
+              target.id === state.wizard1.id
+                ? newTargetEffects
+                : caster.id === state.wizard1.id
+                  ? newCasterEffects
+                  : state.wizard1.effects,
+          },
+          wizard2: {
+            ...state.wizard2,
+            effects:
+              target.id === state.wizard2.id
+                ? newTargetEffects
+                : caster.id === state.wizard2.id
+                  ? newCasterEffects
+                  : state.wizard2.effects,
+          },
+        }
       }
-      break
+
+      return {
+        ...state,
+        wizard1: {
+          ...state.wizard1,
+          effects:
+            target.id === state.wizard1.id
+              ? newTargetEffects
+              : caster.id === state.wizard1.id
+                ? newCasterEffects
+                : state.wizard1.effects,
+        },
+        wizard2: {
+          ...state.wizard2,
+          effects:
+            target.id === state.wizard2.id
+              ? newTargetEffects
+              : caster.id === state.wizard2.id
+                ? newCasterEffects
+                : state.wizard2.effects,
+        },
+      }
 
     case 'throw':
       // Throw is applied to the target and is not compoundable
-      newTarget.effects[1] = 1
+      newTargetEffects[1] = 1
 
       // If throw is applied and target doesn't have deflect, remove choke from caster
-      if (newTarget.effects[2] === 0) {
-        newCaster.effects[0] = 0 // Remove choke from caster
+      if (newTargetEffects[2] === 0) {
+        newCasterEffects[0] = 0 // Remove choke from caster
       }
-      break
+      return {
+        ...state,
+        wizard1: {
+          ...state.wizard1,
+          effects:
+            target.id === state.wizard1.id
+              ? newTargetEffects
+              : caster.id === state.wizard1.id
+                ? newCasterEffects
+                : state.wizard1.effects,
+        },
+        wizard2: {
+          ...state.wizard2,
+          effects:
+            target.id === state.wizard2.id
+              ? newTargetEffects
+              : caster.id === state.wizard2.id
+                ? newCasterEffects
+                : state.wizard2.effects,
+        },
+      }
 
     case 'deflect':
       // Deflect is applied to the caster (self) and is not compoundable
-      newCaster.effects[2] = 1
-      break
+      newTargetEffects[2] = 1
+      return {
+        ...state,
+        wizard1: {
+          ...state.wizard1,
+          effects:
+            target.id === state.wizard1.id
+              ? newTargetEffects
+              : caster.id === state.wizard1.id
+                ? newCasterEffects
+                : state.wizard1.effects,
+        },
+        wizard2: {
+          ...state.wizard2,
+          effects:
+            target.id === state.wizard2.id
+              ? newTargetEffects
+              : caster.id === state.wizard2.id
+                ? newCasterEffects
+                : state.wizard2.effects,
+        },
+      }
   }
-
-  return newState
 }
 
 /**
  * Duel reducer function
  */
 export function duelReducer(state: DuelState, action: DuelAction): DuelState {
+  console.log(state, action)
   switch (action.type) {
     case 'START_DUEL': {
       if (state.startedAt !== 0) {
@@ -329,12 +392,14 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
 
       // Check if duel has started
       if (!hasStarted(state) || hasFinished(state)) {
+        console.warn('Duel not started or already finished')
         return state
       }
 
       // Get spell specification
       const spell = SPELLS[spellName.toLowerCase()]
       if (!spell) {
+        console.warn('Spell not found', spellName)
         return state
       }
 
@@ -343,6 +408,7 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
       const target = getWizardById(state, targetId)
 
       if (!caster || !target) {
+        console.warn('Caster or target not found')
         return state
       }
 
@@ -366,7 +432,7 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
 
       // Apply spell effects
       if (spell.type === 'damage') {
-        newState = applyDamage(newState, newCaster, target, spell.damage || 0)
+        newState = applyDamage(newState, newCaster, target, spell.damage ?? 0)
       } else if (spell.type === 'effect' && spell.effect) {
         newState = applyEffect(newState, newCaster, target, spell.effect.type, spell.effect.value)
       }
