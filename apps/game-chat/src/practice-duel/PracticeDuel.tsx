@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { OffChainDuelProvider } from '@/context/OffChainDuelContext'
 import { useOffChainDuel } from '@/context/useOffChainDuel'
 import { WizardEffects } from '@/duel/WizardEffects'
+import { DuelState } from '@/lib/duel/duel-reducer'
+import { ChatMessage } from '@/lib/message'
 import { useCallback, useEffect, useState } from 'react'
 
 export function PracticeDuel() {
@@ -15,6 +17,43 @@ export function PracticeDuel() {
       </OffChainDuelProvider>
     </div>
   )
+}
+
+// Helper function to create a teacher message
+function createTeacherMessage(text: string): ChatMessage {
+  return {
+    id: crypto.randomUUID(),
+    text,
+    username: 'Teacher Wizard',
+    channel: 'practice-duel',
+    timestamp: new Date().toISOString(),
+  }
+}
+
+function createOpponentMessage(opponentName: string, text: string): ChatMessage {
+  return {
+    id: crypto.randomUUID(),
+    text,
+    username: opponentName,
+    channel: 'practice-duel',
+    timestamp: new Date().toISOString(),
+  }
+}
+
+// Define the tutorial step interface
+interface TutorialStep {
+  id: string
+  opponentSetup: {
+    name: string
+    force: number
+  }
+  intro: string[]
+  expectedAction: (message: string) => boolean
+  stepCompleted: (state: { duel: DuelState; messages: ChatMessage[] }) => boolean
+  hint: string
+  opponentAction?: (
+    messageCallback: (message: string) => void,
+  ) => (() => void) | undefined
 }
 
 /**
@@ -47,7 +86,6 @@ export function PracticeDuel() {
  * - wait for the player to type "ready"
  */
 
-
 /**
  * PRACTICE_STEP_3:
  * - change duel state, opponent name to "throw machine"  with force 30
@@ -64,183 +102,257 @@ export function PracticeDuel() {
 
 /**
  * PRACTICE_STEP_4:
-  * - change duel state, opponent name to "Apprentice Wizard"  with force 128
-  * - teacher wizard message: you will face an apprentice wizard, he loves to choke their opponents
-  * - teacher wizard message: @choke is dangerous spell if casted 3 times in a row it will defeat you, but you can protect yourself with @throw spell
-  * - teacher wizard message: tell me when you "ready" to challenge the apprentice wizard
-  * - apprentice wizard casts @choke every 2.5 seconds if he is thrown he casts an arrow, on 7 seconds just before 3rd choke reset the game state to 128 force for each wizards, teacher wizard says: "you was a moment avay from beign defeated, let's try again, throw your opponent to take advantage over him and choke him or cast arrows. Say "ready" when you are ready to try again"
-  * - wait for the duel ends
-  */
+ * - change duel state, opponent name to "Apprentice Wizard"  with force 128
+ * - teacher wizard message: you will face an apprentice wizard, he loves to choke their opponents
+ * - teacher wizard message: @choke is dangerous spell if casted 3 times in a row it will defeat you, but you can protect yourself with @throw spell
+ * - teacher wizard message: tell me when you "ready" to challenge the apprentice wizard
+ * - apprentice wizard casts @choke every 2.5 seconds if he is thrown he casts an arrow, on 7 seconds just before 3rd choke reset the game state to 128 force for each wizards, teacher wizard says: "you was a moment avay from beign defeated, let's try again, throw your opponent to take advantage over him and choke him or cast arrows. Say "ready" when you are ready to try again"
+ * - wait for the duel ends
+ */
+
+// Define the tutorial steps
+const TUTORIAL_STEPS: TutorialStep[] = [
+  // Step 1: Learn to cast arrow spell
+  {
+    id: 'cast-arrow',
+    opponentSetup: {
+      name: 'Wood Target',
+      force: 20,
+    },
+    intro: [
+      'Welcome to practice ground',
+      'Let\'s practice your skills, here is a wood target. Hit it with a magic arrow by typing "@arrow"',
+    ],
+    expectedAction: (message) => message === '@arrow',
+    stepCompleted: ({ duel }) => {
+      return duel.wizard2.force === 8
+    },
+    hint: 'You must cast a magic arrow spell by typing @arrow',
+  },
+  // Step 2: Cast arrow again
+  {
+    id: 'cast-arrow-again',
+    opponentSetup: {
+      name: 'Wood Target',
+      force: 8,
+    },
+    intro: [
+      'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell.',
+      'This wood target is strong stuff, let\'s try to hit it once again by typing "@arrow"',
+    ],
+    expectedAction: (message) => message === '@arrow',
+    stepCompleted: ({ duel }) => {
+      return duel.wizard2.force === 0
+    },
+    hint: "Let's keep practicing, cast @arrow again",
+  },
+  {
+    id: 'cast-arrow-outro',
+    opponentSetup: {
+      name: 'Wood Target',
+      force: 0,
+    },
+    intro: [
+      'Good, as you can see in your future duels, for sure many to come, your typing skills matter.',
+      'Now it is time to practice defensive spell. You can defend yourself agains an @arrow spell by casting a !deflect spell. Let`s practice it.',
+      'The next opponent is the Arrow Machine. It will cast arrows at you. You need to defend yourself!',
+      'Type "ready" when you are ready for the next task',
+    ],
+    expectedAction: (message) => message === 'ready',
+    stepCompleted: ({ messages }) => {
+      return messages[0].text === 'ready'
+    },
+    hint: 'type and send "ready" to continue',
+  },
+  {
+    id: 'cast-deflect',
+    opponentSetup: {
+      name: 'Arrow Machine',
+      force: 48,
+    },
+    intro: [],
+    expectedAction: (message) => message === '!deflect',
+    stepCompleted: ({ duel }) => {
+      return duel.wizard1.effects[2] === 1
+    },
+    hint: 'To defend yourself you must deflect the arrow, cast !deflect',
+    opponentAction: (onMessage) => {
+      const to = setInterval(() => {
+        onMessage('@arrow')
+      }, 3500)
+
+      return () => clearInterval(to)
+    },
+  },
+  {
+    id: 'cast-on-yourself-explanation',
+    opponentSetup: {
+      name: 'Arrow Machine',
+      force: 48,
+    },
+    intro: [
+      'Good! "!" sign means you are casting a spell on yourself, and "deflect" spell defends you against attacks like the "arrow" spell.',
+      'Now try to defeat the Arrow Machine. Use !deflect to defend yourself, and magic @arrow spells to attack the machine.',
+      'Tell me "ready" when you are ready to continue.',
+    ],
+    expectedAction: (message) => message === 'ready',
+    stepCompleted: ({ messages }) => {
+      return messages[0].text === 'ready'
+    },
+    hint: 'type and send "ready" to continue',
+  },
+  {
+    id: 'defeat-arrow-machine',
+    opponentSetup: {
+      name: 'Arrow Machine',
+      force: 12,
+    },
+    intro: [],
+    hint: 'To defend yourself you must deflect the arrow, cast !deflect, and right after attack the machine, cast @arrow',
+    expectedAction: (message) => message === 'ready',
+    stepCompleted: ({ messages }) => {
+      return messages[0].text === 'ready'
+    },
+    opponentAction: (onMessage) => {
+      const to = setInterval(() => {
+        onMessage('@arrow')
+      }, 3500)
+
+      return () => clearInterval(to)
+    },
+  },
+  {
+    id: 'arrow-machine-defeated',
+    opponentSetup: {
+      name: 'Arrow Machine',
+      force: 0,
+    },
+    intro: [
+      'Good! Now you know how to deflect arrows and attack with arrows.',
+      'Tell me "ready" when you are ready to continue',
+    ],
+    expectedAction: (message) => message === 'ready',
+    stepCompleted: ({ messages }) => {
+      return messages[0].text === 'ready'
+    },
+    hint: 'type and send "ready" to continue',
+    opponentAction: () => undefined, // No opponent action in this step
+  },
+]
 
 function PracticeDuelContent() {
-  const { duelState } = useOffChainDuel()
+  const { dispatch } = useOffChainDuel()
+
+  useEffect(() => {
+    dispatch({
+      type: 'START_DUEL',
+      payload: { countdownSeconds: 0 },
+    })
+  }, [dispatch])
 
   return (
     <div className="flex flex-col h-full">
-      {duelState === 'pending' && <Start />}
-      {duelState === 'started' && <Action />}
-      {duelState === 'finished' && <Result />}
+      {/* {duelState === 'pending' && <Start />} */}
+      <Action />
+      {/* {duelState === 'finished' && <Result />} */}
     </div>
   )
-}
-
-function Start() {
-  const { startDuel, duelData } = useOffChainDuel()
-
-  const handleStartDuel = () => {
-    startDuel({ countdownSeconds: 0 })
-  }
-
-  return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Practice Ground</h2>
-
-      <div className="flex justify-between w-full mb-6">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <span className="text-xl">🧙</span>
-          </div>
-          <p className="font-semibold">Wooden Target</p>
-          <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
-        </div>
-
-        <div className="text-center">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <span className="text-xl">🧙‍♂️</span>
-          </div>
-          <p className="font-semibold">You</p>
-          <p className="text-sm text-gray-600">Force: {duelData.wizard1.force}</p>
-        </div>
-      </div>
-
-      <Button onClick={handleStartDuel}>Start Practice Duel</Button>
-
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 mb-2">
-          Practice mode: Cast spells with @ (opponent) or ! (self)
-        </p>
-        <Link to="/" className="text-blue-500 hover:underline">
-          Back to Home
-        </Link>
-      </div>
-    </div>
-  )
-}
-
-// Helper function to create a teacher message
-function createTeacherMessage(text: string) {
-  return {
-    id: crypto.randomUUID(),
-    text,
-    username: 'Teacher Wizard',
-    channel: 'practice-duel',
-    timestamp: new Date().toISOString(),
-  }
 }
 
 function Action() {
-  const { duelData, currentWizardId, opponentId, dispatch } = useOffChainDuel()
-  const [tutorialMessages, setTutorialMessages] = useState<
-    Array<{
-      id: string
-      text: string
-      username: string
-      channel: string
-      timestamp: string
-    }>
-  >([])
-  const [waitingForArrow, setWaitingForArrow] = useState(false)
-  const [waitingForReady, setWaitingForReady] = useState(false)
-  const [arrowCastCount, setArrowCastCount] = useState(0)
+  const { duelData, duelState, currentWizardId, opponentId, dispatch } = useOffChainDuel()
+  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [tutorialMessages, setTutorialMessages] = useState<ChatMessage[]>([])
+  // Get the current step
+  const currentStep = TUTORIAL_STEPS[currentStepIndex]
+  // if (duelState === 'finished') {
+  //   currentStep = {
+  //     id: 'player-lost',
+  //     opponentSetup: {
+  //       name: duelData.wizard2.id,
+  //       force: duelData.wizard2.force,
+  //     },
+  //     intro: [
+  //       'You failed. That happens. You will get better.',
+  //       'Type "ready" when you are ready to try again',
+  //     ],
+  //     expectedAction: () => false,
+  //     stepCompleted: ({ messages }) => {
+  //       return messages[0].text === 'ready'
+  //     },
+  //     hint: '',
+  //   }
+  // }
 
-  // Initialize tutorial
+  const handleOpponentSpell = useCallback(
+    (input: string) => {
+      dispatch({
+        type: 'CAST_SPELL',
+        payload: {
+          casterId: opponentId,
+          spellName: 'arrow',
+          targetId: 'player',
+        },
+      })
+      setTutorialMessages((prev) => [...prev, createOpponentMessage(opponentId, input)])
+    },
+    [dispatch, opponentId]
+  )
+
+  // Init and switch practice steps
   useEffect(() => {
-    // Set opponent to "Wood Target" with force 20
+    // Set up opponent
     dispatch({
       type: 'SET_OPPONENT',
-      payload: {
-        name: 'Wood Target',
-        force: 20,
-      },
+      payload: currentStep.opponentSetup,
     })
 
-    // Add initial tutorial message
-    const initialMessage = createTeacherMessage(
-      'Let\'s practice your skills, here is a wood target. Hit it with a magic arrow by typing "@arrow"'
-    )
-    setTutorialMessages([initialMessage])
-    setWaitingForArrow(true)
-  }, [dispatch])
+    // Add intro messages
+    const stepIntroMessages = currentStep.intro.map(createTeacherMessage)
+    setTutorialMessages(stepIntroMessages)
 
+    // Set up opponent action if any
+    if (currentStep.opponentAction) {
+      const cleanup = currentStep.opponentAction(handleOpponentSpell)
+      return cleanup
+    }
+  }, [currentStep, dispatch, currentWizardId, opponentId, handleOpponentSpell])
+
+  // Handle user messages and spell casting
   const handleCastSpell = useCallback(
     (userInput: string) => {
       const message = userInput.trim()
-      if (!message) return
+      if (!message || !currentStep) return
 
       const targetChar = message[0]
       const isSpell = targetChar === '@' || targetChar === '!'
 
-      // Handle tutorial progression
-      if (waitingForArrow && message === '@arrow') {
-        setArrowCastCount((prev) => prev + 1)
+      // Check if the user's action matches the expected action for the current step
+      const isExpectedAction = currentStep.expectedAction(message)
 
-        if (arrowCastCount === 0) {
-          dispatch({
-            type: 'CAST_SPELL',
-            payload: {
-              casterId: currentWizardId,
-              spellName: 'arrow',
-              targetId: opponentId,
-            },
-          })
-          // First arrow cast
+      if (isExpectedAction) {
+        // If this is the last step, we're done
+        if (currentStepIndex >= TUTORIAL_STEPS.length - 1) {
+          // Handle completion of the tutorial
+          // TODO: complete
+        } else {
+          // Show outro messages for the current step
           setTimeout(() => {
-            const messages = [
-              createTeacherMessage(
-                'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell.'
-              ),
-              createTeacherMessage(
-                'This wood target is strong stuff, let\'s try to hit it harder by typing "@arrow" again'
-              ),
-            ]
-            setTutorialMessages((prev) => [...prev, ...messages])
-          }, 1000)
-        } else if (arrowCastCount === 1) {
-          // Second arrow cast
-          setTimeout(() => {
-            const messages = [
-              createTeacherMessage(
-                'Good, as you can see in your future duels, for sure many to come, your typing skills matter.'
-              ),
-              createTeacherMessage('Tell me "ready" when you are ready for the next task'),
-            ]
-            setTutorialMessages((prev) => [...prev, ...messages])
-            setWaitingForArrow(false)
-            setWaitingForReady(true)
-          }, 1000)
+            setCurrentStepIndex((prev) => prev + 1)
+          }, 750)
         }
-      } else if (waitingForArrow && isSpell) {
-        // Wrong spell while waiting for arrow
+      } else {
+        // If the user's action doesn't match but is a valid attempt, show the hint
         setTimeout(() => {
-          const message = createTeacherMessage('You must cast a magic arrow spell by typing @arrow')
-          setTutorialMessages((prev) => [...prev, message])
-        }, 500)
-      } else if (waitingForReady && message.toLowerCase() === 'ready') {
-        // Ready for next step
-        setWaitingForReady(false)
-        // Here we would transition to PRACTICE_STEP_2
-        // For now, just acknowledge
-        setTimeout(() => {
-          const message = createTeacherMessage("Great! You've completed the first practice step.")
-          setTutorialMessages((prev) => [...prev, message])
+          const hintMessage = createTeacherMessage(currentStep.hint)
+          setTutorialMessages((prev) => [...prev, hintMessage])
         }, 500)
       }
 
-      // Process the spell casting
+      // Process the spell casting if it's a spell command
       if (isSpell) {
         const spellName = message.slice(1).trim().toLowerCase()
-        const targetType = targetChar === '@' ? 'opponent' : 'self'
-        const targetId = targetType === 'self' ? currentWizardId : opponentId
+        const targetId = targetChar === '@' ? opponentId : 'player'
         dispatch({
           type: 'CAST_SPELL',
           payload: {
@@ -251,7 +363,7 @@ function Action() {
         })
       }
     },
-    [currentWizardId, dispatch, opponentId, waitingForArrow, waitingForReady, arrowCastCount]
+    [currentStep, currentStepIndex, dispatch, currentWizardId, opponentId]
   )
 
   // Get wizard and opponent data
@@ -314,6 +426,49 @@ function Action() {
   )
 }
 
+function Start() {
+  const { startDuel, duelData } = useOffChainDuel()
+
+  const handleStartDuel = () => {
+    startDuel({ countdownSeconds: 0 })
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-center">Practice Ground</h2>
+
+      <div className="flex justify-between w-full mb-6">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <span className="text-xl">🧙</span>
+          </div>
+          <p className="font-semibold">Wooden Target</p>
+          <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
+        </div>
+
+        <div className="text-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <span className="text-xl">🧙‍♂️</span>
+          </div>
+          <p className="font-semibold">You</p>
+          <p className="text-sm text-gray-600">Force: {duelData.wizard1.force}</p>
+        </div>
+      </div>
+
+      <Button onClick={handleStartDuel}>Start Practice Duel</Button>
+
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600 mb-2">
+          Practice mode: Cast spells with @ (opponent) or ! (self)
+        </p>
+        <Link to="/" className="text-blue-500 hover:underline">
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function Result() {
   const { winner, duelData } = useOffChainDuel()
 
@@ -328,7 +483,7 @@ function Result() {
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙</span>
           </div>
-          <p className="font-semibold">Wooden Target</p>
+          <p className="font-semibold">{duelData.wizard2.id}</p>
           <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
         </div>
 
