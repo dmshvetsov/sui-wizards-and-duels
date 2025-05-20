@@ -111,7 +111,7 @@ export function OffChainDuelProvider({
         loser,
         isLoading: false,
         currentWizardId,
-        opponentId,
+        opponentId: duelData.wizard1.id === currentWizardId ? duelData.wizard2.id : duelData.wizard1.id,
       }}
     >
       {children}
