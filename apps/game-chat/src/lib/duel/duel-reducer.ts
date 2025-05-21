@@ -273,6 +273,7 @@ function applyEffect(
           ...state,
           wizard1: {
             ...state.wizard1,
+            force: target.id === state.wizard1.id ? 0 : state.wizard1.force,
             effects:
               target.id === state.wizard1.id
                 ? newTargetEffects
@@ -282,6 +283,7 @@ function applyEffect(
           },
           wizard2: {
             ...state.wizard2,
+            force: target.id === state.wizard2.id ? 0 : state.wizard2.force,
             effects:
               target.id === state.wizard2.id
                 ? newTargetEffects
