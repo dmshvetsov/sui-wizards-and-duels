@@ -1,14 +1,15 @@
 import { Link } from '@/components/Link'
 import { RealtimeChat } from '@/components/realtime-chat'
+import { Button } from '@/components/ui/button'
 import { OffChainDuelProvider } from '@/context/OffChainDuelContext'
 import { useOffChainDuel } from '@/context/useOffChainDuel'
 import { WizardEffects } from '@/duel/WizardEffects'
 import { isDevnetEnv } from '@/lib/config'
-import { DuelAction } from '@/lib/duel/duel-reducer'
+import { DuelAction, DuelWizard } from '@/lib/duel/duel-reducer'
 import { ChatMessage } from '@/lib/message'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-const PRACTICE_DULE_CHANNEL = 'practice-duel'
+const PRACTICE_DUEL_CHANNEL = 'practice-duel'
 
 const TUTORIAL_MESSAGES_DELAY_MS = 800
 
@@ -16,7 +17,7 @@ export function PracticeDuel() {
   return (
     <div className="w-[460px] h-full mx-auto px-4">
       <OffChainDuelProvider
-        duelId={PRACTICE_DULE_CHANNEL}
+        duelId={PRACTICE_DUEL_CHANNEL}
         currentWizardId="player"
         opponentId="opponent"
       >
@@ -33,7 +34,7 @@ function createTeacherMessage(text: string): ChatMessage {
     id: crypto.randomUUID(),
     text,
     username: 'Teacher Wizard',
-    channel: PRACTICE_DULE_CHANNEL,
+    channel: PRACTICE_DUEL_CHANNEL,
     timestamp: new Date().toISOString(),
   }
 }
@@ -43,7 +44,7 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
     id: crypto.randomUUID(),
     text,
     username: opponentName,
-    channel: PRACTICE_DULE_CHANNEL,
+    channel: PRACTICE_DUEL_CHANNEL,
     timestamp: new Date().toISOString(),
   }
 }
@@ -104,6 +105,7 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
 
 function PracticeDuelContent() {
   const { dispatch } = useOffChainDuel()
+  const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('script')
 
   useEffect(() => {
     dispatch({
@@ -112,11 +114,20 @@ function PracticeDuelContent() {
     })
   }, [dispatch])
 
+  const handlePracticeScriptComplete = useCallback(() => {
+    setPracticeStep('duel')
+  }, [])
+
+  const handleDuelCompleted = useCallback(() => {
+    setPracticeStep('completed')
+  }, [])
+
   return (
     <div className="flex flex-col h-full">
       {/* {duelState === 'pending' && <Start />} */}
-      <Action />
-      {/* {duelState === 'finished' && <Result />} */}
+      {practiceStep === 'script' && <ScriptAction onComplete={handlePracticeScriptComplete} />}
+      {practiceStep === 'duel' && <ApprenticeDuelAction onComplete={handleDuelCompleted} />}
+      {practiceStep === 'completed' && <Result />}
     </div>
   )
 }
@@ -271,9 +282,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'duelStateChange',
     action: { type: 'SET_OPPONENT', payload: { name: 'Apprentice Wizard', force: 128 } },
   },
-  { type: 'duelStateChange',
-    action: { type: 'RESET_WIZARDS', payload: {} },
-  },
+  { type: 'duelStateChange', action: { type: 'RESET_WIZARDS', payload: {} } },
   {
     type: 'teacherMessage',
     message:
@@ -282,48 +291,24 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Use 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. Tell me when you\'re ready to face him.',
+      'Use 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. ',
+  },
+  {
+    type: 'teacherMessage',
+    message: "Tell me when you're ready to face him.",
   },
   { type: 'playerMessage', message: 'ready' },
-  { type: 'opponentMessage', message: '@choke', timeout: 4500 },
 ]
 
-function Action() {
+function ScriptAction({ onComplete }: { onComplete: () => void }) {
   const { duelData, currentWizardId, opponentId, dispatch } = useOffChainDuel()
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [tutorialMessages, setTutorialMessages] = useState<ChatMessage[]>([])
 
-  const step = SCRIPT[currentStepIndex]
   useEffect(() => {
-    if (!step) {
-      if (duelData.wizard1.force === 0) {
-        // player defeated
-        // reset the duel
-        setTimeout(() => {
-          setTutorialMessages((prev) => [
-            ...prev,
-            createTeacherMessage("I allowed to cast too many choke spells on you, you have been defeated. Let's try again. Prepare yourself!"),
-          ])
-        }, TUTORIAL_MESSAGES_DELAY_MS)
-        setTimeout(() => {
-          setTutorialMessages((prev) => [
-            ...prev,
-            createTeacherMessage("Let's duel begin."),
-          ])
-          dispatch({ type: 'RESET_WIZARDS', payload: { wizard1Force: 128, wizard2Force: 128 } })
-          setCurrentStepIndex(SCRIPT.length - 1)
-        }, 5000)
-      } else if (duelData.wizard2.force === 0) {
-        // opponent defeated
-        // finish the duel
-        setTutorialMessages((prev) => [
-          ...prev,
-          createTeacherMessage("Congratulations! You've completed the tutorial."),
-        ])
-      } else {
-        // keep the practice duel running in last step
-        setCurrentStepIndex(SCRIPT.length - 1)
-      }
+    const step = SCRIPT[currentStepIndex]
+    if (!step && currentStepIndex === SCRIPT.length) {
+      onComplete()
       return
     }
 
@@ -352,20 +337,13 @@ function Action() {
     } else if (step.type === 'playerMessage') {
       // action is handled by handleCastSpell
     }
-  }, [
-    currentStepIndex,
-    currentWizardId,
-    dispatch,
-    duelData.wizard1.force,
-    duelData.wizard2.force,
-    opponentId,
-    step,
-  ])
+  }, [currentStepIndex, currentWizardId, dispatch, onComplete, opponentId])
 
-  const handleCastSpell = useCallback(
+  const handleUserInput = useCallback(
     (input: string) => {
+      const step = SCRIPT[currentStepIndex]
       if (!step) {
-        // handled by the step switcher useEffect of this component
+        onComplete()
         return
       }
 
@@ -388,66 +366,174 @@ function Action() {
         }
       }
     },
-    [currentWizardId, dispatch, opponentId, step]
+    [currentStepIndex, currentWizardId, dispatch, onComplete, opponentId]
   )
 
-  // Get wizard and opponent data
   const wizard = duelData.wizard1.id === currentWizardId ? duelData.wizard1 : duelData.wizard2
   const opponent = duelData.wizard1.id === opponentId ? duelData.wizard1 : duelData.wizard2
 
   return (
     <>
       <RealtimeChat
-        roomName={PRACTICE_DULE_CHANNEL}
+        roomName={PRACTICE_DUEL_CHANNEL}
         username="Promising Wizard"
-        onMessage={handleCastSpell}
+        onMessage={handleUserInput}
         messages={tutorialMessages}
       />
-      <div className="flex flex-col w-full">
-        <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden mb-2">
-          <div className="bg-blue-500 h-full" style={{ width: `${(wizard.force / 128) * 100}%` }} />
-        </div>
-        <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
-          <div
-            className="bg-red-500 h-full"
-            style={{ width: `${(opponent.force / 128) * 100}%` }}
-          />
-        </div>
+      <ActionUi wizard={wizard} opponent={opponent} />
+    </>
+  )
+}
 
-        <div className="flex justify-between items-start py-8 px-4 w-full">
-          <div className="flex flex-col items-center w-1/3">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
-              <span className="text-xl">🧙</span>
-            </div>
-            <p className="font-semibold text-sm">{opponent.id}</p>
-            <div className="mt-2 min-h-[30px]">
-              <WizardEffects effects={opponent.effects} />
-            </div>
+function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
+  const { duelData, currentWizardId, opponentId, dispatch } = useOffChainDuel()
+  const [tutorialMessages, setTutorialMessages] = useState<ChatMessage[]>([
+    createTeacherMessage("Let's duel begin!"),
+  ])
+
+  // setup duel on mount
+  useEffect(() => {
+    dispatch({
+      type: 'SET_OPPONENT',
+      payload: { name: 'Apprentice Wizard', force: 1 },
+    })
+    dispatch({
+      type: 'RESET_WIZARDS',
+      payload: { wizard1Force: 128, wizard2Force: 128 },
+    })
+    dispatch({
+      type: 'START_DUEL',
+      payload: { countdownSeconds: 0 },
+    })
+  }, [dispatch])
+
+  // run opponent actions
+  const opponentCastIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  useEffect(() => {
+    const to = setInterval(() => {
+      setTutorialMessages((prev) => [...prev, createOpponentMessage(opponentId, '@choke')])
+      dispatch({
+        type: 'CAST_SPELL',
+        payload: {
+          casterId: opponentId,
+          targetId: currentWizardId,
+          spellName: 'choke',
+        },
+      })
+    }, 3500)
+
+    opponentCastIntervalRef.current = to
+
+    return () => clearInterval(to)
+  }, [currentWizardId, dispatch, opponentId])
+
+  useEffect(() => {
+    if (duelData.wizard2.force === 0) {
+      if (opponentCastIntervalRef.current) {
+        clearInterval(opponentCastIntervalRef.current)
+      }
+      setTimeout(() => {
+        setTutorialMessages((prev) => [
+          ...prev,
+          createTeacherMessage('You have defeated your opponent!'),
+          createTeacherMessage('Now you are ready to challenge the real wizards.'),
+        ])
+      }, TUTORIAL_MESSAGES_DELAY_MS)
+    }
+
+    if (duelData.wizard1.force === 0) {
+      setTimeout(() => {
+        setTutorialMessages((prev) => [
+          ...prev,
+          createTeacherMessage('You have been defeated!'),
+          createTeacherMessage("Let's try again."),
+        ])
+        dispatch({
+          type: 'RESET_WIZARDS',
+          payload: { wizard1Force: 128, wizard2Force: 128 },
+        })
+      }, 300)
+    }
+  }, [dispatch, duelData.wizard1.force, duelData.wizard2.force])
+
+  const handleUserInput = useCallback(
+    (input: string) => {
+      const message = input.trim()
+      if (message[0] === '@' || message[0] === '!') {
+        const targetId = message[0] === '@' ? opponentId : currentWizardId
+        dispatch({
+          type: 'CAST_SPELL',
+          payload: {
+            casterId: currentWizardId,
+            targetId,
+            spellName: message.slice(1).toLowerCase(),
+          },
+        })
+      }
+    },
+    [currentWizardId, dispatch, opponentId]
+  )
+
+  const wizard = duelData.wizard1.id === currentWizardId ? duelData.wizard1 : duelData.wizard2
+  const opponent = duelData.wizard1.id === opponentId ? duelData.wizard1 : duelData.wizard2
+
+  return (
+    <>
+      <RealtimeChat
+        roomName={PRACTICE_DUEL_CHANNEL}
+        username="Promising Wizard"
+        onMessage={handleUserInput}
+        messages={tutorialMessages}
+      />
+      <ActionUi wizard={wizard} opponent={opponent} />
+      {duelData.wizard2.force === 0 && <Button onClick={onComplete}>Claim Reward</Button>}
+    </>
+  )
+}
+
+function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWizard }) {
+  return (
+    <div className="flex flex-col w-full">
+      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden mb-2">
+        <div className="bg-blue-500 h-full" style={{ width: `${(wizard.force / 128) * 100}%` }} />
+      </div>
+      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
+        <div className="bg-red-500 h-full" style={{ width: `${(opponent.force / 128) * 100}%` }} />
+      </div>
+
+      <div className="flex justify-between items-start py-8 px-4 w-full">
+        <div className="flex flex-col items-center w-1/3">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+            <span className="text-xl">🧙</span>
           </div>
-
-          <div className="text-lg font-bold flex items-center">VS</div>
-
-          <div className="flex flex-col items-center w-1/3">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-              <span className="text-xl">🧙‍♂️</span>
-            </div>
-            <p className="font-semibold text-sm">You</p>
-            <div className="mt-2 min-h-[30px]">
-              <WizardEffects effects={wizard.effects} />
-            </div>
+          <p className="font-semibold text-sm">{opponent.id}</p>
+          <div className="mt-2 min-h-[30px]">
+            <WizardEffects effects={opponent.effects} />
           </div>
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 mb-2">
-            Practice mode: Cast spells with @ (opponent) or ! (self)
-          </p>
-          <Link to="/" className="text-blue-500 hover:underline">
-            Back to Home
-          </Link>
+        <div className="text-lg font-bold flex items-center">VS</div>
+
+        <div className="flex flex-col items-center w-1/3">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+            <span className="text-xl">🧙‍♂️</span>
+          </div>
+          <p className="font-semibold text-sm">You</p>
+          <div className="mt-2 min-h-[30px]">
+            <WizardEffects effects={wizard.effects} />
+          </div>
         </div>
       </div>
-    </>
+
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600 mb-2">
+          Practice mode: Cast spells with @ (opponent) or ! (self)
+        </p>
+        <Link to="/" className="text-blue-500 hover:underline">
+          Back to Home
+        </Link>
+      </div>
+    </div>
   )
 }
 
@@ -494,46 +580,46 @@ function Action() {
 //   )
 // }
 //
-// function Result() {
-//   const { winner, duelData } = useOffChainDuel()
-//
-//   const isWinner = winner === 'player'
-//
-//   return (
-//     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold mb-6 text-center">{isWinner ? 'Victory!' : 'Defeat!'}</h2>
-//
-//       <div className="flex justify-between w-full mb-6">
-//         <div className="text-center">
-//           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-//             <span className="text-xl">🧙</span>
-//           </div>
-//           <p className="font-semibold">{duelData.wizard2.id}</p>
-//           <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
-//         </div>
-//
-//         <div className="text-center">
-//           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-//             <span className="text-xl">🧙‍♂️</span>
-//           </div>
-//           <p className="font-semibold">You</p>
-//           <p className="text-sm text-gray-600">Force: {duelData.wizard1.force}</p>
-//         </div>
-//       </div>
-//
-//       <p className="text-lg font-semibold mb-4">
-//         {isWinner ? 'You have defeated your opponent!' : 'You have been defeated!'}
-//       </p>
-//
-//       <Link
-//         to="/"
-//         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-//       >
-//         Back to Home
-//       </Link>
-//     </div>
-//   )
-// }
+function Result() {
+  const { winner, duelData } = useOffChainDuel()
+
+  const isWinner = winner === 'player'
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-center">{isWinner ? 'Victory!' : 'Defeat!'}</h2>
+
+      <div className="flex justify-between w-full mb-6">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <span className="text-xl">🧙</span>
+          </div>
+          <p className="font-semibold">{duelData.wizard2.id}</p>
+          <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
+        </div>
+
+        <div className="text-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <span className="text-xl">🧙‍♂️</span>
+          </div>
+          <p className="font-semibold">You</p>
+          <p className="text-sm text-gray-600">Force: {duelData.wizard1.force}</p>
+        </div>
+      </div>
+
+      <p className="text-lg font-semibold mb-4">
+        {isWinner ? 'You have defeated your opponent!' : 'You have been defeated!'}
+      </p>
+
+      <Link
+        to="/"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+      >
+        Back to Home
+      </Link>
+    </div>
+  )
+}
 
 function DevTools() {
   const { duelData } = useOffChainDuel()
