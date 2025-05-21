@@ -2,18 +2,37 @@
 
 ## GAME ROAD MAP
 
-- [x] MVP with two-three spells
+- [ ] landing page (and project pitching deck)
+- [ ] MVP with two-three spells
+  - [x] 3-5 spells
+  - [ ] spell visual fx, casting, applying damage and effects
+  - [ ] spell sound fx
+  - [ ] menu music
+  - [ ] duel music
+  - [ ] spell typing visual effects
+  - [ ] spell book with spells and their effects for read outside a duel
+  - [ ] list available spells during duel
 - [x] auto-signing of duel transaction
+- [x] demo duels against NPCs to learn game mechanics
+- [ ] new players welcome reward claim
+- [ ] duels with prizes, players can stake Sui before duel as a prize for the winner
+- [ ] REWARD token
+  - [ ] add use case for the token to the landing
+  - [ ] reward players for playing duels
+  - [ ] reward new players as welcome gift, after demo duels with NPC
+- [ ] Wizard NFTs
+  - [ ] reward new players with Wizard NFTs after completing demo duels
+  - [ ] grant wizards experience in spell schools they use during duels
+  - [ ] display wizard and his level in schools of spells
+- [ ] optimizations
+  - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
+  - [ ] use gRPC for tx performance
 - [ ] sponsored transactions, players pay in advance Gas to fund their force
-- [ ] demo duels against NPC
-- [ ] spellbook with spells and their effects for read outside a duel
-- [ ] list available spells during duel
-- [ ] different force stake size duels and duels with "leveraged" prizes (stake is X time bigger that force used and a winner gets Sui prize from a loser)
-- [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
-- [ ] reward for players to play and duel
-- [ ] more spells and sophisticated strategies to win
-- [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
-- [ ] equipment and artifacts that can be created or won in a duel as loot
+- [ ] improved game mechanics
+  - [ ] more spells and sophisticated strategies to win
+  - [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
+  - [ ] equipment and artifacts that can be created or won in a duel as loot
+- [ ] split game into bot vs bot and player vs player modes, allow people to bot on chain package but bots must duel vs bots
 
 ## Sui resources
 
