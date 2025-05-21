@@ -449,7 +449,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           createTeacherMessage("Let's try again."),
         ])
         dispatch({
-          type: 'RESET_WIZARDS',
+          type: 'RESET_DUEL',
           payload: { wizard1Force: 128, wizard2Force: 128 },
         })
       }, 300)
