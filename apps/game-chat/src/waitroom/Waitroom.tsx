@@ -1,5 +1,4 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
-import { FundWallet } from '@/components/FundWallet'
 import { Loader } from '@/components/Loader'
 import { Button, ButtonWithLoading } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
@@ -16,6 +15,15 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+
+const MUSIC = {
+  duelground: new Howl({
+    src: ['/music/duelground.ogg'],
+    volume: 0.5,
+    loop: true,
+    preload: true,
+  }),
+}
 
 const UNCONNECTED_COUNTER_STATE = 0
 
@@ -60,6 +68,13 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     },
     { refetchInterval: 0 }
   )
+
+  useEffect(() => {
+    MUSIC.duelground.play()
+    return () => {
+      MUSIC.duelground.stop()
+    }
+  }, [])
 
   useEffect(() => {
     const channel = createRoom('waitroom', { config: { presence: { key: userAccount.id } } })
