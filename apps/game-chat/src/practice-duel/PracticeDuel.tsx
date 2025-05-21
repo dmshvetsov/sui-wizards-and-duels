@@ -8,10 +8,18 @@ import { DuelAction } from '@/lib/duel/duel-reducer'
 import { ChatMessage } from '@/lib/message'
 import { useCallback, useEffect, useState } from 'react'
 
+const PRACTICE_DULE_CHANNEL = 'practice-duel'
+
+const TUTORIAL_MESSAGES_DELAY_MS = 800
+
 export function PracticeDuel() {
   return (
     <div className="w-[460px] h-full mx-auto px-4">
-      <OffChainDuelProvider currentWizardId="player" opponentId="opponent">
+      <OffChainDuelProvider
+        duelId={PRACTICE_DULE_CHANNEL}
+        currentWizardId="player"
+        opponentId="opponent"
+      >
         <PracticeDuelContent />
         <DevTools />
       </OffChainDuelProvider>
@@ -25,7 +33,7 @@ function createTeacherMessage(text: string): ChatMessage {
     id: crypto.randomUUID(),
     text,
     username: 'Teacher Wizard',
-    channel: 'practice-duel',
+    channel: PRACTICE_DULE_CHANNEL,
     timestamp: new Date().toISOString(),
   }
 }
@@ -35,7 +43,7 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
     id: crypto.randomUUID(),
     text,
     username: opponentName,
-    channel: 'practice-duel',
+    channel: PRACTICE_DULE_CHANNEL,
     timestamp: new Date().toISOString(),
   }
 }
@@ -134,7 +142,7 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell.',
+      'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell. This spell cause damage to opponent.',
   },
   {
     type: 'teacherMessage',
@@ -145,7 +153,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'teacherMessage',
     message:
       'Good, as you can see in your future duels, for sure many to come, your typing skills matter.',
-    timeout: 500
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   { type: 'teacherMessage', message: 'Now it is time to practice defensive spell !deflect.' },
   {
@@ -163,7 +171,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'teacherMessage',
     message:
       'Defend yourself agains an @arrow spell from the Machine by casting a !deflect spell. Let`s practice it.',
-    timeout: 500
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
     type: 'playerMessage',
@@ -173,7 +181,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'teacherMessage',
     message:
       'Look, You\'ve got "deflect" spell effect on yourself, You can see all current effects below your and opponents avatar',
-    timeout: 500,
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   { type: 'teacherMessage', message: 'Say "ready" and the machine will throw an arrow at you...' },
   { type: 'playerMessage', message: 'ready' },
@@ -182,7 +190,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'teacherMessage',
     message:
       '"!" sign means you are casting a spell on yourself, and "deflect" effect defends you against attacks like "arrow" spell. As soon as opponet try to deal damage to you your "deflect" effect will gone but you will get no damage.',
-    timeout: 500
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
     type: 'teacherMessage',
@@ -197,80 +205,84 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message: 'Now! This is a great chance, use "@arrow"..!',
-    timeout: 500,
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   { type: 'playerMessage', message: '@arrow' },
   {
     type: 'teacherMessage',
-    message:
-      'Well done! Next you will study "throw" spell and practice with Throw Machine',
-    timeout: 800
+    message: 'Well done! Next you will study "throw" spell and practice with Throw Machine',
+    timeout: 800,
   },
   {
     type: 'teacherMessage',
-    message: 'Tell me that you\'re "ready"'
+    message: 'Tell me that you\'re "ready"',
   },
+  { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
     action: { type: 'SET_OPPONENT', payload: { name: 'Throwing Machine', force: 10 } },
   },
   {
     type: 'teacherMessage',
-    message: 'Throw spell usefull for removing effects from other spells but it is useless from any sort of damage like the one that cause magic arrows.'
+    message:
+      'Throw spell usefull for removing effects from other spells but it is useless from any sort of damage like the one that cause magic arrows.',
   },
   {
     type: 'teacherMessage',
-    message: 'Any spell cost you force. The force is your life power, you will be defeated if you lose all your force. But beauty of "throw" spell is that it requires the least amount of force from all known spells'
+    message:
+      'Any spell cost you force. The force is your life power, you will be defeated if you lose all of your force. But beauty of "throw" spell is that it requires the least amount of force from all known spells.',
   },
   {
     type: 'teacherMessage',
-    message: 'As we learned damage from "arrow" spell reduces force of the target, so "throw" is superiour against other effect spells but not effective against spells that cause damage.'
+    message:
+      'As we learned damage from "arrow" spell reduces force of the target, so "throw" is superiour against other effect spells but not effective against spells that cause damage.',
   },
   {
     type: 'teacherMessage',
-    message: 'Cast "!deflect" and we will see how the machine works'
+    message: 'Cast "!deflect" and we will see how the machine works',
   },
   { type: 'playerMessage', message: '!deflect' },
   { type: 'opponentMessage', message: '@throw', timeout: 1200 },
   {
     type: 'teacherMessage',
-    message: 'Machine is able to disarm your deflect spell, that costs 3 force with spell that costs 2. If you continue to cast deflect against theow you will lose advantage in a duel.',
-    timeout: 500
+    message:
+      'Machine is able to disarm your deflect spell, that costs 3 force with throw spell that costs 2. If you continue to cast deflect against theow you will lose advantage in a duel.',
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
     type: 'teacherMessage',
-    message: 'But this machine can\'t withstand against your arrows. Let\' finish it... cast "@arrow"'
+    message:
+      'But this machine can\'t withstand against your arrows. Let\' finish it... cast "@arrow"',
   },
   { type: 'playerMessage', message: '@arrow' },
   {
     type: 'teacherMessage',
-    message: 'That was easy. Arrow spell it the costest one that we learn today, you need 4 force to cast it.',
-    timeout: 500
+    message:
+      'That was easy. Arrow spell it the costest one that we learn today, you need 4 force to cast it.',
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
     type: 'teacherMessage',
-    message: 'Cast "!deflect" and we will see how the machine works'
-  },
-  {
-    type: 'teacherMessage',
-    message: 'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Tell me whan you\'re "ready" to face him.'
+    message:
+      'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Tell me whan you\'re "ready" to face him.',
   },
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
     action: { type: 'SET_OPPONENT', payload: { name: 'Apprentice Wizard', force: 128 } },
   },
-  {
-    type: 'teacherMessage',
-    message: 'Listen carefully, "choke" is dangerous spell. if it is cast on the opponent 3 times it will crush him in an instant. "defelct" can\'t defent from it but as we learned you can protect yourself from opponent effect such as "choke" with "throw" spell.'
+  { type: 'duelStateChange',
+    action: { type: 'RESET_WIZARDS', payload: {} },
   },
   {
     type: 'teacherMessage',
-    message: ''
+    message:
+      'Listen carefully, "choke" is dangerous spell. if it is cast on the opponent 3 times it will crush him in an instant. "defelct" can\'t defend from it but as we learned you can protect yourself from opponent effect such as "choke" with "throw" spell as well.',
   },
   {
     type: 'teacherMessage',
-    message: 'Use 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. Tell me when you\'re ready to face in a duel with apprentice wizard'
+    message:
+      'Use 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. Tell me when you\'re ready to face him.',
   },
   { type: 'playerMessage', message: 'ready' },
   { type: 'opponentMessage', message: '@choke', timeout: 4500 },
@@ -284,8 +296,34 @@ function Action() {
   const step = SCRIPT[currentStepIndex]
   useEffect(() => {
     if (!step) {
-      // FIXME: need better handling
-      console.warn('no more steps')
+      if (duelData.wizard1.force === 0) {
+        // player defeated
+        // reset the duel
+        setTimeout(() => {
+          setTutorialMessages((prev) => [
+            ...prev,
+            createTeacherMessage("I allowed to cast too many choke spells on you, you have been defeated. Let's try again. Prepare yourself!"),
+          ])
+        }, TUTORIAL_MESSAGES_DELAY_MS)
+        setTimeout(() => {
+          setTutorialMessages((prev) => [
+            ...prev,
+            createTeacherMessage("Let's duel begin."),
+          ])
+          dispatch({ type: 'RESET_WIZARDS', payload: { wizard1Force: 128, wizard2Force: 128 } })
+          setCurrentStepIndex(SCRIPT.length - 1)
+        }, 5000)
+      } else if (duelData.wizard2.force === 0) {
+        // opponent defeated
+        // finish the duel
+        setTutorialMessages((prev) => [
+          ...prev,
+          createTeacherMessage("Congratulations! You've completed the tutorial."),
+        ])
+      } else {
+        // keep the practice duel running in last step
+        setCurrentStepIndex(SCRIPT.length - 1)
+      }
       return
     }
 
@@ -314,13 +352,20 @@ function Action() {
     } else if (step.type === 'playerMessage') {
       // action is handled by handleCastSpell
     }
-  }, [currentStepIndex, currentWizardId, dispatch, opponentId, step])
+  }, [
+    currentStepIndex,
+    currentWizardId,
+    dispatch,
+    duelData.wizard1.force,
+    duelData.wizard2.force,
+    opponentId,
+    step,
+  ])
 
   const handleCastSpell = useCallback(
     (input: string) => {
       if (!step) {
-        // FIXME: need better handling
-        console.warn('no more steps')
+        // handled by the step switcher useEffect of this component
         return
       }
 
@@ -332,7 +377,11 @@ function Action() {
             const targetId = input[0] === '@' ? opponentId : currentWizardId
             dispatch({
               type: 'CAST_SPELL',
-              payload: { casterId: currentWizardId, targetId, spellName: input.slice(1).toLowerCase() },
+              payload: {
+                casterId: currentWizardId,
+                targetId,
+                spellName: input.slice(1).toLowerCase(),
+              },
             })
             setCurrentStepIndex((prev) => prev + 1)
           }
@@ -349,8 +398,8 @@ function Action() {
   return (
     <>
       <RealtimeChat
-        roomName="practice-duel"
-        username="Practice Wizard"
+        roomName={PRACTICE_DULE_CHANNEL}
+        username="Promising Wizard"
         onMessage={handleCastSpell}
         messages={tutorialMessages}
       />

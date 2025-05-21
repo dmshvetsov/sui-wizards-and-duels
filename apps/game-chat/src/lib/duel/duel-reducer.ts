@@ -103,25 +103,26 @@ export type DuelAction =
 /**
  * Create initial duel state
  */
-export function createInitialDuelState(
+export function createInitialDuelState(params: {
   id: string,
   wizard1Id: string,
   wizard2Id: string,
-  initialForce: number = 128
-): DuelState {
+  initialForce?: number,
+  startedAt?: number,
+}): DuelState {
   return {
-    id,
+    id: params.id,
     wizard1: {
-      id: wizard1Id,
-      force: initialForce,
+      id: params.wizard1Id,
+      force: params.initialForce ?? 128,
       effects: [0, 0, 0],
     },
     wizard2: {
-      id: wizard2Id,
-      force: initialForce,
+      id: params.wizard2Id,
+      force: params.initialForce ?? 128,
       effects: [0, 0, 0],
     },
-    startedAt: 0,
+    startedAt: params.startedAt ?? 0,
   }
 }
 
@@ -317,12 +318,12 @@ function applyEffect(
       }
 
     case 'throw':
-      // Throw is applied to the target and is not compoundable
-      newTargetEffects[1] = 1
-
       // If throw is applied and target doesn't have deflect, remove choke from caster
       if (newTargetEffects[2] === 0) {
         newCasterEffects[0] = 0 // Remove choke from caster
+      } else {
+        // remove target deflect effect
+        newTargetEffects[2] = 0
       }
       return {
         ...state,
