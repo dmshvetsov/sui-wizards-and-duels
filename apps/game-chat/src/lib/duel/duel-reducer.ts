@@ -86,8 +86,9 @@ export type DuelAction =
       }
     }
   | {
-      type: 'SET_OPPONENT'
+      type: 'SET_WIZARD'
       payload: {
+        key: 'wizard1' | 'wizard2'
         name: string
         force: number
       }
@@ -378,7 +379,6 @@ function applyEffect(
  * Duel reducer function
  */
 export function duelReducer(state: DuelState, action: DuelAction): DuelState {
-  console.log(state, action)
   switch (action.type) {
     case 'START_DUEL': {
       if (state.startedAt !== 0) {
@@ -443,16 +443,20 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
       return newState
     }
 
-    case 'SET_OPPONENT': {
-      const { name, force } = action.payload
+    case 'SET_WIZARD': {
+      const { key, name, force } = action.payload
 
-      // Create a new state with updated opponent name and force
+      if (key !== 'wizard1' && key !== 'wizard2') {
+        console.warn(`[SET_WIZARD] | Invalid wizard key ${key}`)
+        return state
+      }
+
       return {
         ...state,
-        wizard2: {
-          ...state.wizard2,
-          id: name, // Use the name as the ID for display purposes
-          force: force,
+        [key]: {
+          ...state[key],
+          name,
+          force,
         },
       }
     }

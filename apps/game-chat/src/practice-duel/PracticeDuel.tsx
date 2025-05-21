@@ -141,7 +141,7 @@ type ScriptStep =
 const SCRIPT: ScriptStep[] = [
   {
     type: 'duelStateChange',
-    action: { type: 'SET_OPPONENT', payload: { name: 'Wood Target', force: 20 } },
+    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Wood Target', force: 20 } },
   },
   { type: 'teacherMessage', message: 'Welcome to practice ground' },
   {
@@ -176,7 +176,7 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_OPPONENT', payload: { name: 'Arrow Machine', force: 16 } },
+    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Arrow Machine', force: 16 } },
   },
   {
     type: 'teacherMessage',
@@ -231,7 +231,7 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_OPPONENT', payload: { name: 'Throwing Machine', force: 10 } },
+    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Throwing Machine', force: 10 } },
   },
   {
     type: 'teacherMessage',
@@ -280,7 +280,7 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_OPPONENT', payload: { name: 'Apprentice Wizard', force: 128 } },
+    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 128 } },
   },
   { type: 'duelStateChange', action: { type: 'RESET_WIZARDS', payload: {} } },
   {
@@ -394,8 +394,8 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
   // setup duel on mount
   useEffect(() => {
     dispatch({
-      type: 'SET_OPPONENT',
-      payload: { name: 'Apprentice Wizard', force: 1 },
+      type: 'SET_WIZARD',
+      payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 1 },
     })
     dispatch({
       type: 'RESET_WIZARDS',
