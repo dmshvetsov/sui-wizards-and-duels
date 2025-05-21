@@ -455,7 +455,7 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
         ...state,
         [key]: {
           ...state[key],
-          name,
+          id: name,
           force,
         },
       }
