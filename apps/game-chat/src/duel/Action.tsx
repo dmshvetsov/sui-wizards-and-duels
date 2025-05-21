@@ -158,7 +158,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         roomName={props.duelId}
         username={props.userAccount.displayName}
         onMessage={handleUserInput}
-        onIncommingMessage={handleOpponentInput}
+        onIncomingMessage={handleOpponentInput}
       />
       <div className="flex flex-col w-full">
         {duel !== null && props.userAccount && (
@@ -182,7 +182,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
                   <span className="text-xl">🧙‍♂️</span>
                 </div>
-                <p className="font-semibold text-sm">{props.userAccount.displayName}</p>
+                <p className="font-semibold text-sm">you</p>
                 <div className="mt-2 min-h-[30px]">
                   <WizardEffects effects={wizardEffects} />
                 </div>

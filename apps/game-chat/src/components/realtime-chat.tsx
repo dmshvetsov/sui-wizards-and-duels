@@ -12,7 +12,7 @@ interface RealtimeChatProps {
   roomName: string
   username: string
   onMessage?: (messages: string) => void
-  onIncommingMessage?: (message: string) => void
+  onIncomingMessage?: (message: string) => void
   messages?: ChatMessage[]
 }
 
@@ -21,7 +21,7 @@ interface RealtimeChatProps {
  * @param roomName - The name of the room to join. Each room is a unique chat.
  * @param username - The username of the user
  * @param onMessage - The callback function to handle the messages.
- * @param onIncommingMessage - The callback function to handle the incomming messages.
+ * @param onIncomingMessage - The callback function to handle the incomming messages.
  * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
  * @returns The chat component
  */
@@ -29,7 +29,7 @@ export const RealtimeChat = ({
   roomName,
   username,
   onMessage,
-  onIncommingMessage,
+  onIncomingMessage,
   messages: initialMessages = [],
 }: RealtimeChatProps) => {
   const { containerRef, scrollToBottom } = useChatScroll()
@@ -41,7 +41,7 @@ export const RealtimeChat = ({
   } = useRealtimeChat({
     roomName,
     username,
-    onIncommingMessage,
+    onIncomingMessage,
   })
   const [newMessage, setNewMessage] = useState('')
 

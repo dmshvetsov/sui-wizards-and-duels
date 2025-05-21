@@ -7,12 +7,12 @@ import { useCallback, useEffect, useState } from 'react'
 interface UseRealtimeChatProps {
   roomName: string
   username: string
-  onIncommingMessage?: (message: string) => void
+  onIncomingMessage?: (message: string) => void
 }
 
 const EVENT_MESSAGE_TYPE = 'message'
 
-export function useRealtimeChat({ roomName, username, onIncommingMessage }: UseRealtimeChatProps) {
+export function useRealtimeChat({ roomName, username, onIncomingMessage }: UseRealtimeChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [channel, setChannel] = useState<ReturnType<typeof createRoom> | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -23,7 +23,7 @@ export function useRealtimeChat({ roomName, username, onIncommingMessage }: UseR
     newChannel
       .on('broadcast', { event: EVENT_MESSAGE_TYPE }, (payload) => {
         const chatMessage = payload.payload as ChatMessage
-        onIncommingMessage?.(chatMessage.text)
+        onIncomingMessage?.(chatMessage.text)
         setMessages((current) => [...current, chatMessage])
       })
       .subscribe(async (status) => {
@@ -46,7 +46,7 @@ export function useRealtimeChat({ roomName, username, onIncommingMessage }: UseR
     return () => {
       removeRoom(newChannel)
     }
-  }, [roomName, username, onIncommingMessage])
+  }, [roomName, username, onIncomingMessage])
 
   const sendMessage = useCallback(
     async (text: string) => {
