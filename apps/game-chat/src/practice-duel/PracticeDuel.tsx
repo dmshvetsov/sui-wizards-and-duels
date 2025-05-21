@@ -282,7 +282,7 @@ const SCRIPT: ScriptStep[] = [
     type: 'duelStateChange',
     action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 128 } },
   },
-  { type: 'duelStateChange', action: { type: 'RESET_WIZARDS', payload: {} } },
+  { type: 'duelStateChange', action: { type: 'RESET_DUEL', payload: { wizard1Force: 128, wizard2Force: 128 } } },
   {
     type: 'teacherMessage',
     message:
@@ -398,7 +398,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
       payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 1 },
     })
     dispatch({
-      type: 'RESET_WIZARDS',
+      type: 'RESET_DUEL',
       payload: { wizard1Force: 128, wizard2Force: 128 },
     })
     dispatch({
