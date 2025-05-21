@@ -19,7 +19,7 @@ import { toast } from 'sonner'
 const MUSIC = {
   duelground: new Howl({
     src: ['/music/duelground.ogg'],
-    volume: 0.5,
+    volume: 0,
     loop: true,
     preload: true,
   }),
@@ -71,6 +71,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
   useEffect(() => {
     MUSIC.duelground.play()
+    MUSIC.duelground.fade(0, 0.5, 2500)
     return () => {
       MUSIC.duelground.stop()
     }
