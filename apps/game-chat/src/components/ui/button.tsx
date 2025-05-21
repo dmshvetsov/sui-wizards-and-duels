@@ -43,10 +43,12 @@ export function Button({
   variant,
   size,
   asChild = false,
+  disableSfx = false,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    disableSfx?: boolean
   }) {
   const Comp = asChild ? Slot : 'button'
 
@@ -55,7 +57,7 @@ export function Button({
       data-slot="button"
       {...props}
       onClick={(event) => {
-        SFX.buttonClick.play()
+        if (!disableSfx) SFX.buttonClick.play()
         setTimeout(() => props.onClick?.(event), 200)
       }}
       className={cn(buttonVariants({ variant, size, className }))}

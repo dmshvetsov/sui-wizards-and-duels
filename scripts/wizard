@@ -2,8 +2,8 @@
 
 set -e
 
-PID="0xc30ae712c45d4e0fcdba5190d50ffd52fefde532fa64df5ded2e197e39d80e78"
-WAITROOM_OID="0xcb26955fd2eb741ec75a061d8c7da4107e16f97fc609e1045cda31db3569a364"
+PID="0x8e69e68984885c08607ac65cf1f7326373e0262e1b606183d905f3c441967757"
+WAITROOM_OID="0xc6003b0ed7a8d26eebcff70e561917b9ccf69d508b1439d0c8ac4ebdada912dc"
 
 #  module>::<method>
 MODULE_METHOD=$1
@@ -39,6 +39,27 @@ if [ $MODULE_METHOD = "duel::setup_wizard" ]; then
 
   sui client ptb \
     --move-call $TARGET \
+    --gas-budget 1000000000
+fi
+
+if [ $MODULE_METHOD = "spell::cast_arrow" ]; then
+  DUEL_OID=$3
+  TARGET_ADDRESS=$4
+  if [ -z "$DUEL_OID" ]; then
+    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID: no value> <TARGET_ADDRESS: no value>"
+    exit 1
+  fi
+  if [ -z "$TARGET_ADDRESS" ]; then
+    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID:$3> <TARGET_ADDRESS: no value>"
+    exit 1
+  fi
+
+  sui client ptb \
+    --move-call "$PID::duel::use_force" 4 \
+    --assign force \
+    --move-call "${PID}::spell::cast_arrow" force \
+    --assign damage \
+    --move-call "${PID}::damage::apply" damage @$DUEL_OID @$TARGET_ADDRESS \
     --gas-budget 1000000000
 fi
 

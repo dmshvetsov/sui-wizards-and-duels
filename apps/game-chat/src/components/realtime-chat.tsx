@@ -12,6 +12,7 @@ interface RealtimeChatProps {
   roomName: string
   username: string
   onMessage?: (messages: string) => void
+  onIncommingMessage?: (message: string) => void
   messages?: ChatMessage[]
 }
 
@@ -19,7 +20,8 @@ interface RealtimeChatProps {
  * Real-time chat component
  * @param roomName - The name of the room to join. Each room is a unique chat.
  * @param username - The username of the user
- * @param onMessage - The callback function to handle the messages. Useful if you want to store the messages in a database.
+ * @param onMessage - The callback function to handle the messages.
+ * @param onIncommingMessage - The callback function to handle the incomming messages.
  * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
  * @returns The chat component
  */
@@ -27,6 +29,7 @@ export const RealtimeChat = ({
   roomName,
   username,
   onMessage,
+  onIncommingMessage,
   messages: initialMessages = [],
 }: RealtimeChatProps) => {
   const { containerRef, scrollToBottom } = useChatScroll()
@@ -38,6 +41,7 @@ export const RealtimeChat = ({
   } = useRealtimeChat({
     roomName,
     username,
+    onIncommingMessage,
   })
   const [newMessage, setNewMessage] = useState('')
 
@@ -114,6 +118,7 @@ export const RealtimeChat = ({
         />
         {isConnected && newMessage.trim() && (
           <Button
+            disableSfx
             className="aspect-square rounded-full animate-in fade-in slide-in-from-right-4 duration-300"
             type="submit"
             disabled={!isConnected}

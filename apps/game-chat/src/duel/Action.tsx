@@ -1,19 +1,20 @@
 import { UserAccount } from '@/components/Authenticated'
+import { Link } from '@/components/Link'
 import { Loader } from '@/components/Loader'
 import { RealtimeChat } from '@/components/realtime-chat'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
 import { getSpellSpec } from '@/lib/protocol/spell'
+import { SFX } from '@/lib/sfx'
 import { executeWith } from '@/lib/sui/client'
+import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
 import { WizardEffects } from './WizardEffects'
-import { Link } from '@/components/Link'
-import { displayName } from '@/lib/user'
 
 export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { duel, duelistCap, isLoading } = useDuel()
@@ -22,12 +23,40 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
 
-  /** @param userInput- user message during duel
+  /**
+   * @param opponentInput - opponent message during duel
+   */
+  const handleOpponentInput = useCallback(
+    (opponentInput: string) => {
+      const message = opponentInput.trim()
+      if (!message) {
+        return
+      }
+      const targetChar = message[0]
+      const target =
+        targetChar === '@' ? duelistCap?.wizard : targetChar === '!' ? duelistCap?.opponent : null
+      if (!target) {
+        // it is a chat message, do nothig
+        return
+      }
+
+      const spellName = message.slice(1).trim().toLowerCase()
+      const spellSpec = getSpellSpec(spellName)
+      if (spellSpec) {
+        console.debug('opponent spell', spellName)
+        SFX.spellCast.play()
+      }
+    },
+    [duelistCap]
+  )
+
+  /**
+   * @param userInput- user message during duel
    * spell message format to apply to opponent: @ spellName
    * spell message format to apply to self: ! spellName
    * simple chat message starts with any other character than ! or @
    */
-  const handleCastSpell = useCallback(
+  const handleUserInput = useCallback(
     (userInput: string) => {
       const start = Date.now()
 
@@ -42,7 +71,8 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       }
 
       const targetChar = message[0]
-      const target = targetChar === '@' ? duelistCap.opponent : targetChar === '!' ? duelistCap.wizard : null
+      const target =
+        targetChar === '@' ? duelistCap.opponent : targetChar === '!' ? duelistCap.wizard : null
       if (!target) {
         // it is a chat message, do nothig
         return
@@ -54,6 +84,8 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         toast.warning(`${spellName} is not a spell`)
         return
       }
+
+      SFX.spellCast.play()
 
       const tx = new Transaction()
       const [force] = tx.moveCall({
@@ -79,6 +111,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         },
         {
           onSuccess: (result) => {
+            SFX.spell.play(spellName)
             toast.success(`Cast spell ${message} successfully! (${Date.now() - start} ms)`)
             console.debug('Cast spell transaction result:', result)
           },
@@ -124,7 +157,8 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       <RealtimeChat
         roomName={props.duelId}
         username={props.userAccount.displayName}
-        onMessage={handleCastSpell}
+        onMessage={handleUserInput}
+        onIncommingMessage={handleOpponentInput}
       />
       <div className="flex flex-col w-full">
         {duel !== null && props.userAccount && (

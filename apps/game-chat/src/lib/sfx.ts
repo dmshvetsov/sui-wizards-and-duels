@@ -1,6 +1,10 @@
 import { Howl } from 'howler'
 
 export const SFX = {
+  spellCast: new Howl({
+    src: ['/sfx/spell-cast.ogg'],
+    preload: true,
+  }),
   spell: new Howl({
     src: ['/sfx/spell-sprite.ogg'],
     sprite: {
