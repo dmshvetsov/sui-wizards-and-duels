@@ -253,7 +253,7 @@ const SCRIPT: ScriptStep[] = [
     message: 'Cast "!deflect" and we will see how the machine works',
   },
   { type: 'playerMessage', message: '!deflect' },
-  { type: 'opponentMessage', message: '@throw', timeout: 1200 },
+  { type: 'opponentMessage', message: '@throw', timeout: 1600 },
   {
     type: 'teacherMessage',
     message:
@@ -537,49 +537,6 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
   )
 }
 
-// function Start() {
-//   const { startDuel, duelData } = useOffChainDuel()
-//
-//   const handleStartDuel = () => {
-//     startDuel({ countdownSeconds: 0 })
-//   }
-//
-//   return (
-//     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold mb-6 text-center">Practice Ground</h2>
-//
-//       <div className="flex justify-between w-full mb-6">
-//         <div className="text-center">
-//           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-//             <span className="text-xl">🧙</span>
-//           </div>
-//           <p className="font-semibold">Wooden Target</p>
-//           <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
-//         </div>
-//
-//         <div className="text-center">
-//           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-//             <span className="text-xl">🧙‍♂️</span>
-//           </div>
-//           <p className="font-semibold">You</p>
-//           <p className="text-sm text-gray-600">Force: {duelData.wizard1.force}</p>
-//         </div>
-//       </div>
-//
-//       <Button onClick={handleStartDuel}>Start Practice Duel</Button>
-//
-//       <div className="mt-4 text-center">
-//         <p className="text-sm text-gray-600 mb-2">
-//           Practice mode: Cast spells with @ (opponent) or ! (self)
-//         </p>
-//         <Link to="/" className="text-blue-500 hover:underline">
-//           Back to Home
-//         </Link>
-//       </div>
-//     </div>
-//   )
-// }
-//
 function Result() {
   const { winner, duelData } = useOffChainDuel()
 
