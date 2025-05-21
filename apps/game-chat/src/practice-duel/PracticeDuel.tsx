@@ -31,6 +31,20 @@ const MUSIC = {
   }),
 }
 
+const SFX = {
+  spell: new Howl({
+    src: ['/sfx/spell-sprite.ogg'],
+    sprite: {
+      arrow: [0, 2000],
+      deflect: [5000, 2000],
+      choke: [10000, 2000],
+      throw: [15000, 2000],
+    },
+    volume: 1,
+    preload: true,
+  }),
+}
+
 // Music paths
 
 export function PracticeDuel() {
@@ -125,7 +139,7 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
 
 function PracticeDuelContent() {
   const { dispatch } = useOffChainDuel()
-  const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('duel')
+  const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('script')
 
   // Start duel immediately
   useEffect(() => {
@@ -146,6 +160,11 @@ function PracticeDuelContent() {
         MUSIC.duel.play()
       })
     } else {
+      MUSIC.script.stop()
+      MUSIC.duel.stop()
+    }
+
+    return () => {
       MUSIC.script.stop()
       MUSIC.duel.stop()
     }
@@ -369,12 +388,14 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
       setTimeout(() => {
         setTutorialMessages((prev) => [...prev, createOpponentMessage(opponentId, step.message)])
         const targetId = step.message[0] === '@' ? currentWizardId : opponentId
+        const spellName = step.message.slice(1).toLowerCase()
+        SFX.spell.play(spellName)
         dispatch({
           type: 'CAST_SPELL',
           payload: {
             targetId,
             casterId: opponentId,
-            spellName: step.message.slice(1),
+            spellName,
           },
         })
         setCurrentStepIndex((prev) => prev + 1)
@@ -398,12 +419,14 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
             setCurrentStepIndex((prev) => prev + 1)
           } else {
             const targetId = input[0] === '@' ? opponentId : currentWizardId
+            const spellName = input.slice(1).toLowerCase()
+            SFX.spell.play(spellName)
             dispatch({
               type: 'CAST_SPELL',
               payload: {
                 casterId: currentWizardId,
                 targetId,
-                spellName: input.slice(1).toLowerCase(),
+                spellName,
               },
             })
             setCurrentStepIndex((prev) => prev + 1)
@@ -426,6 +449,9 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
         messages={tutorialMessages}
       />
       <ActionUi wizard={wizard} opponent={opponent} />
+      {isDevnetEnv && (
+        <Button variant="link" onClick={() => onComplete()}>skip to duel</Button>
+      )}
     </>
   )
 }
@@ -457,12 +483,14 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
     const to = setInterval(() => {
       setTutorialMessages((prev) => [...prev, createOpponentMessage(opponentId, '@choke')])
+      const spellName = 'choke'
+      SFX.spell.play(spellName)
       dispatch({
         type: 'CAST_SPELL',
         payload: {
           casterId: opponentId,
           targetId: currentWizardId,
-          spellName: 'choke',
+          spellName,
         },
       })
     }, 3500)
@@ -471,6 +499,18 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
 
     return () => clearInterval(to)
   }, [currentWizardId, dispatch, opponentId])
+
+  useEffect(() => {
+    if (duelData.wizard2.force <= 3) {
+      if (opponentCastIntervalRef.current) {
+        clearInterval(opponentCastIntervalRef.current)
+      }
+      setTutorialMessages((prev) => [
+        ...prev,
+        createTeacherMessage('Your oponent has no more force to fight... surely you will win!'),
+      ])
+    }
+  }, [duelData.wizard2]);
 
   useEffect(() => {
     if (duelData.wizard2.force === 0) {
@@ -518,6 +558,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           return
         }
 
+        SFX.spell.play(spellName)
         dispatch({
           type: 'CAST_SPELL',
           payload: {
@@ -551,6 +592,9 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
         messages={tutorialMessages}
       />
       <ActionUi wizard={wizard} opponent={opponent} />
+      {isDevnetEnv && (
+        <Button variant="link" onClick={() => onComplete()}>skip to completed state</Button>
+      )}
       {duelData.wizard2.force === 0 && <Button onClick={handleExitDuel}>Claim Reward</Button>}
     </>
   )
@@ -590,12 +634,9 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
         </div>
       </div>
 
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 mb-2">
-          Practice mode: Cast spells with @ (opponent) or ! (self)
-        </p>
-        <Link to="/" className="text-blue-500 hover:underline">
-          Back to Home
+      <div className="flex gap-8 justify-center mt-4 text-center">
+        <Link to="/d">
+          Skip Practice
         </Link>
       </div>
     </div>
