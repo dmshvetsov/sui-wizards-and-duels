@@ -93,7 +93,7 @@ export type DuelAction =
       }
     }
   | {
-      type: 'RESET_DUEL'
+      type: 'RESET_WIZARDS'
       payload: {
         wizard1Force?: number
         wizard2Force?: number
@@ -456,7 +456,7 @@ export function duelReducer(state: DuelState, action: DuelAction): DuelState {
       }
     }
 
-    case 'RESET_DUEL': {
+    case 'RESET_WIZARDS': {
       const { wizard1Force = 128, wizard2Force = 128 } = action.payload
 
       // Reset the duel state but keep the wizard IDs
