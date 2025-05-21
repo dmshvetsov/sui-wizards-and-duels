@@ -5,29 +5,29 @@
 - [ ] landing page (and project pitching deck)
 - [ ] MVP with two-three spells
   - [x] 3-5 spells
-  - [ ] spell visual fx, casting, applying damage and effects
-  - [ ] spell sound fx
+  - [ ] spell visual FX, casting, applying damage and effects
+  - [ ] spell sound FX
   - [ ] menu music
   - [ ] duel music
   - [ ] spell typing visual effects
   - [ ] spell book with spells and their effects for read outside a duel
   - [ ] list available spells during duel
 - [x] auto-signing of duel transaction
-- [x] demo duels against NPCs to learn game mechanics
+- [x] demo duels against NPCs for fun and engaging learning process and user acquisition
 - [ ] new players welcome reward claim
 - [ ] duels with prizes, players can stake Sui before duel as a prize for the winner
 - [ ] REWARD token
   - [ ] add use case for the token to the landing
   - [ ] reward players for playing duels
   - [ ] reward new players as welcome gift, after demo duels with NPC
+- [ ] optimizations
+  - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
+  - [ ] use gRPC for transaction performance
+- [ ] sponsored transactions, players pay in advance Gas to fund their force
 - [ ] Wizard NFTs
   - [ ] reward new players with Wizard NFTs after completing demo duels
   - [ ] grant wizards experience in spell schools they use during duels
   - [ ] display wizard and his level in schools of spells
-- [ ] optimizations
-  - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
-  - [ ] use gRPC for tx performance
-- [ ] sponsored transactions, players pay in advance Gas to fund their force
 - [ ] improved game mechanics
   - [ ] more spells and sophisticated strategies to win
   - [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
