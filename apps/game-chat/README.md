@@ -52,3 +52,39 @@ export default tseslint.config({
   },
 })
 ```
+
+## Practice Duel
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PracticeDuelContent
+    participant ScriptAction
+    participant DuelReducer
+
+    User->>PracticeDuelContent: Mount component
+    PracticeDuelContent->>ScriptAction: Render ScriptAction (step 0)
+    loop For each Script Step
+        ScriptAction->>DuelReducer: Dispatch duel state changes (if any)
+        alt Teacher Message Step
+            ScriptAction->>ScriptAction: Append teacher message
+        else Opponent Message Step
+            ScriptAction->>ScriptAction: Append opponent message (with delay)
+            ScriptAction->>DuelReducer: Dispatch opponent spell cast
+        else Player Expected Message Step
+            User->>ScriptAction: Submit message
+            ScriptAction->>ScriptAction: Validate input
+            alt Input matches expected
+                ScriptAction->>DuelReducer: Dispatch player spell cast
+            end
+        end
+        ScriptAction->>ScriptAction: Advance to next step
+    end
+    ScriptAction->>PracticeDuelContent: Notify completion
+    PracticeDuelContent->>ApprenticeDuelAction: Render final duel challenge
+    loop Opponent casts spell every 3.5s
+        ApprenticeDuelAction->>DuelReducer: Dispatch opponent spell cast
+        ApprenticeDuelAction->>ApprenticeDuelAction: Append opponent message
+        ApprenticeDuelAction->>ApprenticeDuelAction: Monitor duel state for victory/defeat
+    end
+```
