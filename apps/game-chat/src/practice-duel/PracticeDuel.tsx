@@ -10,10 +10,28 @@ import { ChatMessage } from '@/lib/message'
 import { getSpellSpec } from '@/lib/protocol/spell'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { Howl } from 'howler'
 
 const PRACTICE_DUEL_CHANNEL = 'practice-duel'
 
 const TUTORIAL_MESSAGES_DELAY_MS = 800
+
+const MUSIC = {
+  script: new Howl({
+    src: ['/public/music/practice-script.ogg'],
+    volume: 1,
+    loop: true,
+    preload: true,
+  }),
+  duel: new Howl({
+    src: ['/public/music/practice-duel.ogg'],
+    volume: 1,
+    loop: true,
+    preload: true,
+  }),
+}
+
+// Music paths
 
 export function PracticeDuel() {
   return (
@@ -108,13 +126,83 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
 function PracticeDuelContent() {
   const { dispatch } = useOffChainDuel()
   const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('script')
+  // const scriptMusicRef = useRef<Howl | null>(null)
+  // const duelMusicRef = useRef<Howl | null>(null)
 
+  // Initialize Howl instances for background music
+  // useEffect(() => {
+  //   // Create Howl instances for both music tracks
+  //   scriptMusicRef.current = new Howl({
+  //     // src: [`/public/music/practice-script.ogg`],
+  //     src: ['/public/music/practice-duel-music.wav'],
+  //     volume: 0.3,
+  //     loop: true,
+  //     preload: true,
+  //     html5: true,
+  //   })
+  //
+  //   duelMusicRef.current = new Howl({
+  //     src: ['/public/music/practice-duel-music.wav'],
+  //     volume: 0.3,
+  //     loop: true,
+  //     preload: true,
+  //   })
+  //
+  //   // Clean up when component unmounts
+  //   return () => {
+  //     if (scriptMusicRef.current) {
+  //       scriptMusicRef.current.stop()
+  //     }
+  //     if (duelMusicRef.current) {
+  //       duelMusicRef.current.stop()
+  //     }
+  //   }
+  // }, [])
+
+  // Start duel
   useEffect(() => {
     dispatch({
       type: 'START_DUEL',
       payload: { countdownSeconds: 0 },
     })
   }, [dispatch])
+
+  // Handle music playback based on practice step
+  useEffect(() => {
+    // Play the appropriate music based on the current step
+    if (practiceStep === 'script') {
+      // Start script music and stop duel music
+      MUSIC.duel.stop()
+      MUSIC.script.play()
+      // if (duelMusicRef.current && duelMusicRef.current.playing()) {
+      //   duelMusicRef.current.fade(0.3, 0, 1000)
+      //   setTimeout(() => duelMusicRef.current?.stop(), 1000)
+      // }
+    } else if (practiceStep === 'duel') {
+      MUSIC.script.stop()
+      MUSIC.duel.play()
+      // Start duel music and stop script music
+      // if (duelMusicRef.current && !duelMusicRef.current.playing()) {
+      //   duelMusicRef.current.play()
+      // }
+      // if (scriptMusicRef.current && scriptMusicRef.current.playing()) {
+      //   scriptMusicRef.current.fade(0.3, 0, 1000)
+      //   setTimeout(() => scriptMusicRef.current?.stop(), 1000)
+      // }
+    } else if (practiceStep === 'completed') {
+      MUSIC.script.stop()
+      MUSIC.duel.stop()
+      // Stop all music
+      // if (scriptMusicRef.current && scriptMusicRef.current.playing()) {
+      //   scriptMusicRef.current.fade(0.3, 0, 1000)
+      //   setTimeout(() => scriptMusicRef.current?.stop(), 1000)
+      // }
+      // if (duelMusicRef.current && duelMusicRef.current.playing()) {
+      //   duelMusicRef.current.fade(0.3, 0, 1000)
+      //   setTimeout(() => duelMusicRef.current?.stop(), 1000)
+      // }
+    }
+  }, [practiceStep])
 
   const handlePracticeScriptComplete = useCallback(() => {
     setPracticeStep('duel')
@@ -126,7 +214,6 @@ function PracticeDuelContent() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* {duelState === 'pending' && <Start />} */}
       {practiceStep === 'script' && <ScriptAction onComplete={handlePracticeScriptComplete} />}
       {practiceStep === 'duel' && <ApprenticeDuelAction onComplete={handleDuelCompleted} />}
       {practiceStep === 'completed' && <Result />}
