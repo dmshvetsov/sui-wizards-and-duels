@@ -125,41 +125,9 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
 
 function PracticeDuelContent() {
   const { dispatch } = useOffChainDuel()
-  const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('script')
-  // const scriptMusicRef = useRef<Howl | null>(null)
-  // const duelMusicRef = useRef<Howl | null>(null)
+  const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('duel')
 
-  // Initialize Howl instances for background music
-  // useEffect(() => {
-  //   // Create Howl instances for both music tracks
-  //   scriptMusicRef.current = new Howl({
-  //     // src: [`/public/music/practice-script.ogg`],
-  //     src: ['/public/music/practice-duel-music.wav'],
-  //     volume: 0.3,
-  //     loop: true,
-  //     preload: true,
-  //     html5: true,
-  //   })
-  //
-  //   duelMusicRef.current = new Howl({
-  //     src: ['/public/music/practice-duel-music.wav'],
-  //     volume: 0.3,
-  //     loop: true,
-  //     preload: true,
-  //   })
-  //
-  //   // Clean up when component unmounts
-  //   return () => {
-  //     if (scriptMusicRef.current) {
-  //       scriptMusicRef.current.stop()
-  //     }
-  //     if (duelMusicRef.current) {
-  //       duelMusicRef.current.stop()
-  //     }
-  //   }
-  // }, [])
-
-  // Start duel
+  // Start duel immediately
   useEffect(() => {
     dispatch({
       type: 'START_DUEL',
@@ -169,38 +137,17 @@ function PracticeDuelContent() {
 
   // Handle music playback based on practice step
   useEffect(() => {
-    // Play the appropriate music based on the current step
     if (practiceStep === 'script') {
-      // Start script music and stop duel music
       MUSIC.duel.stop()
       MUSIC.script.play()
-      // if (duelMusicRef.current && duelMusicRef.current.playing()) {
-      //   duelMusicRef.current.fade(0.3, 0, 1000)
-      //   setTimeout(() => duelMusicRef.current?.stop(), 1000)
-      // }
     } else if (practiceStep === 'duel') {
-      MUSIC.script.stop()
-      MUSIC.duel.play()
-      // Start duel music and stop script music
-      // if (duelMusicRef.current && !duelMusicRef.current.playing()) {
-      //   duelMusicRef.current.play()
-      // }
-      // if (scriptMusicRef.current && scriptMusicRef.current.playing()) {
-      //   scriptMusicRef.current.fade(0.3, 0, 1000)
-      //   setTimeout(() => scriptMusicRef.current?.stop(), 1000)
-      // }
-    } else if (practiceStep === 'completed') {
+      MUSIC.script.fade(1, 0, 1200).on( 'fade', () => {
+        MUSIC.script.stop()
+        MUSIC.duel.play()
+      })
+    } else {
       MUSIC.script.stop()
       MUSIC.duel.stop()
-      // Stop all music
-      // if (scriptMusicRef.current && scriptMusicRef.current.playing()) {
-      //   scriptMusicRef.current.fade(0.3, 0, 1000)
-      //   setTimeout(() => scriptMusicRef.current?.stop(), 1000)
-      // }
-      // if (duelMusicRef.current && duelMusicRef.current.playing()) {
-      //   duelMusicRef.current.fade(0.3, 0, 1000)
-      //   setTimeout(() => duelMusicRef.current?.stop(), 1000)
-      // }
     }
   }, [practiceStep])
 
@@ -536,6 +483,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           createTeacherMessage('You have defeated your opponent!'),
           createTeacherMessage('Now you are ready to challenge the real wizards.'),
         ])
+        MUSIC. duel.fade(1, 0.1, 1500)
       }, TUTORIAL_MESSAGES_DELAY_MS)
     }
 
@@ -583,6 +531,14 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
     [currentWizardId, dispatch, opponentId]
   )
 
+  const handleExitDuel = useCallback(() => {
+    setTutorialMessages((prev) => [...prev, createTeacherMessage('Good luck!')])
+    MUSIC.duel.fade(0.1, 0, 1200).on('fade', () => {
+      MUSIC.duel.stop()
+      onComplete()
+    })
+  }, [onComplete])
+
   const wizard = duelData.wizard1.id === currentWizardId ? duelData.wizard1 : duelData.wizard2
   const opponent = duelData.wizard1.id === opponentId ? duelData.wizard1 : duelData.wizard2
 
@@ -595,7 +551,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
         messages={tutorialMessages}
       />
       <ActionUi wizard={wizard} opponent={opponent} />
-      {duelData.wizard2.force === 0 && <Button onClick={onComplete}>Claim Reward</Button>}
+      {duelData.wizard2.force === 0 && <Button onClick={handleExitDuel}>Claim Reward</Button>}
     </>
   )
 }
