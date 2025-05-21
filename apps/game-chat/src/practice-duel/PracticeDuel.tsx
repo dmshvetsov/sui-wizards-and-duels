@@ -7,7 +7,9 @@ import { WizardEffects } from '@/duel/WizardEffects'
 import { isDevnetEnv } from '@/lib/config'
 import { DuelAction, DuelWizard } from '@/lib/duel/duel-reducer'
 import { ChatMessage } from '@/lib/message'
+import { getSpellSpec } from '@/lib/protocol/spell'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 const PRACTICE_DUEL_CHANNEL = 'practice-duel'
 
@@ -231,7 +233,10 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Throwing Machine', force: 10 } },
+    action: {
+      type: 'SET_WIZARD',
+      payload: { key: 'wizard2', name: 'Throwing Machine', force: 10 },
+    },
   },
   {
     type: 'teacherMessage',
@@ -280,9 +285,15 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 128 } },
+    action: {
+      type: 'SET_WIZARD',
+      payload: { key: 'wizard2', name: 'Apprentice Wizard', force: 128 },
+    },
   },
-  { type: 'duelStateChange', action: { type: 'RESET_DUEL', payload: { wizard1Force: 128, wizard2Force: 128 } } },
+  {
+    type: 'duelStateChange',
+    action: { type: 'RESET_DUEL', payload: { wizard1Force: 128, wizard2Force: 128 } },
+  },
   {
     type: 'teacherMessage',
     message:
@@ -452,6 +463,10 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           type: 'RESET_DUEL',
           payload: { wizard1Force: 128, wizard2Force: 128 },
         })
+        dispatch({
+          type: 'START_DUEL',
+          payload: { countdownSeconds: 0 },
+        })
       }, 300)
     }
   }, [dispatch, duelData.wizard1.force, duelData.wizard2.force])
@@ -461,12 +476,19 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
       const message = input.trim()
       if (message[0] === '@' || message[0] === '!') {
         const targetId = message[0] === '@' ? opponentId : currentWizardId
+        const spellName = message.slice(1).toLowerCase()
+        const spellSpec = getSpellSpec(spellName)
+        if (!spellSpec) {
+          toast.warning(`"${spellName}" is not a spell`)
+          return
+        }
+
         dispatch({
           type: 'CAST_SPELL',
           payload: {
             casterId: currentWizardId,
             targetId,
-            spellName: message.slice(1).toLowerCase(),
+            spellName,
           },
         })
       }
