@@ -101,6 +101,7 @@ export const RealtimeChat = ({
 
       <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-t border-border p-4">
         <Input
+          autoFocus
           className={cn(
             'rounded-full bg-background text-sm transition-all duration-300',
             isConnected && newMessage.trim() ? 'w-[calc(100%-36px)]' : 'w-full'
