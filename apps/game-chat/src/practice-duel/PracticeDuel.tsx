@@ -8,9 +8,10 @@ import { isDevnetEnv } from '@/lib/config'
 import { DuelAction, DuelWizard } from '@/lib/duel/duel-reducer'
 import { ChatMessage } from '@/lib/message'
 import { getSpellSpec } from '@/lib/protocol/spell'
+import { SFX } from '@/lib/sfx'
+import { Howl } from 'howler'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Howl } from 'howler'
 
 const PRACTICE_DUEL_CHANNEL = 'practice-duel'
 
@@ -30,22 +31,6 @@ const MUSIC = {
     preload: true,
   }),
 }
-
-const SFX = {
-  spell: new Howl({
-    src: ['/sfx/spell-sprite.ogg'],
-    sprite: {
-      arrow: [0, 2000],
-      deflect: [5000, 2000],
-      choke: [10000, 2000],
-      throw: [15000, 2000],
-    },
-    volume: 1,
-    preload: true,
-  }),
-}
-
-// Music paths
 
 export function PracticeDuel() {
   return (
