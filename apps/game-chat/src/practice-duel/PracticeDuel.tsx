@@ -275,6 +275,7 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: 'ready' },
   { type: 'opponentMessage', message: '@choke', timeout: 4500 },
 ]
+
 function Action() {
   const { duelData, currentWizardId, opponentId, dispatch } = useOffChainDuel()
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
@@ -299,7 +300,7 @@ function Action() {
     } else if (step.type === 'opponentMessage') {
       setTimeout(() => {
         setTutorialMessages((prev) => [...prev, createOpponentMessage(opponentId, step.message)])
-        const targetId = step.message[0] === '@' ? 'player' : opponentId
+        const targetId = step.message[0] === '@' ? currentWizardId : opponentId
         dispatch({
           type: 'CAST_SPELL',
           payload: {
@@ -313,7 +314,7 @@ function Action() {
     } else if (step.type === 'playerMessage') {
       // action is handled by handleCastSpell
     }
-  }, [currentStepIndex, dispatch, opponentId, step])
+  }, [currentStepIndex, currentWizardId, dispatch, opponentId, step])
 
   const handleCastSpell = useCallback(
     (input: string) => {
@@ -328,17 +329,17 @@ function Action() {
           if (input === 'ready') {
             setCurrentStepIndex((prev) => prev + 1)
           } else {
-            const targetId = input[0] === '@' ? opponentId : 'player'
+            const targetId = input[0] === '@' ? opponentId : currentWizardId
             dispatch({
               type: 'CAST_SPELL',
-              payload: { casterId: 'player', targetId, spellName: input.slice(1).toLowerCase() },
+              payload: { casterId: currentWizardId, targetId, spellName: input.slice(1).toLowerCase() },
             })
             setCurrentStepIndex((prev) => prev + 1)
           }
         }
       }
     },
-    [dispatch, opponentId, step]
+    [currentWizardId, dispatch, opponentId, step]
   )
 
   // Get wizard and opponent data
