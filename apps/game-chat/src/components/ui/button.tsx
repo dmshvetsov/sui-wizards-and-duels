@@ -4,6 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
+import { SFX } from '@/lib/sfx'
 
 type WithLoading = {
   isLoading?: boolean
@@ -42,18 +43,24 @@ export function Button({
   variant,
   size,
   asChild = false,
+  disableSfx = false,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    disableSfx?: boolean
   }) {
   const Comp = asChild ? Slot : 'button'
 
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
+      onClick={(event) => {
+        if (!disableSfx) SFX.buttonClick.play()
+        setTimeout(() => props.onClick?.(event), 200)
+      }}
+      className={cn(buttonVariants({ variant, size, className }))}
     />
   )
 }
