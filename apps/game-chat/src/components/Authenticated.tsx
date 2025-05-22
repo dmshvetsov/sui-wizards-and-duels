@@ -2,8 +2,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PublicKey } from '@mysten/sui/cryptography'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader } from './Loader'
 import { GameMenu } from './GameMenu'
+import { Loader } from './Loader'
 
 export type UserAccount = {
   /** Uniq identifier of the user, piblic key address of the user account */
@@ -14,8 +14,6 @@ export type UserAccount = {
   displayName: string
   /** Public key of the of the connected user account wallet */
   publicKey: PublicKey
-  /** Whether this account is using zkLogin */
-  isZkLogin?: boolean
 }
 
 export interface AuthenticatedComponentProps {
@@ -27,23 +25,23 @@ type AuthenticatedProps = {
 }
 
 export function Authenticated({ component: Component }: AuthenticatedProps) {
-  const user = useCurrentUser()
+  const userAccount = useCurrentUser()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!user) {
+    if (!userAccount) {
       navigate('/signin')
     }
-  }, [user, navigate])
+  }, [userAccount, navigate])
 
-  if (!user) {
+  if (!userAccount) {
     return <Loader />
   }
 
   return (
     <>
-      <GameMenu userAccount={user} />
-      <Component userAccount={user} />
+      <GameMenu userAccount={userAccount} />
+      <Component userAccount={userAccount} />
     </>
   )
 }

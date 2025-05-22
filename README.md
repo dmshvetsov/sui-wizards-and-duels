@@ -13,7 +13,7 @@
 - [x] demo duels against NPCs for fun and engaging learning process and user acquisition
 - [ ] new players welcome reward claim
 - [ ] duels with prizes, players can stake Sui before duel as a prize for the winner
-- [ ] REWARD token
+- [ ] WnD reward token
   - [ ] add use case for the token to the landing
   - [ ] reward players for playing duels
   - [ ] reward new players as welcome gift, after demo duels with NPC

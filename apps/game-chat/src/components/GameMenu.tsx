@@ -18,7 +18,7 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
 
   const balanceMist = balanceQuery.data ? balanceQuery.data.totalBalance : '0'
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     disconnect()
     navigate('/signin')
   }
