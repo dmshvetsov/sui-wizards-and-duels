@@ -5,13 +5,10 @@
 - [ ] landing page (and project pitching deck)
 - [ ] MVP with two-three spells
   - [x] 3-5 spells
-  - [ ] spell visual FX, casting, applying damage and effects
-  - [ ] spell sound FX
-  - [ ] menu music
-  - [ ] duel music
-  - [ ] spell typing visual effects
-  - [ ] spell book with spells and their effects for read outside a duel
-  - [ ] list available spells during duel
+  - [x] spell sound FX
+  - [x] menu music
+  - [x] duel music
+  - [ ] spell visual FX, casting, applying damage and effects (must be done after RPC call optimizations)
 - [x] auto-signing of duel transaction
 - [x] demo duels against NPCs for fun and engaging learning process and user acquisition
 - [ ] new players welcome reward claim
@@ -21,9 +18,13 @@
   - [ ] reward players for playing duels
   - [ ] reward new players as welcome gift, after demo duels with NPC
 - [ ] optimizations
+  - [ ] RPC calls optimizations, set gas coin, resolve object references to reduce number of RPC calls to make a spell
   - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
   - [ ] use gRPC for transaction performance
 - [ ] sponsored transactions, players pay in advance Gas to fund their force
+- [ ] spell book with spells and their effects for read outside a duel
+- [ ] list available spells during duel
+- [ ] spell typing visual effects
 - [ ] Wizard NFTs
   - [ ] reward new players with Wizard NFTs after completing demo duels
   - [ ] grant wizards experience in spell schools they use during duels
@@ -33,6 +34,8 @@
   - [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
   - [ ] equipment and artifacts that can be created or won in a duel as loot
 - [ ] split game into bot vs bot and player vs player modes, allow people to bot on chain package but bots must duel vs bots
+- [ ] leader board
+- [ ] rewrite in a game engine
 
 ## Sui resources
 

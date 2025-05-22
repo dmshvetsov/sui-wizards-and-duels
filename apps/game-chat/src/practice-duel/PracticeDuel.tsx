@@ -508,7 +508,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           createTeacherMessage('You have defeated your opponent!'),
           createTeacherMessage('Now you are ready to challenge the real wizards.'),
         ])
-        MUSIC. duel.fade(1, 0.1, 1500)
+        MUSIC. duel.fade(1, 0.2, 2500)
       }, TUTORIAL_MESSAGES_DELAY_MS)
     }
 

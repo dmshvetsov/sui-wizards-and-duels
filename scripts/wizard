@@ -44,18 +44,23 @@ fi
 
 if [ $MODULE_METHOD = "spell::cast_arrow" ]; then
   DUEL_OID=$3
-  TARGET_ADDRESS=$4
+  DUELIST_CAP_OID=$4
+  TARGET_ADDRESS=$5
   if [ -z "$DUEL_OID" ]; then
-    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID: no value> <TARGET_ADDRESS: no value>"
+    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID: no value> <DUELIST_CAP_OID: no value> <TARGET_ADDRESS: no value>"
+    exit 1
+  fi
+  if [ -z "$DUELIST_CAP_OID" ]; then
+    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID:$3> <DUELIST_CAP_OID: no value> <TARGET_ADDRESS: no value>"
     exit 1
   fi
   if [ -z "$TARGET_ADDRESS" ]; then
-    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID:$3> <TARGET_ADDRESS: no value>"
+    echo "Usage: $0 <MODULE_METHOD:$1> <WIZARD_ADDRESS:$2> <DUEL_OID:$3> <DUELIST_CAP_OID:$4> <TARGET_ADDRESS: no value>"
     exit 1
   fi
 
   sui client ptb \
-    --move-call "$PID::duel::use_force" 4 \
+    --move-call "$PID::duel::use_force" @$DUEL_OID @$DUELIST_CAP_OID 4 \
     --assign force \
     --move-call "${PID}::spell::cast_arrow" force \
     --assign damage \
