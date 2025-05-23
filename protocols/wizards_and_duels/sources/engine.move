@@ -15,14 +15,16 @@ module wizards_and_duels::engine;
 /// * `(u64, u64, vector<u8>, vector<u8>)` - Updated (caster_force, target_force, caster_effects, target_effects)
 ///
 /// Rules:
-/// if caster's trhown > 0 then if damage is 0 then set caster's deflect to 0 else set caster's deflect to 0
-/// if target's deflect > 0 set damage to 0 and set caster's thrown to 0 and set deflect to 0
-/// if damage > 0 set caster's thrown to 0 and caster's choke to 0 and reduce target_force by damage but not less than 0
-/// if target's choke > 0 them set target's deflect to 0
-/// if target's choke >= 3 them set target's force to 0
-/// if caster's throw > 0 and target's deflect is 0 set target's summon effect to 0 and target's choke effect to 0 and set throw to 0
+/// - If damage > 0 and target has deflect, set target damage to 0, deflect half of damage to caster and consume deflect
+/// - If damage > 0, reset caster's throw and choke effects and reduce target's force
+/// - If target has choke, remove deflect
+/// - If target has choke level 3 or higher, reduce force to 0
+/// - If target has throw, remove choke from caster, remove delfect from target and consume target throw
+/// - For choke effect: applied to target, compoundable, removes deflect
+/// - For throw effect: applied to target, removes choke from caster if successful
+/// - For deflect effect: applied to caster, not compoundable
 ///
-/// choke effect applies on target, throw applien on target, deflect applies on caster
+/// choke effect applies on target, throw applies on target, deflect applies on caster
 public(package) fun settle(
     _caster: address,
     _target: address,
@@ -44,25 +46,32 @@ public(package) fun settle(
     let target_deflect = *vector::borrow(&target_effects, 2);
 
     // Create mutable copies for updating
-    let mut new_target_force = target_force;
+    let mut new_caster_force = caster_force;
     let mut new_caster_choke = caster_choke;
     let mut new_caster_thrown = caster_thrown;
     let mut new_caster_deflect = caster_deflect;
-    let mut new_target_choke = target_choke;
+    let mut new_target_force = target_force;
     let mut new_target_deflect = target_deflect;
     let mut new_target_thrown = target_thrown;
 
-    if (target_deflect > 0 && mut_damage > 0) {
-        // use target deflect to defend the target from arrow damage or throw effect
+    // deflect defends from damage
+    if (mut_damage > 0 && target_deflect > 0) {
         mut_damage = 0;
-        new_target_thrown = 0;
         new_target_deflect = 0;
+        if (caster_deflect > 0) {
+            new_caster_deflect = 0;
+        } else {
+            new_caster_force = new_caster_force - (damage / 2);
+        };
     };
 
+    // cause damage
     if (mut_damage > 0) {
+        // Reset caster's throw and choke effects when dealing damage
         new_caster_thrown = 0;
         new_caster_choke = 0;
 
+        // Apply damage to target's force
         if (target_force >= mut_damage) {
             new_target_force = target_force - mut_damage;
         } else {
@@ -71,37 +80,24 @@ public(package) fun settle(
     };
 
     if (target_choke > 0) {
+        // deflect can't defend from choke and choke remove deflect
         new_target_deflect = 0;
+        if (target_choke >= 3) {
+            // If target has choke level 3 or higher, reduce force to 0
+            new_target_force = 0;
+        };
     };
 
-    if (target_choke >= 3) {
-        new_target_force = 0;
-    };
-
-    // caster trying to throw the target, if not deflected see check above
     if (target_thrown > 0) {
-        // successful throw, removes ooponent effect of choke on the caster
-        new_caster_choke = 0;
-        // caster thrown is used set effect on target to 0
-        new_target_thrown = 0;
+        // throw safes from choke
+        new_caster_choke = 0; 
+        // throw removes deflect from target
+        new_target_deflect = 0; 
+        // throw effect must be consumed
+        new_target_thrown = 0; 
     };
 
-    // Reset some effects if they are not casted in current action
-    // if caster deflect or taget thrown by caster or caster produced damage then current caster action is not choke, reset target's choke
-    let is_current_action_choke = target_thrown == 0 && caster_deflect == 0 && mut_damage == 0;
-    if (!is_current_action_choke) {
-        new_target_choke = 0;
-    };
-    let is_current_action_deflect = target_choke == 0 && caster_deflect == 0 && mut_damage == 0;
-    if (!is_current_action_deflect) {
-        new_caster_deflect = 0;
-    };
-
-    // Reduce casters one time effects
-    new_caster_thrown = if (new_caster_thrown > 1) { new_caster_thrown - 1 } else { 0 };
-    new_caster_deflect = if (new_caster_deflect > 1) { new_caster_deflect - 1 } else { 0 };
-
-    // Some effects are capped at 1
+    // Cap throw and deflect at 1
     if (new_caster_thrown > 1) {
         new_caster_thrown = 1;
     };
@@ -110,9 +106,9 @@ public(package) fun settle(
     };
 
     (
-        caster_force, 
-        new_target_force, 
-        vector[new_caster_choke, new_caster_thrown, new_caster_deflect], 
-        vector[new_target_choke, new_target_thrown, new_target_deflect]
+        new_caster_force,
+        new_target_force,
+        vector[new_caster_choke, new_caster_thrown, new_caster_deflect],
+        vector[target_choke, new_target_thrown, new_target_deflect]
     )
 }
