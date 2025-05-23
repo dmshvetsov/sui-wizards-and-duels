@@ -28,7 +28,7 @@ const MUSIC = {
 
 const UNCONNECTED_COUNTER_STATE = 0
 
-const THREE_SECONDS_IN_MS = 1000
+const THREE_SECONDS_IN_MS = 3000
 const ONE_SECOND_IN_MS = 1000
 
 type WaitState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'paired'
