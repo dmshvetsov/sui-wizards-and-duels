@@ -4,7 +4,7 @@ export function Signing() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="flex flex-col items-center gap-4">
-        <h1 className="text-2xl font-bold mb-4">Wizards & Duels</h1>
+        <h1 className="mb-4">Wizards  Duels</h1>
 
         {/* Enoki zkLogin */}
         <div className="mb-4">
