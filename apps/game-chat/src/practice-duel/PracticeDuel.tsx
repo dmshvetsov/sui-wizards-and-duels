@@ -438,6 +438,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
         username="Promising Wizard"
         onMessage={handleUserInput}
         messages={tutorialMessages}
+        disablePersistentStorage
       />
       <ActionUi wizard={wizard} opponent={opponent} />
       {isDevnetEnv && (
