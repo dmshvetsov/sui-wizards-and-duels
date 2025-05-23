@@ -17,7 +17,6 @@ const USER_ACCOUNT_TABLE = 'user_accounts'
  * Create or update a link between a wallet address and app auth user record
 *
  * @param suiAddress The Sui wallet address from Enoki
- * @param isZkLogin Whether the user authenticated with zkLogin
  * @param displayName The display name for the user
  * @returns The created or updated user metadata
  */
