@@ -209,7 +209,7 @@ public(package) fun cast_damage(duel: &mut Duel, caster: address, target: addres
     assert!(caster == duel.wizard1 || caster == duel.wizard2, ENotDuelWizard);
 
     if (duel.wizard1 == target) {
-        let (_, target_force, caster_effects, target_effects) = engine::settle(
+        let (caster_force, target_force, caster_effects, target_effects) = engine::settle(
             caster,
             target,
             amount,
@@ -218,13 +218,14 @@ public(package) fun cast_damage(duel: &mut Duel, caster: address, target: addres
             duel.wizard2_effects,
             duel.wizard1_effects,
         );
+        duel.wizard2_force = caster_force;
         duel.wizard1_force = target_force;
-        duel.wizard1_effects = caster_effects;
-        duel.wizard2_effects = target_effects;
+        duel.wizard2_effects = caster_effects;
+        duel.wizard1_effects = target_effects;
         return
     };
     if (duel.wizard2 == target) {
-        let (_, target_force, caster_effects, target_effects) = engine::settle(
+        let (caster_force, target_force, caster_effects, target_effects) = engine::settle(
             caster,
             target,
             amount,
@@ -233,6 +234,7 @@ public(package) fun cast_damage(duel: &mut Duel, caster: address, target: addres
             duel.wizard1_effects,
             duel.wizard2_effects,
         );
+        duel.wizard1_force = caster_force;
         duel.wizard2_force = target_force;
         duel.wizard1_effects = caster_effects;
         duel.wizard2_effects = target_effects;
