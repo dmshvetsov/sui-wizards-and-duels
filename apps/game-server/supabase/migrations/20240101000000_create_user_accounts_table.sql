@@ -16,15 +16,16 @@ CREATE POLICY "Allow public read access to user_accounts"
   USING (true);
 
 -- Create policy for insert/update
-CREATE POLICY "Allow anon insert to user_accounts"
+CREATE POLICY "Allow users to insert their own account"
   ON public.user_accounts
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Allow anon update to user_accounts"
+CREATE POLICY "Allow users to update their own account"
   ON public.user_accounts
   FOR UPDATE
-  USING (true);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- Create function to update updated_at on user_accounts update
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
