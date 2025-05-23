@@ -47,7 +47,7 @@ export function Start(props: { userAccount: UserAccount }) {
 
       <div className="w-full flex justify-between items-center mb-8">
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+          <div className="w-16 h-16 bg-indigo-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙</span>
           </div>
           <p className="font-semibold">
@@ -59,7 +59,7 @@ export function Start(props: { userAccount: UserAccount }) {
         <div className="text-xl font-bold">VS</div>
 
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2">
+          <div className="w-16 h-16 bg-orange-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙‍♂️</span>
           </div>
           <p className="font-semibold">

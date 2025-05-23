@@ -620,7 +620,7 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
 
       <div className="flex justify-between items-start py-8 px-4 w-full">
         <div className="flex flex-col items-center w-1/3">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+          <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-xl">🧙</span>
           </div>
           <p className="font-semibold text-sm">{opponent.id}</p>
@@ -632,7 +632,7 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
         <div className="text-lg font-bold flex items-center">VS</div>
 
         <div className="flex flex-col items-center w-1/3">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+          <div className="w-12 h-12 bg-indigo-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-xl">🧙‍♂️</span>
           </div>
           <p className="font-semibold text-sm">You</p>
@@ -660,7 +660,7 @@ function Result() {
 
       <div className="flex justify-between w-full mb-6">
         <div className="text-center">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+          <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙</span>
           </div>
           <p className="font-semibold">{duelData.wizard2.id}</p>
@@ -668,7 +668,7 @@ function Result() {
         </div>
 
         <div className="text-center">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+          <div className="w-12 h-12 bg-indigo-300 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙‍♂️</span>
           </div>
           <p className="font-semibold">You</p>

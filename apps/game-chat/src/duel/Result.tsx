@@ -92,7 +92,7 @@ export function Result(props: { userAccount: UserAccount }) {
           <div className="w-full flex justify-between items-center mb-6">
             <div className="flex flex-col items-center">
               <div
-                className={`w-16 h-16 ${wizard1 === winner ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center mb-2`}
+                className={`w-16 h-16 ${wizard1 === winner ? 'bg-yellow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
               >
                 <span className="text-2xl">🧙</span>
               </div>
@@ -110,7 +110,7 @@ export function Result(props: { userAccount: UserAccount }) {
 
             <div className="flex flex-col items-center">
               <div
-                className={`w-16 h-16 ${wizard2 === winner ? 'bg-green-100' : 'bg-red-100'} rounded-full flex items-center justify-center mb-2`}
+                className={`w-16 h-16 ${wizard2 === winner ? 'bg-yerllow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
               >
                 <span className="text-2xl">🧙‍♂️</span>
               </div>
