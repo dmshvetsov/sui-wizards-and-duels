@@ -183,45 +183,45 @@ const SCRIPT: ScriptStep[] = [
     type: 'duelStateChange',
     action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Wood Target', force: 20 } },
   },
-  { type: 'teacherMessage', message: 'Welcome to practice ground' },
+  { type: 'teacherMessage', message: 'Welcome to Wizards & Duels practice ground.' },
   {
     type: 'teacherMessage',
     message:
-      'Let\'s practice your skills, here is a wood target. Hit it with a magic arrow by typing "@arrow"',
+      'I\'ll teach you how to use basic spells. If you are seasoned wizard feel free to skip practice with "Skip Practice" button below.',
+  },
+  {
+    type: 'teacherMessage',
+    message:
+      'Here is a wood target, hit it with a magic arrow by typing "@arrow"',
   },
   { type: 'playerMessage', message: '@arrow' },
   {
     type: 'teacherMessage',
     message:
-      'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell. This spell cause damage to opponent.',
+      'Good! "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell. This spell cause damage to opponent force you can see your opponent force bar below. If magic force goes to 0 that means defeat.',
   },
   {
     type: 'teacherMessage',
-    message: 'This Wood target is strong stuff, let\'s try to hit it once again by typing "@arrow"',
+    message: 'This Wood target is strong one, let\'s try to hit it once again by typing "@arrow"',
   },
   { type: 'playerMessage', message: '@arrow' },
   {
     type: 'teacherMessage',
     message:
-      'Good, as you can see in your future duels, for sure many to come, your typing skills matter.',
+      'Good, as you can see, in duels, for sure many to come, your typing skills matter.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
-  { type: 'teacherMessage', message: 'Now it is time to practice defensive spell !deflect.' },
-  {
-    type: 'teacherMessage',
-    message:
-      'Your next practice target is the Arrow Machine. It will cast arrows at you. You need to defend yourself!',
-  },
+  { type: 'teacherMessage', message: 'Now it is time to practice defensive deflect spell. Your next practice target is an Arrow Machine.' },
   { type: 'teacherMessage', message: 'Type "ready" when you are ready for the next task' },
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
-    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Arrow Machine', force: 16 } },
+    action: { type: 'SET_WIZARD', payload: { key: 'wizard2', name: 'Arrow Machine', force: 25 } },
   },
   {
     type: 'teacherMessage',
     message:
-      'Defend yourself agains an @arrow spell from the Machine by casting a !deflect spell. Let`s practice it.',
+      'This Machine will cast magic arrows at you, same spell as you used to crush the Wood Target. Defend yourself agains @arrow spell from the Machine by casting a "!deflect" spell. Let`s practice it.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
@@ -231,7 +231,13 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Look, You\'ve got "deflect" spell effect on yourself, You can see all current effects below your and opponents avatar',
+      'Look, You\'ve got "deflect" spell effect on yourself, You can see all current effects below your and opponent\'s avatar',
+    timeout: TUTORIAL_MESSAGES_DELAY_MS,
+  },
+  {
+    type: 'teacherMessage',
+    message:
+      '"!" sign means you are casting a spell on yourself, and "deflect" effect defends you against spells that cause damage like "arrow" spell. As soon as opponet try to deal damage your "deflect" effect will gone but you will get no damage.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   { type: 'teacherMessage', message: 'Say "ready" and the machine will throw an arrow at you...' },
@@ -240,7 +246,7 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      '"!" sign means you are casting a spell on yourself, and "deflect" effect defends you against attacks like "arrow" spell. As soon as opponet try to deal damage to you your "deflect" effect will gone but you will get no damage.',
+      'Your deflect effect is gone, but you got no damage. A great advantage of deflect spell is that part of deflected damage is returned to the opponent.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
@@ -279,17 +285,17 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Throw spell usefull for removing effects from other spells but it is useless from any sort of damage like the one that cause magic arrows.',
+      'Throw spell usefull for removing effects from other spells but it is useless agaist any sort of damage like the one that cause magic arrows.',
   },
   {
     type: 'teacherMessage',
     message:
-      'Any spell cost you force. The force is your life power, you will be defeated if you lose all of your force. But beauty of "throw" spell is that it requires the least amount of force from all known spells.',
+      'Any spell cost you force. The force is your life power. Remember? You will be defeated if you lose all of your force. But beauty of "throw" spell is that it requires the least amount of force from all known spells.',
   },
   {
     type: 'teacherMessage',
     message:
-      'As we learned damage from "arrow" spell reduces force of the target, so "throw" is superiour against other effect spells but not effective against spells that cause damage.',
+      'As we learned damage from "arrow" spell reduces force of the target, so "throw" is superiour against other effect spells out there but has no effect against arrow spell.',
   },
   {
     type: 'teacherMessage',
@@ -300,7 +306,7 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Machine is able to disarm your deflect spell, that costs 3 force with throw spell that costs 2. If you continue to cast deflect against theow you will lose advantage in a duel.',
+      'Machine is able to disarm your deflect spell, that costs 3 force with throw spell that costs 2. If you continue to cast deflect against opponent that disarms your deflect with throw spell you will lose advantage in a duel.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
   {
@@ -318,7 +324,7 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Tell me whan you\'re "ready" to face him.',
+      'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Tell me whan you\'re "ready" to learn last spell for today.',
   },
   { type: 'playerMessage', message: 'ready' },
   {
@@ -335,12 +341,12 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'Listen carefully, "choke" is dangerous spell. if it is cast on the opponent 3 times it will crush him in an instant. "defelct" can\'t defend from it but as we learned you can protect yourself from opponent effect such as "choke" with "throw" spell as well.',
+      'Listen carefully, "choke" is dangerous spell. if it is cast on the opponent 3 times it will crush him in an instant. "deflect" can\'t defend from it but as we learned you can protect yourself from opponent effects such as "choke" with "throw" spell.',
   },
   {
     type: 'teacherMessage',
     message:
-      'Use 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. ',
+      'Use all 4 spells "arrow", "throw", "choke", and "deflect" you learned to defeat your next opponent. Remember to use "@" to cast spells on opponet and "!" on yourself. ',
   },
   {
     type: 'teacherMessage',

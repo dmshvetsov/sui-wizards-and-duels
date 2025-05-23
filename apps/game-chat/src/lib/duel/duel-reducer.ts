@@ -5,9 +5,9 @@
 export type WizardEffects = [
   /** choke */
   number,
-  /** deflect */
+  /** throw */
   number,
-  /** throw  */
+  /** deflect */
   number,
 ]
 
@@ -218,9 +218,14 @@ function applyDamage(
     newState.wizard2 = newTarget
   }
 
-  // If target has deflect, nullify damage and consume deflect
+  // If target has deflect, nullify damage, cause half damage to the caster and consume deflect
   if (newTarget.effects[2] > 0) {
     newTarget.effects[2] = 0
+    if (newCaster.effects[2] > 0) {
+      newCaster.effects[2] = 0
+    } else {
+      newCaster.force = Math.max(0, newCaster.force - Math.floor(damage / 2))
+    }
     return newState
   }
 
