@@ -83,10 +83,10 @@ export function Result(props: { userAccount: UserAccount }) {
       {winner ? (
         <div className="w-full mb-8">
           <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mb-3 border-4 border-yellow-400">
+            <div className="w-24 h-24 flex items-center justify-center mb-4">
               <span className="text-4xl">👑</span>
             </div>
-            <p className="text-xl font-bold text-yellow-600">{displayName(winner)} Wins!</p>
+            <p className="text-xl font-bold">{displayName(winner)} Wins!</p>
           </div>
 
           <div className="w-full flex justify-between items-center mb-6">
@@ -96,13 +96,13 @@ export function Result(props: { userAccount: UserAccount }) {
               >
                 <span className="text-2xl">🧙</span>
               </div>
-              <p className="font-semibold">{displayName(wizard1)}</p>
+              <p className="font-semibold">{wizard1 === props.userAccount.id ? 'You' : displayName(wizard1)}</p>
               <p className="text-sm text-gray-600">Final Force: {wizard1Force}</p>
               {wizard1 === winner && (
-                <p className="text-xs text-green-600 font-semibold mt-1">WINNER</p>
+                <p className="text-xs text-lime-800 font-semibold mt-1">WINNER</p>
               )}
               {wizard1 === loser && (
-                <p className="text-xs text-red-600 font-semibold mt-1">DEFEATED</p>
+                <p className="text-xs text-red-800 font-semibold mt-1">DEFEATED</p>
               )}
             </div>
 
@@ -114,20 +114,20 @@ export function Result(props: { userAccount: UserAccount }) {
               >
                 <span className="text-2xl">🧙‍♂️</span>
               </div>
-              <p className="font-semibold">{displayName(wizard2)}</p>
+              <p className="font-semibold">{wizard2 === props.userAccount.id ? 'You' : displayName(wizard2)}</p>
               <p className="text-sm text-gray-600">Final Force: {wizard2Force}</p>
               {wizard2 === winner && (
-                <p className="text-xs text-green-600 font-semibold mt-1">WINNER</p>
+                <p className="text-xs font-semibold mt-1">WINNER</p>
               )}
               {wizard2 === loser && (
-                <p className="text-xs text-red-600 font-semibold mt-1">DEFEATED</p>
+                <p className="text-xs text-red-800 font-semibold mt-1">DEFEATED</p>
               )}
             </div>
           </div>
 
           <div className="text-center mb-6">
             {isCurrentUserWinner ? (
-              <p className="text-green-600 font-semibold">
+              <p className="font-semibold">
                 Congratulations! You have won the duel and gained magical force!
               </p>
             ) : isCurrentUserLoser ? (
@@ -148,13 +148,13 @@ export function Result(props: { userAccount: UserAccount }) {
       )}
 
       {duelistCap != null ? (
-        <ButtonWithFx onClick={handleEndDuel} className="w-full" disabled={isTxInProgress} isLoading={isTxInProgress}>
+        <ButtonWithFx onClick={handleEndDuel} disabled={isTxInProgress} isLoading={isTxInProgress}>
           {isCurrentUserWinner
             ? 'Claim your opponent force and reward'
             : 'Claim participation reward'}
         </ButtonWithFx>
       ) : (
-        <Button onClick={handleNavigateToDuelgound} className="w-full">
+        <Button onClick={handleNavigateToDuelgound}>
           Back to Duelground
         </Button>
       )}
