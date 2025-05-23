@@ -42,7 +42,7 @@ createRoot(rootElement).render(
     <SuiClientProvider networks={networkConfig} defaultNetwork={DEFAULT_NETWORK}>
       <EnokiSetup apiKey={ENOKI_API_KEY} providers={authProviders} />
       <WalletProvider autoConnect>
-        <AppClientSetup encryptionKey={ENOKI_API_KEY} />
+        <AppClientSetup />
         <App />
       </WalletProvider>
     </SuiClientProvider>
