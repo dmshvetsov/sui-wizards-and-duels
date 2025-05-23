@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { displayName, type ChatMessage } from '@/lib/message'
+import { displayName, isSpell, type ChatMessage } from '@/lib/message'
 
 interface ChatMessageItemProps {
   message: ChatMessage
@@ -17,27 +17,32 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
       >
         {showHeader && (
           <div
-            className={cn('flex items-center gap-2 text-xs px-3', {
+            className={cn('flex items-center gap-2 text-xs', {
               'justify-end flex-row-reverse': isOwnMessage,
             })}
           >
             <span className="font-medium">{isOwnMessage ? 'you' : displayName(message)}</span>
-            <span className="text-foreground/50 text-xs">
-              {new Date(message.timestamp).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true,
-              })}
-            </span>
           </div>
         )}
-        <div
-          className={cn(
-            'py-2 px-3 rounded-xl text-sm w-fit',
-            isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+        <div className="relative mx-2 w-fit">
+          {isSpell(message) && (
+            <div className="absolute inset-px transitiona-all duration-1000 bg-gradient-to-r from-indigo-700 via-orange-700 to-indigo-500 rounded-full blur-xs animate-pulse"></div>
           )}
-        >
-          {message.text}
+          <div
+            className={cn(
+              'relative items-center justify-center relative py-2 px-3 rounded-md text-sm w-fit',
+              {
+                'bg-primary text-primary-foreground': isOwnMessage && !isSpell(message),
+                'bg-muted text-foreground': !isOwnMessage && !isSpell(message),
+                'italic bg-linear-65 from-orange-600 to-orange-800 text-primary-foreground border-1 border-orange-600':
+                  isSpell(message) && !isOwnMessage,
+                'italic bg-linear-295 from-indigo-600 to-indigo-800 text-primary-foreground border-1 border-indigo-600':
+                  isSpell(message) && isOwnMessage,
+              }
+            )}
+          >
+            {message.text}
+          </div>
         </div>
       </div>
     </div>

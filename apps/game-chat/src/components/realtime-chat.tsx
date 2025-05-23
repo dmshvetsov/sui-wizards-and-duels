@@ -14,6 +14,7 @@ interface RealtimeChatProps {
   onMessage?: (messages: string) => void
   onIncomingMessage?: (message: string) => void
   messages?: ChatMessage[]
+  disablePersistentStorage?: boolean
 }
 
 /**
@@ -31,6 +32,7 @@ export const RealtimeChat = ({
   onMessage,
   onIncomingMessage,
   messages: initialMessages = [],
+  disablePersistentStorage,
 }: RealtimeChatProps) => {
   const { containerRef, scrollToBottom } = useChatScroll()
 
@@ -42,6 +44,7 @@ export const RealtimeChat = ({
     roomName,
     username,
     onIncomingMessage,
+    disablePersistentStorage,
   })
   const [newMessage, setNewMessage] = useState('')
 
@@ -66,7 +69,9 @@ export const RealtimeChat = ({
   const handleSendMessage = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
-      if (!newMessage.trim() || !isConnected) return
+      if (!newMessage.trim() || !isConnected) {
+        return
+      }
 
       sendMessage(newMessage)
       if (onMessage) {
@@ -103,11 +108,12 @@ export const RealtimeChat = ({
         </div>
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-t border-border p-4">
+      <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-border py-4">
         <Input
-          autoFocus
+          id="user-input"
+          name="user-input"
           className={cn(
-            'rounded-full bg-background text-sm transition-all duration-300',
+            'rounded-md bg-background text-sm transition-all duration-300',
             isConnected && newMessage.trim() ? 'w-[calc(100%-36px)]' : 'w-full'
           )}
           type="text"

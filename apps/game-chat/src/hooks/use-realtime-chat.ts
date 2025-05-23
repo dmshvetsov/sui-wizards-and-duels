@@ -8,11 +8,17 @@ interface UseRealtimeChatProps {
   roomName: string
   username: string
   onIncomingMessage?: (message: string) => void
+  disablePersistentStorage?: boolean
 }
 
 const EVENT_MESSAGE_TYPE = 'message'
 
-export function useRealtimeChat({ roomName, username, onIncomingMessage }: UseRealtimeChatProps) {
+export function useRealtimeChat({
+  roomName,
+  username,
+  onIncomingMessage,
+  disablePersistentStorage,
+}: UseRealtimeChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [channel, setChannel] = useState<ReturnType<typeof createRoom> | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -63,14 +69,16 @@ export function useRealtimeChat({ roomName, username, onIncomingMessage }: UseRe
       // Update local state immediately for the sender
       setMessages((current) => [...current, message])
 
-      await createMessage(message)
+      if (!disablePersistentStorage) {
+        await createMessage(message)
+      }
       await channel.send({
         type: 'broadcast',
         event: EVENT_MESSAGE_TYPE,
         payload: message,
       })
     },
-    [channel, isConnected, roomName, username]
+    [channel, isConnected, roomName, username, disablePersistentStorage]
   )
 
   return { messages, sendMessage, isConnected }

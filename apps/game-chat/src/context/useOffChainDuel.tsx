@@ -45,7 +45,12 @@ export type OffChainDuelContextValue = {
   opponentId: string
 }
 
-const initialDuelData = createInitialDuelState('practice', 'player', 'opponent')
+const initialDuelData = createInitialDuelState({
+  id: 'practice',
+  wizard1Id: 'player',
+  wizard2Id: 'opponent',
+  initialForce: 128,
+})
 
 const defaultContextValue: OffChainDuelContextValue = {
   duelState: 'loading',

@@ -254,8 +254,6 @@ function applyEffect(
   effectType: 'choke' | 'throw' | 'deflect',
   value: number
 ): DuelState {
-  console.debug('apply effect', state, caster, target, effectType, value)
-
   // Get new references to wizards
   const newCasterEffects: WizardEffects =
     caster.id === state.wizard1.id ? [...state.wizard1.effects] : [...state.wizard2.effects]

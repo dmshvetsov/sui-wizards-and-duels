@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { ButtonWithFx } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 export function Landing() {
@@ -17,7 +17,7 @@ export function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 mt-4">
-            <Button onClick={handleLaunchGmae}>Launch Game</Button>
+            <ButtonWithFx onClick={handleLaunchGmae}>Launch Game</ButtonWithFx>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function Landing() {
 
       <div className="flex flex-col items-center text-center">
         <div className="flex flex-col sm:flex-row gap-6 mb-12">
-          <Button onClick={handleLaunchGmae}>Launch Game</Button>
+          <ButtonWithFx onClick={handleLaunchGmae}>Launch Game</ButtonWithFx>
         </div>
       </div>
 

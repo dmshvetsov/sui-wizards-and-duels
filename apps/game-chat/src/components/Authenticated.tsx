@@ -2,7 +2,6 @@ import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { PublicKey } from '@mysten/sui/cryptography'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GameMenu } from './GameMenu'
 import { Loader } from './Loader'
 
 export type UserAccount = {
@@ -39,9 +38,6 @@ export function Authenticated({ component: Component }: AuthenticatedProps) {
   }
 
   return (
-    <>
-      <GameMenu userAccount={userAccount} />
-      <Component userAccount={userAccount} />
-    </>
+    <Component userAccount={userAccount} />
   )
 }
