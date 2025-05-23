@@ -34,9 +34,9 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
               {
                 'bg-primary text-primary-foreground': isOwnMessage && !isSpell(message),
                 'bg-muted text-foreground': !isOwnMessage && !isSpell(message),
-                'bg-linear-65 from-orange-600 to-orange-800 text-primary-foreground border-1 border-orange-600':
+                'italic bg-linear-65 from-orange-600 to-orange-800 text-primary-foreground border-1 border-orange-600':
                   isSpell(message) && !isOwnMessage,
-                'bg-linear-295 from-indigo-600 to-indigo-800 text-primary-foreground border-1 border-indigo-600':
+                'italic bg-linear-295 from-indigo-600 to-indigo-800 text-primary-foreground border-1 border-indigo-600':
                   isSpell(message) && isOwnMessage,
               }
             )}
