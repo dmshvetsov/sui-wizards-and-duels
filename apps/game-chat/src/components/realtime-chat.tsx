@@ -108,12 +108,12 @@ export const RealtimeChat = ({
         </div>
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-t border-border p-4">
+      <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-border py-4">
         <Input
           id="user-input"
           name="user-input"
           className={cn(
-            'rounded-full bg-background text-sm transition-all duration-300',
+            'rounded-md bg-background text-sm transition-all duration-300',
             isConnected && newMessage.trim() ? 'w-[calc(100%-36px)]' : 'w-full'
           )}
           type="text"
