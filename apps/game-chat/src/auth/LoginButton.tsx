@@ -18,7 +18,6 @@ interface LoginButtonProps {
 export function LoginButton({ provider, label, className }: LoginButtonProps) {
   const { mutate: connect } = useConnectWallet()
   const wallets = useWallets().filter(isEnokiWallet)
-  console.debug('wallets', wallets)
 
   // Find the wallet for the specified provider
   const wallet = wallets.find((wallet) => wallet.provider === provider)
