@@ -43,3 +43,5 @@ export class AppError {
 //         "message": "Transaction validator signing failed due to issues with transaction inputs, please review the errors and try again:\n- Object ID 0x83fdf74aafb830490ac66258cf1a763d914cc775896c22de200f1b97e745daa4 Version 0x192ad1b5 Digest HefdTartVdYJpLT9x56PqyYiUweAMaYiRDEvzT8xfk1D is not available for consumption, current version: 0x192ad1b6"
 //     }
 // }
+
+// Network error 502 Bad Gateway during RPC call
