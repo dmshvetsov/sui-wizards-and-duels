@@ -5,9 +5,9 @@
 export type WizardEffects = [
   /** choke */
   number,
-  /** deflect */
+  /** throw */
   number,
-  /** throw  */
+  /** deflect */
   number,
 ]
 
