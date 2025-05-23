@@ -11,7 +11,7 @@ export function formatMistBalance(balanceMist: string): string {
   }
 
   const suiFormatted = balanceMist.slice(0, balanceMist.length - 9);
-  const mistFormatted = balanceMist.slice(-9, 5);
+  const mistFormatted = balanceMist.slice(-9, -4);
 
   return `${suiFormatted}.${mistFormatted}`;
 }
