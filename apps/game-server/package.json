@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "supabase functions serve --no-verify-jwt",
     "devenv:up": "supabase start",
-    "devnenv:stop": "supabase stop",
+    "devenv:stop": "supabase stop",
     "migration:up": "supabase migration up",
     "migration:diff": "supabase db diff",
     "test": "echo \"Error: no test specified\" && exit 1"
