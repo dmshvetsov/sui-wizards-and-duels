@@ -61,7 +61,11 @@ public(package) fun settle(
         if (caster_deflect > 0) {
             new_caster_deflect = 0;
         } else {
-            new_caster_force = new_caster_force - (damage / 2);
+            if (new_caster_force > damage / 2) {
+                new_caster_force = new_caster_force - (damage / 2);
+            } else {
+                new_caster_force = 0;
+            };
         };
     };
 
