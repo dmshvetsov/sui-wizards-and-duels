@@ -3,6 +3,7 @@ import { RealtimeChat } from '@/components/realtime-chat'
 import { Button } from '@/components/ui/button'
 import { OffChainDuelProvider } from '@/context/OffChainDuelContext'
 import { useOffChainDuel } from '@/context/useOffChainDuel'
+import { ForceBar } from '@/duel/ForceBar'
 import { WizardEffects } from '@/duel/WizardEffects'
 import { isDevnetEnv } from '@/lib/config'
 import { DuelAction, DuelWizard } from '@/lib/duel/duel-reducer'
@@ -10,10 +11,10 @@ import { ChatMessage } from '@/lib/message'
 import { getSpellSpec } from '@/lib/protocol/spell'
 import { SFX } from '@/lib/sfx'
 import { Howl } from 'howler'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-const PRACTICE_DUEL_CHANNEL = 'practice-duel'
+const PRACTICE_DUEL_ID = 'practice-duel'
 
 const TUTORIAL_MESSAGES_DELAY_MS = 800
 
@@ -36,7 +37,7 @@ export function PracticeDuel() {
   return (
     <div className="w-[460px] h-full mx-auto px-4">
       <OffChainDuelProvider
-        duelId={PRACTICE_DUEL_CHANNEL}
+        duelId={PRACTICE_DUEL_ID}
         currentWizardId="player"
         opponentId="opponent"
       >
@@ -53,7 +54,7 @@ function createTeacherMessage(text: string): ChatMessage {
     id: crypto.randomUUID(),
     text,
     username: 'Teacher Wizard',
-    channel: PRACTICE_DUEL_CHANNEL,
+    channel: PRACTICE_DUEL_ID,
     timestamp: new Date().toISOString(),
   }
 }
@@ -63,7 +64,7 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
     id: crypto.randomUUID(),
     text,
     username: opponentName,
-    channel: PRACTICE_DUEL_CHANNEL,
+    channel: PRACTICE_DUEL_ID,
     timestamp: new Date().toISOString(),
   }
 }
@@ -140,7 +141,7 @@ function PracticeDuelContent() {
       MUSIC.duel.stop()
       MUSIC.script.play()
     } else if (practiceStep === 'duel') {
-      MUSIC.script.fade(1, 0, 1200).on( 'fade', () => {
+      MUSIC.script.fade(1, 0, 1200).on('fade', () => {
         MUSIC.script.stop()
         MUSIC.duel.play()
       })
@@ -191,8 +192,7 @@ const SCRIPT: ScriptStep[] = [
   },
   {
     type: 'teacherMessage',
-    message:
-      'Here is a wood target, hit it with a magic arrow by typing "@arrow"',
+    message: 'Here is a wood target, hit it with a magic arrow by typing "@arrow"',
   },
   { type: 'playerMessage', message: '@arrow' },
   {
@@ -207,11 +207,14 @@ const SCRIPT: ScriptStep[] = [
   { type: 'playerMessage', message: '@arrow' },
   {
     type: 'teacherMessage',
-    message:
-      'Good, as you can see, in duels, for sure many to come, your typing skills matter.',
+    message: 'Good, as you can see, in duels, for sure many to come, your typing skills matter.',
     timeout: TUTORIAL_MESSAGES_DELAY_MS,
   },
-  { type: 'teacherMessage', message: 'Now it is time to practice defensive deflect spell. Your next practice target is an Arrow Machine.' },
+  {
+    type: 'teacherMessage',
+    message:
+      'Now it is time to practice defensive deflect spell. Your next practice target is an Arrow Machine.',
+  },
   { type: 'teacherMessage', message: 'Type "ready" when you are ready for the next task' },
   { type: 'playerMessage', message: 'ready' },
   {
@@ -434,7 +437,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
   return (
     <>
       <RealtimeChat
-        roomName={PRACTICE_DUEL_CHANNEL}
+        roomName={PRACTICE_DUEL_ID}
         username="Promising Wizard"
         onMessage={handleUserInput}
         messages={tutorialMessages}
@@ -442,7 +445,9 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
       />
       <ActionUi wizard={wizard} opponent={opponent} />
       {isDevnetEnv && (
-        <Button variant="link" onClick={() => onComplete()}>skip to duel</Button>
+        <Button variant="link" onClick={() => onComplete()}>
+          skip to duel
+        </Button>
       )}
     </>
   )
@@ -502,7 +507,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
         createTeacherMessage('Your oponent has no more force to fight... surely you will win!'),
       ])
     }
-  }, [duelData.wizard2]);
+  }, [duelData.wizard2])
 
   useEffect(() => {
     if (duelData.wizard2.force === 0) {
@@ -515,7 +520,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
           createTeacherMessage('You have defeated your opponent!'),
           createTeacherMessage('Now you are ready to challenge the real wizards.'),
         ])
-        MUSIC. duel.fade(1, 0.2, 2500)
+        MUSIC.duel.fade(1, 0.2, 2500)
       }, TUTORIAL_MESSAGES_DELAY_MS)
     }
 
@@ -578,14 +583,17 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
   return (
     <>
       <RealtimeChat
-        roomName={PRACTICE_DUEL_CHANNEL}
+        roomName={PRACTICE_DUEL_ID}
         username="Promising Wizard"
         onMessage={handleUserInput}
         messages={tutorialMessages}
+        disablePersistentStorage
       />
       <ActionUi wizard={wizard} opponent={opponent} />
       {isDevnetEnv && (
-        <Button variant="link" onClick={() => onComplete()}>skip to completed state</Button>
+        <Button variant="link" onClick={() => onComplete()}>
+          skip to completed state
+        </Button>
       )}
       {duelData.wizard2.force === 0 && <Button onClick={handleExitDuel}>Claim Reward</Button>}
     </>
@@ -593,14 +601,22 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
 }
 
 function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWizard }) {
+  const mimicDuelInterace = useMemo(
+    () => ({
+      id: PRACTICE_DUEL_ID,
+      wizard1: wizard.id,
+      wizard2: opponent.id,
+      wizard1_force: wizard.force,
+      wizard2_force: opponent.force,
+      wizard1_effects: wizard.effects,
+      wizard2_effects: opponent.effects,
+      started_at: 0,
+    }),
+    [opponent.effects, opponent.force, opponent.id, wizard.effects, wizard.force, wizard.id]
+  )
   return (
     <div className="flex flex-col w-full">
-      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden mb-2">
-        <div className="bg-blue-500 h-full" style={{ width: `${(wizard.force / 128) * 100}%` }} />
-      </div>
-      <div className="w-full bg-gray-100 h-4 rounded-full overflow-hidden">
-        <div className="bg-red-500 h-full" style={{ width: `${(opponent.force / 128) * 100}%` }} />
-      </div>
+      <ForceBar duel={mimicDuelInterace} currentWizardId={wizard.id} />
 
       <div className="flex justify-between items-start py-8 px-4 w-full">
         <div className="flex flex-col items-center w-1/3">
@@ -627,9 +643,7 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
       </div>
 
       <div className="flex gap-8 justify-center mt-4 text-center">
-        <Link to="/d">
-          Skip Practice
-        </Link>
+        <Link to="/d">Skip Practice</Link>
       </div>
     </div>
   )
