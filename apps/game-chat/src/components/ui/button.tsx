@@ -88,7 +88,7 @@ export function ButtonWithFx(props: React.ComponentProps<'button'> & WithLoading
   const { onClick, children, isLoading, className, ...restProps } = props
   return (
     <div className={cn("relative inline-flex group", className)}>
-      {!isLoading && <div className="absolute transitiona-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-tilt"></div>}
+      {!isLoading && <div className="absolute transition-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-tilt"></div>}
       <button
         className={cn(
           'relative items-center justify-center bg-primary text-primary-foreground shadow-xs transition-all duration-200',

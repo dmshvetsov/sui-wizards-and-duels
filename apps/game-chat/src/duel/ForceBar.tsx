@@ -11,9 +11,9 @@ export function ForceBar({ duel, currentWizardId }: { duel: Duel; currentWizardI
   return (
     <div className="w-full bg-white flex justify-between items-center gap-2 items-center px-4">
       <div className="w-8">{opponentForce}</div>
-      <div className="w-full bg-linear-to-r from-indigo-500 to-indigo-700 h-2 rounded-md">
+      <div className="w-full bg-gradient-to-r from-indigo-500 to-indigo-800 h-2 rounded-md">
         <div
-          className="bg-linear-to-r from-orange-700 to-orange-500 h-2 rounded-md"
+          className="bg-gradient-to-r from-orange-800 to-orange-500 h-2 rounded-md"
           style={{
             width: `${forceRatio}%`,
             transition: 'width 0.5s ease-in-out',

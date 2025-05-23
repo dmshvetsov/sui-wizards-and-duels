@@ -110,7 +110,7 @@ export function Result(props: { userAccount: UserAccount }) {
 
             <div className="flex flex-col items-center w-1/3">
               <div
-                className={`w-16 h-16 ${wizard2 === winner ? 'bg-yerllow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
+                className={`w-16 h-16 ${wizard2 === winner ? 'bg-yellow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
               >
                 <span className="text-2xl">🧙‍♂️</span>
               </div>
