@@ -63,11 +63,12 @@ export function AppClientSetup() {
                   new AppError('createOrUpdateUserAccount', err).log()
                 })
               }
-            }).catch(err => {
+            })
+            .catch((err) => {
               new AppError('signInWithIdToken', err).log()
             })
         })
-        .catch(err => {
+        .catch((err) => {
           new AppError('createOrUpdateUserAccount', err).log()
         })
     }
