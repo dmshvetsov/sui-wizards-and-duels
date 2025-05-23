@@ -23,6 +23,11 @@ export function AppClientSetup() {
   const address = account?.address ?? null
   const { connectionStatus } = wallet
   useEffect(() => {
+    if (!network) {
+      console.debug(`sui client network is misconfigured, current value ${network}`)
+      return
+    }
+
     if (connectionStatus === 'disconnected') {
       getClient()
         .auth.getSession()
@@ -37,7 +42,14 @@ export function AppClientSetup() {
       enc
         .decrypt(ENOKI_API_KEY, val)
         .then((res) => {
-          const session = JSON.parse(res) as { jwt: string }
+          if (!res) {
+            throw new Error('failed to read zklogin token')
+          }
+
+          const session = JSON.parse(res) as { jwt?: string }
+          if (!session.jwt) {
+            throw new Error('current session missing token')
+          }
 
           getClient()
             .auth.signInWithIdToken({ provider: 'google', token: session.jwt })
@@ -51,9 +63,13 @@ export function AppClientSetup() {
                   new AppError('createOrUpdateUserAccount', err).log()
                 })
               }
+            }).catch(err => {
+              new AppError('signInWithIdToken', err).log()
             })
         })
-        .catch(console.error)
+        .catch(err => {
+          new AppError('createOrUpdateUserAccount', err).log()
+        })
     }
   }, [network, address, connectionStatus])
 
