@@ -2,17 +2,24 @@ import { createClient, RealtimeChannelOptions } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+
+const supabaseClient = createClient(supabaseUrl, supabaseKey)
+
+export const NOT_FOUND_ERR_CODE = 'PGRST116'
+
+export function getClient() {
+  return supabaseClient
+}
 
 export const createRoom = (roomName: string, opts: RealtimeChannelOptions = { config: {} }) => {
-  return supabase.channel(roomName, opts)
+  return getClient().channel(roomName, opts)
 }
 export const removeRoom = (channel: ReturnType<typeof createRoom>) => {
-  return supabase.removeChannel(channel)
+  return getClient().removeChannel(channel)
 }
 
 export const getMessages = (roomName: string) => {
-  return supabase
+  return getClient()
     .from('messages')
     .select()
     .eq('channel', roomName)
@@ -29,7 +36,7 @@ export const createMessage = async ({
   username: string
   channel: string
 }) => {
-  return await supabase.from('messages').insert({
+  return await getClient().from('messages').insert({
     text,
     username,
     channel,
