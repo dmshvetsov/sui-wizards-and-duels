@@ -27,6 +27,7 @@ const MUSIC = {
 
 const UNCONNECTED_COUNTER_STATE = 0
 
+const THREE_SECONDS_IN_MS = 1000
 const ONE_SECOND_IN_MS = 1000
 
 type WaitState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'paired'
@@ -37,6 +38,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const [waitState, setWaitState] = useState<WaitState>('loading')
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
+  const [waitRoomStateIsReconciling, setWaitRoomStateIsReconciling] = useState(false)
 
   const navigate = useNavigate()
 
@@ -46,7 +48,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       id: waitroom.object.waitroom,
       options: { showContent: true },
     },
-    { enabled: waitState !== 'loading', refetchInterval: ONE_SECOND_IN_MS }
+    { enabled: waitState !== 'loading', refetchInterval: THREE_SECONDS_IN_MS }
   )
   const duelistCapQuery = useSuiClientQuery(
     'getOwnedObjects',
@@ -135,8 +137,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     }
 
     const balanceInMist = BigInt(playerBalance.data.totalBalance)
-    // FIXME: also need take into account that waitlist and/or duel and caps creation takes gas
-    const requiredBalanceInMist = 12800000n // 0.0128 SUI in MIST
+    const requiredBalanceInMist = 12800000n * 2n // x2 0.0128 SUI in MIST
 
     console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
 
@@ -168,8 +169,10 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         setWaitState('iddle')
       }
     }
+    setWaitRoomStateIsReconciling(false)
   }, [waitroomState, userAccount.id, waitState])
 
+  const refetchWaitListState = waitroomQuery.refetch
   const handleJoinWaitlist = useCallback(() => {
     signAndExecute(
       { transaction: joinTx() },
@@ -182,15 +185,20 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
         },
+        onSettled() {
+          setWaitRoomStateIsReconciling(true)
+          refetchWaitListState()
+        },
       }
     )
-  }, [signAndExecute])
+  }, [signAndExecute, refetchWaitListState])
 
   const handleLeave = useCallback(() => {
     signAndExecute(
       { transaction: leaveTx() },
       {
         onSuccess(_result) {
+          refetchWaitListState()
           console.debug('waitroom leave tx success', _result)
         },
         onError(err) {
@@ -198,9 +206,13 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
         },
+        onSettled() {
+          setWaitRoomStateIsReconciling(true)
+          refetchWaitListState()
+        },
       }
     )
-  }, [signAndExecute])
+  }, [signAndExecute, refetchWaitListState])
 
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
     return <Loader />
@@ -226,8 +238,8 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           <ButtonWithFx
             className="mt-4"
             onClick={handleLeave}
-            disabled={isSigningAndExecuting}
-            isLoading={isSigningAndExecuting}
+            disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+            isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
           >
             Cancel
           </ButtonWithFx>
@@ -235,14 +247,14 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       ) : waitState === 'needs_funding' ? (
         <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
       ) : (
-          <ButtonWithFx
-            className="mt-12"
-            onClick={handleJoinWaitlist}
-            disabled={isSigningAndExecuting}
-            isLoading={isSigningAndExecuting}
-          >
-            Play
-          </ButtonWithFx>
+        <ButtonWithFx
+          className="mt-12"
+          onClick={handleJoinWaitlist}
+          disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+          isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+        >
+          Play
+        </ButtonWithFx>
       )}
 
       <div className="mt-12">
