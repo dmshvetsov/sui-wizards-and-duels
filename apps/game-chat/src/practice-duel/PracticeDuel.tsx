@@ -27,7 +27,7 @@ const MUSIC = {
   }),
   duel: new Howl({
     src: ['/music/practice-duel.ogg'],
-    volume: 1,
+    volume: 0.8,
     loop: true,
     preload: true,
   }),
@@ -655,11 +655,11 @@ function Result() {
   const isWinner = winner === 'player'
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-full">
       <h2 className="text-2xl font-bold mb-6 text-center">{isWinner ? 'Victory!' : 'Defeat!'}</h2>
 
-      <div className="flex justify-between w-full mb-6">
-        <div className="text-center">
+      <div className="flex items-center  w-full mb-6">
+        <div className="text-center w-1/3">
           <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙</span>
           </div>
@@ -667,7 +667,9 @@ function Result() {
           <p className="text-sm text-gray-600">Force: {duelData.wizard2.force}</p>
         </div>
 
-        <div className="text-center">
+        <div className="text-xl font-bold grow text-center">VS</div>
+
+        <div className="text-center w-1/3">
           <div className="w-12 h-12 bg-indigo-300 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙‍♂️</span>
           </div>

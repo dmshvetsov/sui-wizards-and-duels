@@ -77,7 +77,7 @@ export function Result(props: { userAccount: UserAccount }) {
   const isCurrentUserLoser = props.userAccount.id === loser
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen">
       <h2 className="text-2xl font-bold mb-6 text-center">Duel Results</h2>
 
       {winner ? (
@@ -89,8 +89,8 @@ export function Result(props: { userAccount: UserAccount }) {
             <p className="text-xl font-bold">{displayName(winner)} Wins!</p>
           </div>
 
-          <div className="w-full flex justify-between items-center mb-6">
-            <div className="flex flex-col items-center">
+          <div className="w-full flex items-center mb-6">
+            <div className="flex flex-col items-center w-1/3">
               <div
                 className={`w-16 h-16 ${wizard1 === winner ? 'bg-yellow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
               >
@@ -106,9 +106,9 @@ export function Result(props: { userAccount: UserAccount }) {
               )}
             </div>
 
-            <div className="text-xl font-bold">VS</div>
+            <div className="text-xl font-bold grow text-center">VS</div>
 
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-1/3">
               <div
                 className={`w-16 h-16 ${wizard2 === winner ? 'bg-yerllow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
               >

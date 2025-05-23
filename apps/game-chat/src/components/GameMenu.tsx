@@ -24,7 +24,7 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
   }
 
   return (
-    <div className="w-full flex gap-4 justify-end items-center px-12 py-8">
+    <div className="fixed bottom-0 left-0 w-full flex gap-4 justify-center items-center px-12 py-8">
       <div>
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{userAccount.id}</span>
       </div>

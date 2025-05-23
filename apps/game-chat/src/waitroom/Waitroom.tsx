@@ -1,4 +1,5 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
+import { GameMenu } from '@/components/GameMenu'
 import { Loader } from '@/components/Loader'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
@@ -157,7 +158,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       return
     }
 
-    console.debug('waitroom data', waitroomState)
     const queue = (waitroomState.content.fields as Waitroom).queue
     const isInQueue = queue.find((pair) => pair.fields.wizard1 === userAccount.id) != null
     if (isInQueue) {
@@ -219,7 +219,8 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center mt-[15%]">
+    <div className="flex flex-col items-center justify-center h-screen">
+      <GameMenu userAccount={userAccount} />
       <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
       <p>Join other player in Player vs Player Wizards Duels.</p>
       <p>Defeat your opponent to take away his Sui force.</p>
@@ -265,13 +266,18 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       </div>
 
       {onlineCount === 1 && (
-        <p className="mt-2">
-          You are the only one in the Duelground. Wait for others to join or invite friends with the
-          following link <span className="font-semibold">{window.location.toString()}</span>
-        </p>
+        <>
+          <p className="mt-2 text-center">
+            You are the only one in the Duelground. Wait for others to join or invite friends with
+            the following link
+          </p>
+          <p>
+            <span className="font-semibold">{window.location.toString()}</span>
+          </p>
+        </>
       )}
       {isDevnetEnv && (
-        <div className="bottom-0 left-0 absolute pl-6 pb-8 text-xs">
+        <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
           <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
           <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
           <pre className="text-gray-600 mt-2">

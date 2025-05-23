@@ -42,11 +42,11 @@ export function Start(props: { userAccount: UserAccount }) {
   const canStartDuel = isCurrentUserInDuel && !isStarting && duel.started_at === 0
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen">
       <h2 className="text-2xl font-bold mb-6 text-center">Get ready for the Duel!</h2>
 
-      <div className="w-full flex justify-between items-center mb-8">
-        <div className="flex flex-col items-center">
+      <div className="w-full flex items-center mb-8">
+        <div className="flex flex-col items-center w-1/3">
           <div className="w-16 h-16 bg-indigo-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙</span>
           </div>
@@ -56,9 +56,9 @@ export function Start(props: { userAccount: UserAccount }) {
           <p className="text-sm text-gray-600">Force: {wizard1Force}</p>
         </div>
 
-        <div className="text-xl font-bold">VS</div>
+        <div className="text-xl font-bold grow text-center">VS</div>
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-1/3">
           <div className="w-16 h-16 bg-orange-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-2xl">🧙‍♂️</span>
           </div>
