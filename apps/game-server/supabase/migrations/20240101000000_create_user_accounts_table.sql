@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS public.user_accounts (
-  sui_address TEXT PRIMARY KEY,
+  sui_address TEXT PRIMARY KEY CHECK (sui_address ~ '^0x[a-fA-F0-9]{64}$'),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   user_id UUID NOT NULL DEFAULT auth.uid(),
