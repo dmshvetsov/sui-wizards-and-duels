@@ -9,11 +9,11 @@ CREATE POLICY "Allow public read access to messages"
 
 -- Allow authenticated users to insert messages
 -- updates are not allowed
-CREATE POLICY "Allow anon insert to messages"
+CREATE POLICY "Allow authenticated users insert to messages"
   ON public.messages
   FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK (auth.uid() = user_id);
 
 ALTER TABLE ONLY "public"."messages"
     ADD COLUMN "user_id" UUID NOT NULL DEFAULT auth.uid();
