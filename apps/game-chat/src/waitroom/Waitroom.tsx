@@ -1,6 +1,6 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { Loader } from '@/components/Loader'
-import { Button, ButtonWithLoading } from '@/components/ui/button'
+import { Button, ButtonWithFx } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
@@ -207,49 +207,51 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center mt-[15%]">
       <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
-      <p className="text-lg">
-        wizards online:{' '}
-        <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
-      </p>
+      <p>Join other player in Player vs Player Wizards Duels.</p>
+      <p>Defeat your opponent to take away his Sui force.</p>
 
       {waitState === 'paired' ? (
-        <p className="mt-4">
+        <p className="mt-12">
           <span className="animate-pulse font-semibold text-green-600">
             OPPONENT FOUND! PREPARE FOR A DUEL...
           </span>
         </p>
       ) : waitState === 'waiting' ? (
         <>
-          <p className="mt-4">
+          <p className="mt-12">
             <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
           </p>
-          <ButtonWithLoading
+          <ButtonWithFx
             className="mt-4"
             onClick={handleLeave}
             disabled={isSigningAndExecuting}
             isLoading={isSigningAndExecuting}
           >
             Cancel
-          </ButtonWithLoading>
+          </ButtonWithFx>
         </>
       ) : waitState === 'needs_funding' ? (
         <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
       ) : (
-        <>
-          <ButtonWithLoading
-            className="mt-4"
+          <ButtonWithFx
+            className="mt-12"
             onClick={handleJoinWaitlist}
             disabled={isSigningAndExecuting}
             isLoading={isSigningAndExecuting}
           >
             Play
-          </ButtonWithLoading>
-          <p className="mt-2">Join other player in Wizards Duels.</p>
-          <p>Defeat your opponent to take away his Sui force.</p>
-        </>
+          </ButtonWithFx>
       )}
+
+      <div className="mt-12">
+        <p className="text-lg">
+          wizards online:{' '}
+          <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
+        </p>
+      </div>
+
       {onlineCount === 1 && (
         <p className="mt-2">
           You are the only one in the Duelground. Wait for others to join or invite friends with the
@@ -257,7 +259,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         </p>
       )}
       {isDevnetEnv && (
-        <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
+        <div className="bottom-0 left-0 absolute pl-6 pb-8 text-xs">
           <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
           <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
           <pre className="text-gray-600 mt-2">

@@ -1,6 +1,6 @@
 import { Link } from '@/components/Link'
 import { RealtimeChat } from '@/components/realtime-chat'
-import { Button } from '@/components/ui/button'
+import { Button, ButtonWithFx } from '@/components/ui/button'
 import { OffChainDuelProvider } from '@/context/OffChainDuelContext'
 import { useOffChainDuel } from '@/context/useOffChainDuel'
 import { ForceBar } from '@/duel/ForceBar'
@@ -591,11 +591,11 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
       />
       <ActionUi wizard={wizard} opponent={opponent} />
       {isDevnetEnv && (
-        <Button variant="link" onClick={() => onComplete()}>
+        <Button variant="link" className='my-2' onClick={() => onComplete()}>
           skip to completed state
         </Button>
       )}
-      {duelData.wizard2.force === 0 && <Button onClick={handleExitDuel}>Claim Reward</Button>}
+      {duelData.wizard2.force === 0 && <div className="w-fit mx-auto mt-4"><ButtonWithFx onClick={handleExitDuel}>Claim Reward</ButtonWithFx></div>}
     </>
   )
 }
@@ -642,9 +642,9 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
         </div>
       </div>
 
-      <div className="flex gap-8 justify-center mt-4 text-center">
+      {opponent.force !== 0 && <div className="flex gap-8 justify-center mt-4 text-center">
         <Link to="/d">Skip Practice</Link>
-      </div>
+      </div>}
     </div>
   )
 }
@@ -680,10 +680,7 @@ function Result() {
         {isWinner ? 'You have defeated your opponent!' : 'You have been defeated!'}
       </p>
 
-      <Link
-        to="/"
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-      >
+      <Link to="/">
         Back to Home
       </Link>
     </div>

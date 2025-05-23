@@ -1,5 +1,5 @@
 import { UserAccount } from '@/components/Authenticated'
-import { Button, ButtonWithLoading } from '@/components/ui/button'
+import { Button, ButtonWithFx } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
@@ -148,11 +148,11 @@ export function Result(props: { userAccount: UserAccount }) {
       )}
 
       {duelistCap != null ? (
-        <ButtonWithLoading onClick={handleEndDuel} className="w-full" disabled={isTxInProgress} isLoading={isTxInProgress}>
+        <ButtonWithFx onClick={handleEndDuel} className="w-full" disabled={isTxInProgress} isLoading={isTxInProgress}>
           {isCurrentUserWinner
             ? 'Claim your opponent force and reward'
             : 'Claim participation reward'}
-        </ButtonWithLoading>
+        </ButtonWithFx>
       ) : (
         <Button onClick={handleNavigateToDuelgound} className="w-full">
           Back to Duelground

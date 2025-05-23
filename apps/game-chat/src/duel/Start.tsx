@@ -1,6 +1,6 @@
 import { UserAccount } from '@/components/Authenticated'
 import { CountdownTimer } from '@/components/CountdownTimer'
-import { ButtonWithLoading } from '@/components/ui/button'
+import { ButtonWithFx } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { displayName } from '@/lib/user'
 import { useState } from 'react'
@@ -81,14 +81,13 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       {canStartDuel ? (
-        <ButtonWithLoading
+        <ButtonWithFx
           onClick={handleStartDuel}
           disabled={isStarting}
-          className="w-full"
           isLoading={isStarting}
         >
           {isStarting ? 'Starting Duel...' : 'Start Duel'}
-        </ButtonWithLoading>
+        </ButtonWithFx>
       ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
         <CountdownTimer to={duel.started_at} size="md" className="mt-4" />
       ) : (

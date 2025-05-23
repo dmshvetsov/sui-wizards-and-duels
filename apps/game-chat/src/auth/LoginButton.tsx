@@ -1,5 +1,5 @@
 import { Loader } from '@/components/Loader'
-import { Button } from '@/components/ui/button'
+import { ButtonWithFx } from '@/components/ui/button'
 import { useConnectWallet, useCurrentAccount, useWallets } from '@mysten/dapp-kit'
 import { isEnokiWallet, type AuthProvider, type EnokiWallet } from '@mysten/enoki'
 import { useEffect } from 'react'
@@ -15,7 +15,7 @@ interface LoginButtonProps {
  * Custom login button for a specific authentication provider
  * This component renders a button that initiates the zkLogin flow for the specified provider
  */
-export function LoginButton({ provider, label, className }: LoginButtonProps) {
+export function LoginButton({ provider, label }: LoginButtonProps) {
   const { mutate: connect } = useConnectWallet()
   const wallets = useWallets().filter(isEnokiWallet)
 
@@ -27,8 +27,7 @@ export function LoginButton({ provider, label, className }: LoginButtonProps) {
   }
 
   return (
-    <Button
-      className={className}
+    <ButtonWithFx
       onClick={() => {
         connect(
           { wallet },
@@ -45,7 +44,7 @@ export function LoginButton({ provider, label, className }: LoginButtonProps) {
       }}
     >
       {label || `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`}
-    </Button>
+    </ButtonWithFx>
   )
 }
 

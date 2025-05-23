@@ -32,7 +32,7 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
         <span className="text-lg font-medium">{formatMistBalance(balanceMist)}</span>
         <span className="text-sm text-gray-600">Sui</span>
       </div>
-      <Button onClick={handleSignOut}>Sign Out</Button>
+      <Button variant="secondary" onClick={handleSignOut}>Sign Out</Button>
     </div>
   )
 }
