@@ -77,18 +77,11 @@ export function Result(props: { userAccount: UserAccount }) {
   const isCurrentUserLoser = props.userAccount.id === loser
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen w-[400px] mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Duel Results</h2>
 
       {winner ? (
         <div className="w-full mb-8">
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 flex items-center justify-center mb-4">
-              <span className="text-4xl">👑</span>
-            </div>
-            <p className="text-xl font-bold">{displayName(winner)} Wins!</p>
-          </div>
-
           <div className="w-full flex items-center mb-6">
             <div className="flex flex-col items-center w-1/3">
               <div
@@ -99,7 +92,7 @@ export function Result(props: { userAccount: UserAccount }) {
               <p className="font-semibold">{wizard1 === props.userAccount.id ? 'You' : displayName(wizard1)}</p>
               <p className="text-sm text-gray-600">Final Force: {wizard1Force}</p>
               {wizard1 === winner && (
-                <p className="text-xs text-lime-800 font-semibold mt-1">WINNER</p>
+                <p className="text-xs text-yellow-500 font-semibold mt-1">WINNER</p>
               )}
               {wizard1 === loser && (
                 <p className="text-xs text-red-800 font-semibold mt-1">DEFEATED</p>
@@ -120,7 +113,7 @@ export function Result(props: { userAccount: UserAccount }) {
                 <p className="text-xs font-semibold mt-1">WINNER</p>
               )}
               {wizard2 === loser && (
-                <p className="text-xs text-red-800 font-semibold mt-1">DEFEATED</p>
+                <p className="text-xs text-gray-500 font-semibold mt-1">DEFEATED</p>
               )}
             </div>
           </div>
