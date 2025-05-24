@@ -40,7 +40,7 @@ export function DuelLayout({ userAccount }: { userAccount: UserAccount }) {
   }
 
   return (
-    <div className="w-[460px] h-full mx-auto px-4">
+    <div className="w-[960px] h-full mx-auto px-4">
       <DuelProvider duelId={duelId} currentUser={userAccount}>
         <Duel userAccount={userAccount} />
       </DuelProvider>

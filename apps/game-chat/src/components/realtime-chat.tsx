@@ -15,6 +15,7 @@ interface RealtimeChatProps {
   onIncomingMessage?: (message: string) => void
   messages?: ChatMessage[]
   disablePersistentStorage?: boolean
+  onSendMessageRef?: React.MutableRefObject<((message: string) => void) | null>
 }
 
 /**
@@ -33,6 +34,7 @@ export const RealtimeChat = ({
   onIncomingMessage,
   messages: initialMessages = [],
   disablePersistentStorage,
+  onSendMessageRef,
 }: RealtimeChatProps) => {
   const { containerRef, scrollToBottom } = useChatScroll()
 
@@ -82,6 +84,27 @@ export const RealtimeChat = ({
     [newMessage, isConnected, sendMessage, onMessage]
   )
 
+  const handleNewMessageProgramatically = useCallback(
+    (message: string) => {
+      if (!message.trim() || !isConnected) {
+        return
+      }
+
+      sendMessage(message)
+      if (onMessage) {
+        onMessage(message)
+      }
+    },
+    [isConnected, sendMessage, onMessage]
+  )
+
+  // Expose the sendMessageProgrammatically function via the ref
+  useEffect(() => {
+    if (onSendMessageRef) {
+      onSendMessageRef.current = handleNewMessageProgramatically
+    }
+  }, [onSendMessageRef, handleNewMessageProgramatically])
+
   return (
     <div className="flex flex-col h-3/5 w-full bg-background text-foreground antialiased">
       {/* Messages */}
@@ -125,7 +148,7 @@ export const RealtimeChat = ({
         {isConnected && newMessage.trim() && (
           <Button
             disableSfx
-            className="aspect-square rounded-full animate-in fade-in slide-in-from-right-4 duration-300"
+            className="aspect-square rounded-md animate-in fade-in slide-in-from-right-4 duration-300"
             type="submit"
             disabled={!isConnected}
           >

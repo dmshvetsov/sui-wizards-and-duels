@@ -225,38 +225,39 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       <p>Join other player in Player vs Player Wizards Duels.</p>
       <p>Defeat your opponent to take away his Sui force.</p>
 
-      {waitState === 'paired' ? (
-        <p className="mt-12">
-          <span className="animate-pulse font-semibold text-green-600">
-            OPPONENT FOUND! PREPARE FOR A DUEL...
-          </span>
-        </p>
-      ) : waitState === 'waiting' ? (
-        <>
-          <p className="mt-12">
-            <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+      <div className="h-[100px] mt-12 text-center">
+        {waitState === 'paired' ? (
+          <p>
+            <span className="animate-pulse font-semibold text-green-600">
+              OPPONENT FOUND! PREPARE FOR A DUEL...
+            </span>
           </p>
+        ) : waitState === 'waiting' ? (
+          <>
+            <p>
+              <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+            </p>
+            <ButtonWithFx
+              className="mt-4"
+              onClick={handleLeave}
+              disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+              isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+            >
+              Cancel
+            </ButtonWithFx>
+          </>
+        ) : waitState === 'needs_funding' ? (
+          <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
+        ) : (
           <ButtonWithFx
-            className="mt-4"
-            onClick={handleLeave}
+            onClick={handleJoinWaitlist}
             disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
             isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
           >
-            Cancel
+            Play
           </ButtonWithFx>
-        </>
-      ) : waitState === 'needs_funding' ? (
-        <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
-      ) : (
-        <ButtonWithFx
-          className="mt-12"
-          onClick={handleJoinWaitlist}
-          disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-          isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
-        >
-          Play
-        </ButtonWithFx>
-      )}
+        )}
+      </div>
 
       <div className="mt-12">
         <p className="text-lg">

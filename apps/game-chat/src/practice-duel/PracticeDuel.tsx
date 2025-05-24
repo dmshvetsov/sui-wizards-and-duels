@@ -1,5 +1,6 @@
 import { Link } from '@/components/Link'
 import { RealtimeChat } from '@/components/realtime-chat'
+import { SpellButtons } from '@/components/SpellButtons'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { OffChainDuelProvider } from '@/context/OffChainDuelContext'
 import { useOffChainDuel } from '@/context/useOffChainDuel'
@@ -35,7 +36,7 @@ const MUSIC = {
 
 export function PracticeDuel() {
   return (
-    <div className="w-[460px] h-full mx-auto px-4">
+    <div className="w-[960px] h-full mx-auto px-4">
       <OffChainDuelProvider
         duelId={PRACTICE_DUEL_ID}
         currentWizardId="player"
@@ -353,6 +354,11 @@ const SCRIPT: ScriptStep[] = [
   },
   {
     type: 'teacherMessage',
+    message:
+      'Lastly, you learned to type your spells but you don\'t have to type them, it is faster to cast spells from your Spell book in duels, by cliking buttons. I appreciate your patience with our typing exercice',
+  },
+  {
+    type: 'teacherMessage',
     message: "Tell me when you're ready to face him.",
   },
   { type: 'playerMessage', message: 'ready' },
@@ -435,7 +441,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
   const opponent = duelData.wizard1.id === opponentId ? duelData.wizard1 : duelData.wizard2
 
   return (
-    <>
+    <div className="w-[400px] mx-auto h-screen">
       <RealtimeChat
         roomName={PRACTICE_DUEL_ID}
         username="Promising Wizard"
@@ -449,7 +455,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
           skip to duel
         </Button>
       )}
-    </>
+    </div>
   )
 }
 
@@ -458,6 +464,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
   const [tutorialMessages, setTutorialMessages] = useState<ChatMessage[]>([
     createTeacherMessage("Let's duel begin!"),
   ])
+  const sendMessageRef = useRef<((message: string) => void) | null>(null)
 
   // setup duel on mount
   useEffect(() => {
@@ -569,6 +576,14 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
     [currentWizardId, dispatch, opponentId]
   )
 
+  // Handle spell button click
+  const handleCastSpell = useCallback((spell: string) => {
+    // Use the sendMessage function from the ref
+    if (sendMessageRef.current) {
+      sendMessageRef.current(spell)
+    }
+  }, [sendMessageRef])
+
   const handleExitDuel = useCallback(() => {
     setTutorialMessages((prev) => [...prev, createTeacherMessage('Good luck!')])
     MUSIC.duel.fade(0.1, 0, 1200).on('fade', () => {
@@ -581,22 +596,32 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
   const opponent = duelData.wizard1.id === opponentId ? duelData.wizard1 : duelData.wizard2
 
   return (
-    <>
-      <RealtimeChat
-        roomName={PRACTICE_DUEL_ID}
-        username="Promising Wizard"
-        onMessage={handleUserInput}
-        messages={tutorialMessages}
-        disablePersistentStorage
+    <div className="flex gap-4 h-screen mx-auto">
+      <div className="w-[150px]" />
+
+      <div className="flex flex-col w-[400px]">
+        <RealtimeChat
+          roomName={PRACTICE_DUEL_ID}
+          username="Promising Wizard"
+          onMessage={handleUserInput}
+          messages={tutorialMessages}
+          disablePersistentStorage
+          onSendMessageRef={sendMessageRef}
+        />
+        <ActionUi wizard={wizard} opponent={opponent} />
+        {isDevnetEnv && (
+          <Button variant="link" className='my-2' onClick={() => onComplete()}>
+            skip to completed state
+          </Button>
+        )}
+        {duelData.wizard2.force === 0 && <div className="w-fit mx-auto mt-4"><ButtonWithFx onClick={handleExitDuel}>Claim Reward</ButtonWithFx></div>}
+      </div>
+
+      <SpellButtons
+        onCastSpell={handleCastSpell}
+        className="w-[150px]"
       />
-      <ActionUi wizard={wizard} opponent={opponent} />
-      {isDevnetEnv && (
-        <Button variant="link" className='my-2' onClick={() => onComplete()}>
-          skip to completed state
-        </Button>
-      )}
-      {duelData.wizard2.force === 0 && <div className="w-fit mx-auto mt-4"><ButtonWithFx onClick={handleExitDuel}>Claim Reward</ButtonWithFx></div>}
-    </>
+    </div>
   )
 }
 
@@ -623,7 +648,7 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
           <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mb-2">
             <span className="text-xl">🧙</span>
           </div>
-          <p className="font-semibold text-sm">{opponent.id}</p>
+          <p className="font-semibold text-sm text-center">{opponent.id}</p>
           <div className="mt-2 min-h-[30px]">
             <WizardEffects effects={opponent.effects} />
           </div>
@@ -655,10 +680,10 @@ function Result() {
   const isWinner = winner === 'player'
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-full">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-full w-[400px] mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">{isWinner ? 'Victory!' : 'Defeat!'}</h2>
 
-      <div className="flex items-center  w-full mb-6">
+      <div className="flex items-center w-full mb-6">
         <div className="text-center w-1/3">
           <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mx-auto mb-2">
             <span className="text-xl">🧙</span>

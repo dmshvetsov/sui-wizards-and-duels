@@ -2,6 +2,7 @@ import { UserAccount } from '@/components/Authenticated'
 import { Link } from '@/components/Link'
 import { Loader } from '@/components/Loader'
 import { RealtimeChat } from '@/components/realtime-chat'
+import { SpellButtons } from '@/components/SpellButtons'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
@@ -11,7 +12,7 @@ import { executeWith } from '@/lib/sui/client'
 import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
 import { WizardEffects } from './WizardEffects'
@@ -22,6 +23,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
   const { mutate: signAndExecute } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
+  const sendMessageRef = useRef<((message: string) => void) | null>(null)
 
   /**
    * @param opponentInput - opponent message during duel
@@ -131,6 +133,14 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     [duel, duelistCap, signAndExecute]
   )
 
+  // Handle spell button click
+  const handleCastSpell = useCallback((spell: string) => {
+    // Use the sendMessage function from the ref
+    if (sendMessageRef.current) {
+      sendMessageRef.current(spell)
+    }
+  }, [sendMessageRef])
+
   if (isLoading) {
     return <Loader />
   }
@@ -153,44 +163,55 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     props.userAccount.id === duel.wizard1 ? duel.wizard2_effects : duel.wizard1_effects
 
   return (
-    <>
-      <RealtimeChat
-        roomName={props.duelId}
-        username={props.userAccount.displayName}
-        onMessage={handleUserInput}
-        onIncomingMessage={handleOpponentInput}
-      />
-      <div className="flex flex-col w-full">
-        {duel !== null && props.userAccount && (
-          <>
-            <ForceBar duel={duel} currentWizardId={props.userAccount.id} />
+    <div className="flex justify-center h-full">
+      <div className="w-[150px]" />
 
-            <div className="flex justify-between items-start py-8 px-4 w-full">
-              <div className="flex flex-col items-center w-1/3">
-                <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-xl">🧙</span>
+      <div className="flex flex-col w-[400px]">
+        <RealtimeChat
+          roomName={props.duelId}
+          username={props.userAccount.displayName}
+          onMessage={handleUserInput}
+          onIncomingMessage={handleOpponentInput}
+          onSendMessageRef={sendMessageRef}
+        />
+        <div className="flex flex-col w-full">
+          {duel !== null && props.userAccount && (
+            <>
+              <ForceBar duel={duel} currentWizardId={props.userAccount.id} />
+
+              <div className="flex justify-between items-start py-8 px-4 w-full">
+                <div className="flex flex-col items-center w-1/3">
+                  <div className="w-12 h-12 bg-orange-300 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-xl">🧙</span>
+                  </div>
+                  <p className="font-semibold text-sm">{displayName(opponentId)}</p>
+                  <div className="mt-2 min-h-[30px]">
+                    <WizardEffects effects={opponentEffects} />
+                  </div>
                 </div>
-                <p className="font-semibold text-sm">{displayName(opponentId)}</p>
-                <div className="mt-2 min-h-[30px]">
-                  <WizardEffects effects={opponentEffects} />
+
+                <div className="text-lg font-bold flex items-center">VS</div>
+
+                <div className="flex flex-col items-center w-1/3">
+                  <div className="w-12 h-12 bg-indigo-300 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-xl">🧙‍♂️</span>
+                  </div>
+                  <p className="font-semibold text-sm">you</p>
+                  <div className="mt-2 min-h-[30px]">
+                    <WizardEffects effects={wizardEffects} />
+                  </div>
                 </div>
               </div>
-
-              <div className="text-lg font-bold flex items-center">VS</div>
-
-              <div className="flex flex-col items-center w-1/3">
-                <div className="w-12 h-12 bg-indigo-300 rounded-full flex items-center justify-center mb-2">
-                  <span className="text-xl">🧙‍♂️</span>
-                </div>
-                <p className="font-semibold text-sm">you</p>
-                <div className="mt-2 min-h-[30px]">
-                  <WizardEffects effects={wizardEffects} />
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </>
+
+      {/* Spell buttons sidebar */}
+      <SpellButtons
+        onCastSpell={handleCastSpell}
+        className="w-[150px]"
+      />
+    </div>
   )
 }

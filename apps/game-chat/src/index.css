@@ -5,6 +5,7 @@
     font-family: Starlight;
     font-style: normal;
     font-weight: 400;
+    font-display: block;
     src: local('Starlight Rune - Personal Use'), url('https://fonts.cdnfonts.com/s/118806/Yudi-YqPny.woff') format('woff');
 }
 

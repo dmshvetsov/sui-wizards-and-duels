@@ -42,7 +42,7 @@ export function Start(props: { userAccount: UserAccount }) {
   const canStartDuel = isCurrentUserInDuel && !isStarting && duel.started_at === 0
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen">
+    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md h-screen w-[400px] mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Get ready for the Duel!</h2>
 
       <div className="w-full flex items-center mb-8">
@@ -70,33 +70,26 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       <div className="text-center mb-6">
-        <>
-          <p className="text-gray-700 mb-2">
-            Both wizards have prepared their spells and are ready to duel.
-          </p>
-          <p className="text-gray-700">
-            The first wizard to reduce their opponent's force to zero wins!
-          </p>
-        </>
+        <p className="text-gray-700">
+          The first wizard to reduce their opponent's force to zero wins!
+        </p>
       </div>
 
-      {canStartDuel ? (
-        <ButtonWithFx
-          onClick={handleStartDuel}
-          disabled={isStarting}
-          isLoading={isStarting}
-        >
-          {isStarting ? 'Starting Duel...' : 'Start Duel'}
-        </ButtonWithFx>
-      ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
-        <CountdownTimer to={duel.started_at} size="md" className="mt-4" />
-      ) : (
-        <p className="text-sm text-gray-500 italic">
-          {isCurrentUserInDuel
-            ? 'Waiting for the duel to start...'
-            : 'You are spectating this duel'}
-        </p>
-      )}
+      <div className="h-[100px] mt-4">
+        {canStartDuel ? (
+          <ButtonWithFx onClick={handleStartDuel} disabled={isStarting} isLoading={isStarting}>
+            {isStarting ? 'Starting Duel...' : 'Start Duel'}
+          </ButtonWithFx>
+        ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
+          <CountdownTimer to={duel.started_at} size="md" />
+        ) : (
+          <p className="text-sm text-gray-500 italic">
+            {isCurrentUserInDuel
+              ? 'Waiting for the duel to start...'
+              : 'You are spectating this duel'}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
