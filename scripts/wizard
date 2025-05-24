@@ -70,4 +70,12 @@ if [ $MODULE_METHOD = "waitroom::join" ]; then
     --gas-budget 1000000000
 fi
 
+if [ $MODULE_METHOD = "waitroom::leave" ]; then
+  TARGET="$PID::waitroom::leave"
+
+  sui client ptb \
+    --move-call $TARGET @$WAITROOM_OID \
+    --gas-budget 1000000000
+fi
+
 sui client switch --address $PREV_ACTIVE_ADDRESS
