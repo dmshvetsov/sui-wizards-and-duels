@@ -31,6 +31,7 @@
   - [ ] display wizard and his level in schools of spells
 - [ ] improved game mechanics
   - [ ] more spells and sophisticated strategies to win
+  - [ ] spells combo
   - [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
   - [ ] equipment and artifacts that can be created or won in a duel as loot
   - [ ] wizards level up in schools by using this school spells, higher level opens new spells and artifacts
