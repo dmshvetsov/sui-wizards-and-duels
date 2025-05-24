@@ -21,8 +21,7 @@ export function Result(props: { userAccount: UserAccount }) {
   })
 
   // Calculate prize information early so it's available in callbacks
-  const prize = duel ? mistToSui(duel.prize_pool|| '0') : 0
-  const prizePool = duel ? mistToSui(duel.prize_pool || '0') : 0
+  const prizePool = duel ? mistToSui(duel.prize_pool|| '0') : 0
   const isCurrentUserWinner = props.userAccount.id === winner
   const isCurrentUserLoser = props.userAccount.id === loser
 
@@ -48,7 +47,7 @@ export function Result(props: { userAccount: UserAccount }) {
       },
       {
         onSuccess: (result) => {
-          if (isCurrentUserWinner && prize > 0) {
+          if (isCurrentUserWinner && prizePool > 0) {
             toast.success(`Successfully claimed ${prizePool} SUI prize!`)
           } else {
             toast.success(`Duel ended successfully!`)
@@ -65,7 +64,7 @@ export function Result(props: { userAccount: UserAccount }) {
         },
       }
     )
-  }, [duel, duelistCap, refetchDuelistCap, signAndExecute, isCurrentUserWinner, prize, prizePool])
+  }, [duel, duelistCap, refetchDuelistCap, signAndExecute, isCurrentUserWinner, prizePool])
 
   const handleNavigateToDuelgound = useCallback(() => {
     navigate('/d')
@@ -127,7 +126,7 @@ export function Result(props: { userAccount: UserAccount }) {
           </div>
 
           {/* Prize Information */}
-          {prize > 0 && (
+          {prizePool > 0 && (
             <h3 className="text-lg font-semibold mt-8 text-center">Prize Pool {prizePool} Sui</h3>
           )}
 
@@ -160,7 +159,7 @@ export function Result(props: { userAccount: UserAccount }) {
       {duelistCap != null ? (
         <ButtonWithFx onClick={handleEndDuel} disabled={isTxInProgress} isLoading={isTxInProgress}>
           {isCurrentUserWinner
-            ? prize > 0
+            ? prizePool > 0
               ? `Claim ${prizePool} Sui Prize`
               : 'Claim Victory'
             : 'End Duel'}
