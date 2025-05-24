@@ -79,19 +79,21 @@ export function Start(props: { userAccount: UserAccount }) {
         </p>
       </div>
 
-      {canStartDuel ? (
-        <ButtonWithFx onClick={handleStartDuel} disabled={isStarting} isLoading={isStarting}>
-          {isStarting ? 'Starting Duel...' : 'Start Duel'}
-        </ButtonWithFx>
-      ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
-        <CountdownTimer to={duel.started_at} size="md" className="mt-4" />
-      ) : (
-        <p className="text-sm text-gray-500 italic">
-          {isCurrentUserInDuel
-            ? 'Waiting for the duel to start...'
-            : 'You are spectating this duel'}
-        </p>
-      )}
+      <div className="h-[80px] mt-4">
+        {canStartDuel ? (
+          <ButtonWithFx onClick={handleStartDuel} disabled={isStarting} isLoading={isStarting}>
+            {isStarting ? 'Starting Duel...' : 'Start Duel'}
+          </ButtonWithFx>
+        ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
+          <CountdownTimer to={duel.started_at} size="md" />
+        ) : (
+          <p className="text-sm text-gray-500 italic">
+            {isCurrentUserInDuel
+              ? 'Waiting for the duel to start...'
+              : 'You are spectating this duel'}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
