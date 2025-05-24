@@ -241,45 +241,6 @@ public fun end(duel: &mut Duel, duelistCap: DuelistCap, ctx: &mut TxContext) {
 }
 
 //
-// # Getter functions
-//
-
-/// Get wizard1 address
-public fun wizard1(duel: &Duel): address {
-    duel.wizard1
-}
-
-/// Get wizard2 address
-public fun wizard2(duel: &Duel): address {
-    duel.wizard2
-}
-
-/// Get wizard1 force
-public fun wizard1_force(duel: &Duel): u64 {
-    duel.wizard1_force
-}
-
-/// Get wizard2 force
-public fun wizard2_force(duel: &Duel): u64 {
-    duel.wizard2_force
-}
-
-/// Get wizard1 effects
-public fun wizard1_effects(duel: &Duel): vector<u8> {
-    duel.wizard1_effects
-}
-
-/// Get wizard2 effects
-public fun wizard2_effects(duel: &Duel): vector<u8> {
-    duel.wizard2_effects
-}
-
-/// Get started_at timestamp
-public fun started_at(duel: &Duel): u64 {
-    duel.started_at
-}
-
-//
 // # Initialization
 //
 
