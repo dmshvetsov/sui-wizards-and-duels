@@ -1,6 +1,7 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { GameMenu } from '@/components/GameMenu'
 import { Loader } from '@/components/Loader'
+import { StakeSelector } from '@/components/StakeSelector'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
@@ -40,6 +41,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
   const [waitRoomStateIsReconciling, setWaitRoomStateIsReconciling] = useState(false)
+  const [selectedStake, setSelectedStake] = useState(0)
 
   const navigate = useNavigate()
 
@@ -63,7 +65,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     { refetchInterval: ONE_SECOND_IN_MS }
   )
 
-  const playerBalance = useSuiClientQuery(
+  const playerBalanceQuery = useSuiClientQuery(
     'getBalance',
     {
       owner: userAccount.id,
@@ -133,11 +135,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
   useEffect(() => {
     // Check if the wallet has enough SUI
-    if (!playerBalance.data) {
+    if (!playerBalanceQuery.data) {
       return
     }
 
-    const balanceInMist = BigInt(playerBalance.data.totalBalance)
+    const balanceInMist = BigInt(playerBalanceQuery.data.totalBalance)
     const requiredBalanceInMist = 12800000n * 2n // x2 0.0128 SUI in MIST
 
     console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
@@ -146,7 +148,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     if (balanceInMist < requiredBalanceInMist && waitState === 'iddle') {
       setWaitState('needs_funding')
     }
-  }, [playerBalance.data, waitState])
+  }, [playerBalanceQuery.data, waitState])
 
   const waitroomState = waitroomQuery.data?.data
   useEffect(() => {
@@ -173,14 +175,19 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }, [waitroomState, userAccount.id, waitState])
 
   const refetchWaitListState = waitroomQuery.refetch
+  const refetchBalance = playerBalanceQuery.refetch
   const handleJoinWaitlist = useCallback(() => {
     signAndExecute(
-      { transaction: joinTx() },
+      { transaction: joinTx(selectedStake * 1_000_000_000) },
       {
         onSuccess(_result) {
           console.debug('waitroom join tx success', _result)
+          toast.success(
+            `Joined waitroom with ${selectedStake === 0 ? 'no stake' : `${selectedStake} SUI stake`}`
+          )
         },
         onError(err) {
+          console.error(err)
           const appErr = new AppError('handleJoinWaitlist', err)
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
@@ -188,10 +195,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         onSettled() {
           setWaitRoomStateIsReconciling(true)
           refetchWaitListState()
+          refetchBalance()
         },
       }
     )
-  }, [signAndExecute, refetchWaitListState])
+  }, [selectedStake, signAndExecute, refetchWaitListState, refetchBalance])
 
   const handleLeave = useCallback(() => {
     signAndExecute(
@@ -209,73 +217,79 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         onSettled() {
           setWaitRoomStateIsReconciling(true)
           refetchWaitListState()
+          refetchBalance()
         },
       }
     )
-  }, [signAndExecute, refetchWaitListState])
+  }, [signAndExecute, refetchWaitListState, refetchBalance])
 
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
     return <Loader />
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <GameMenu userAccount={userAccount} />
-      <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
-      <p>Join other player in Player vs Player Wizards Duels.</p>
-      <p>Defeat your opponent to take away his Sui force.</p>
+    <div className="flex justify-center gap-8 items-center h-screen">
+      <div className="w-[300px]" />
+      <div className="flex flex-col items-center justify-center w-[480px]">
+        <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
+        <p>Join other player in Player vs Player Wizards Duels.</p>
+        <p>Defeat your opponent to take away his Sui force.</p>
 
-      {waitState === 'paired' ? (
-        <p className="mt-12">
-          <span className="animate-pulse font-semibold text-green-600">
-            OPPONENT FOUND! PREPARE FOR A DUEL...
-          </span>
-        </p>
-      ) : waitState === 'waiting' ? (
-        <>
+        {waitState === 'paired' ? (
           <p className="mt-12">
-            <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+            <span className="animate-pulse font-semibold text-green-600">
+              OPPONENT FOUND! PREPARE FOR A DUEL...
+            </span>
           </p>
+        ) : waitState === 'waiting' ? (
+          <>
+            <p className="mt-12">
+              <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+            </p>
+            <ButtonWithFx
+              className="mt-4"
+              onClick={handleLeave}
+              disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+              isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+            >
+              Cancel
+            </ButtonWithFx>
+          </>
+        ) : waitState === 'needs_funding' ? (
+          <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
+        ) : (
           <ButtonWithFx
-            className="mt-4"
-            onClick={handleLeave}
+            className="mt-6"
+            onClick={handleJoinWaitlist}
             disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
             isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
           >
-            Cancel
+            {selectedStake > 0 ? 'Stake and Play' : 'Play'}
           </ButtonWithFx>
-        </>
-      ) : waitState === 'needs_funding' ? (
-        <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
-      ) : (
-        <ButtonWithFx
-          className="mt-12"
-          onClick={handleJoinWaitlist}
-          disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-          isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
-        >
-          Play
-        </ButtonWithFx>
-      )}
+        )}
 
-      <div className="mt-12">
-        <p className="text-lg">
-          wizards online:{' '}
-          <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
-        </p>
+        <div className="mt-12">
+          <p className="text-lg">
+            wizards online:{' '}
+            <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
+          </p>
+        </div>
+
+        {onlineCount === 1 && (
+          <>
+            <p className="mt-2 text-center">
+              You are the only one in the Duelground. Wait for others to join or invite friends with
+              the following link
+            </p>
+            <p>
+              <span className="font-semibold">{window.location.toString()}</span>
+            </p>
+          </>
+        )}
       </div>
-
-      {onlineCount === 1 && (
-        <>
-          <p className="mt-2 text-center">
-            You are the only one in the Duelground. Wait for others to join or invite friends with
-            the following link
-          </p>
-          <p>
-            <span className="font-semibold">{window.location.toString()}</span>
-          </p>
-        </>
-      )}
+      <div className="mt-8">
+        <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+      </div>
       {isDevnetEnv && (
         <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
           <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
@@ -285,6 +299,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           </pre>
         </div>
       )}
+      <GameMenu userAccount={userAccount} />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { UserAccount } from '@/components/Authenticated'
 import { CountdownTimer } from '@/components/CountdownTimer'
 import { ButtonWithFx } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
+import { formatMistBalance } from '@/lib/sui/coin'
 import { displayName } from '@/lib/user'
 import { useState } from 'react'
 
@@ -70,33 +71,29 @@ export function Start(props: { userAccount: UserAccount }) {
       </div>
 
       <div className="text-center mb-6">
-        <>
-          <p className="text-gray-700 mb-2">
-            Both wizards have prepared their spells and are ready to duel.
-          </p>
-          <p className="text-gray-700">
-            The first wizard to reduce their opponent's force to zero wins!
-          </p>
-        </>
+        {duel.prize_pool !== '0' && (
+          <h3 className="mb-4">Prize {formatMistBalance(duel.prize_pool)} Sui</h3>
+        )}
+        <p className="text-gray-700">
+          The first wizard to reduce their opponent's force to zero wins!
+        </p>
       </div>
 
-      {canStartDuel ? (
-        <ButtonWithFx
-          onClick={handleStartDuel}
-          disabled={isStarting}
-          isLoading={isStarting}
-        >
-          {isStarting ? 'Starting Duel...' : 'Start Duel'}
-        </ButtonWithFx>
-      ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
-        <CountdownTimer to={duel.started_at} size="md" className="mt-4" />
-      ) : (
-        <p className="text-sm text-gray-500 italic">
-          {isCurrentUserInDuel
-            ? 'Waiting for the duel to start...'
-            : 'You are spectating this duel'}
-        </p>
-      )}
+      <div className="h-[80px] mt-4">
+        {canStartDuel ? (
+          <ButtonWithFx onClick={handleStartDuel} disabled={isStarting} isLoading={isStarting}>
+            {isStarting ? 'Starting Duel...' : 'Start Duel'}
+          </ButtonWithFx>
+        ) : duel.started_at !== 0 && duel.started_at > Date.now() ? (
+          <CountdownTimer to={duel.started_at} size="md" />
+        ) : (
+          <p className="text-sm text-gray-500 italic">
+            {isCurrentUserInDuel
+              ? 'Waiting for the duel to start...'
+              : 'You are spectating this duel'}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

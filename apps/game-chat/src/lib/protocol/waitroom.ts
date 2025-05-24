@@ -7,6 +7,7 @@ export type Waitroom = {
     fields: {
       wizard1: string
       wizard2: string
+      stake_amount: string
     },
   }>
 }
@@ -33,16 +34,19 @@ export const waitroom = Object.freeze({
 
 /**
  * Get a wait room join transaction
+ * @param stakeAmountInMist - Stake amount in MIST (1 SUI = 1_000_000_000 MIST)
  */
-export function joinTx() {
+export function joinTx(stakeAmountInMist: number) {
   const tx = new Transaction()
+  tx.setGasBudget(10_000_000)
+  const [stake] = tx.splitCoins(tx.gas, [stakeAmountInMist]);
   tx.moveCall({
     target: waitroom.method.join,
-    arguments: [tx.object(waitroom.object.waitroom)],
+    arguments: [
+      tx.object(waitroom.object.waitroom),
+      stake,
+    ],
   })
-  // TODO: use slightly random gas price to avoid consensus issues if two players will join at the same time
-  // tx.setGasBudget(5_000_000);
-  // tx.setGasPrice(1_000);
   return tx
 }
 
@@ -51,13 +55,11 @@ export function joinTx() {
  */
 export function leaveTx() {
   const tx = new Transaction()
+  tx.setGasBudget(10_000_000)
   tx.moveCall({
     target: waitroom.method.leave,
     arguments: [tx.object(waitroom.object.waitroom)],
   })
-  // TODO: use slightly random gas price to avoid consensus issues if two players will join at the same time
-  // tx.setGasBudget(5_000_000);
-  // tx.setGasPrice(1_000);
   return tx
 }
 
