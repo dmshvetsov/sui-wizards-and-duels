@@ -64,7 +64,6 @@ if [ $MODULE_METHOD = "waitroom::join" ]; then
   TARGET="$PID::waitroom::join"
 
   sui client ptb \
-    --gas-coin @0xb1b8c1665de5613c4fab3dc7f6b1fc03ec27dc90c3f9ed3f2d6411e8773d2e66 \
     --split-coins gas [1000000000] \
     --assign stake \
     --move-call $TARGET @$WAITROOM_OID stake \
