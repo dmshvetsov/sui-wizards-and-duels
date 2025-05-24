@@ -2,8 +2,8 @@
 
 set -e
 
-PID="0x497acf880e1c88f50b1b3c64f2ade9dd2c302ab51e30287ace508a6ac33c3626"
-WAITROOM_OID="0x9f97cfd34fb6a63b609c8ef0d151bcc6811181c0333838c3e0f281801adec224"
+PID="0x7be4673567ae7fc47223410c155dea133d592773d4fba82ffc4bdeb41873f38e"
+WAITROOM_OID="0xbd2995682239452f216ec517fbac6ff47cffaace23c53caa9f5539228b73d573"
 
 #  module>::<method>
 MODULE_METHOD=$1
@@ -32,14 +32,6 @@ sui client switch --address $WIZARD_ADDRESS
 if [ $MODULE_METHOD = "faucet" ]; then
   # NOTE: you must have httpie CLI installed, implicit dependency
   http POST https://faucet.devnet.sui.io/v2/gas FixedAmountRequest:="{\"recipient\":\"$WIZARD_ADDRESS\"}"
-fi
-
-if [ $MODULE_METHOD = "duel::setup_wizard" ]; then
-  TARGET="$PID::duel::setup_wizard"
-
-  sui client ptb \
-    --move-call $TARGET \
-    --gas-budget 1000000000
 fi
 
 if [ $MODULE_METHOD = "spell::cast_arrow" ]; then
@@ -72,7 +64,10 @@ if [ $MODULE_METHOD = "waitroom::join" ]; then
   TARGET="$PID::waitroom::join"
 
   sui client ptb \
-    --move-call $TARGET @$WAITROOM_OID \
+    --gas-coin @0xb1b8c1665de5613c4fab3dc7f6b1fc03ec27dc90c3f9ed3f2d6411e8773d2e66 \
+    --split-coins gas [1000000000] \
+    --assign stake \
+    --move-call $TARGET @$WAITROOM_OID stake \
     --gas-budget 1000000000
 fi
 

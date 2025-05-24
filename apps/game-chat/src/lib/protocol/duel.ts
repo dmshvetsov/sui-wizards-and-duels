@@ -19,6 +19,8 @@ export type Duel = {
   wizard1_effects: [number, number, number]
   /** effects touple choke, throw, deflect */
   wizard2_effects: [number, number, number]
+  /** current prize pool value in MIST */
+  prize_pool: string
 }
 
 const PACKAGE_ID_V1 = getPid()

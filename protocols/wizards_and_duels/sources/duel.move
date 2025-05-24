@@ -1,6 +1,9 @@
 module wizards_and_duels::duel;
 
 use sui::clock::Clock;
+use sui::coin;
+use sui::sui::SUI;
+use sui::balance::{Self, Balance};
 use wizards_and_duels::force::{Self, Force};
 use wizards_and_duels::effect::{Self, Effect};
 use wizards_and_duels::engine;
@@ -9,7 +12,7 @@ const EBadTx: u64 = 1;
 const ENotDuelWizard: u64 = 2;
 const EDuelNotInAction: u64 = 3;
 // const EDuelFinished: u64 = 4; no longer in use
-const EDuelExpired: u64 = 5;
+// const EDuelExpired: u64 = 5;
 const ENotEnoughForce: u64 = 6;
 const EDuelStillInAction: u64 = 7;
 const ENotCaster: u64 = 8;
@@ -28,6 +31,7 @@ public struct Duel has key {
     wizard2_force: u64,
     wizard2_effects: vector<u8>,
     wizard1_effects: vector<u8>,
+    prize_pool: Balance<SUI>,
 }
 
 public struct DuelistCap has key {
@@ -41,8 +45,7 @@ public struct AdminCap has key {
     id: UID,
 }
 
-public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
-    // TODO: refactor this method is to expensive in gas for a player to execute, must be shared between 2 players
+public fun create(player_1: address, player_2: address, prize_pool: Balance<SUI>, ctx: &mut TxContext) {
     let duel = Duel {
         id: object::new(ctx),
         wizard1: player_1,
@@ -52,6 +55,7 @@ public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
         started_at: 0,
         wizard1_effects: effect::default_value(),
         wizard2_effects: effect::default_value(),
+        prize_pool
     };
 
     let duel_id = duel.id.to_address().to_id();
@@ -70,113 +74,6 @@ public fun create(player_1: address, player_2: address, ctx: &mut TxContext) {
         wizard: player_2,
         opponent: player_1,
     }, player_2);
-}
-
-public fun create_predefined(player1: address, player2: address, ctx: &mut TxContext) {
-    let duel = Duel {
-        id: object::new(ctx),
-        wizard1: player1,
-        wizard2: player2,
-        wizard1_force: 0,
-        wizard2_force: 0,
-        started_at: 0,
-        wizard1_effects: effect::default_value(),
-        wizard2_effects: effect::default_value(),
-    };
-    transfer::share_object(duel);
-}
-
-public fun create_with_invite(opponent: address, ctx: &mut TxContext): DuelistCap {
-    let sender = tx_context::sender(ctx);
-    assert!(opponent != sender, EBadTx);
-
-    let duel = Duel {
-        id: object::new(ctx),
-        wizard1: sender,
-        wizard2: opponent,
-        wizard1_force: 128,
-        wizard2_force: 0,
-        started_at: 0,
-        wizard1_effects: effect::default_value(),
-        wizard2_effects: effect::default_value(),
-    };
-    let duel_id = duel.id.to_address().to_id();
-    transfer::share_object(duel);
-    DuelistCap {
-        id: object::new(ctx),
-        duel: duel_id,
-        wizard: sender,
-        opponent: opponent,
-    }
-}
-
-public fun create_open(ctx: &mut TxContext): DuelistCap {
-    let sender = tx_context::sender(ctx);
-    // TODO: move 128 force of Sui to the game treasury address in a separate new coin object
-    let duel = Duel {
-        id: object::new(ctx),
-        wizard1: sender,
-        wizard2: @0x0,
-        wizard1_force: 128,
-        wizard2_force: 0,
-        started_at: 0,
-        wizard1_effects: effect::default_value(),
-        wizard2_effects: effect::default_value(),
-    };
-    let duel_id = duel.id.to_address().to_id();
-    transfer::share_object(duel);
-    DuelistCap {
-        id: object::new(ctx),
-        duel: duel_id,
-        wizard: sender,
-        opponent: @0x0,
-    }
-}
-
-public fun join(duel: &mut Duel, now: &Clock, ctx: &mut TxContext): DuelistCap {
-    assert!(duel.started_at <= now.timestamp_ms(), EDuelExpired);
-
-    let sender = tx_context::sender(ctx);
-    // TODO: move 128 force of Sui to the game treasury address in a separate new coin object
-    if (duel.wizard1 == sender) {
-        duel.wizard1_force = 128;
-        return DuelistCap {
-            id: object::new(ctx),
-            duel: duel.id.to_address().to_id(),
-            wizard: sender,
-            opponent: duel.wizard2,
-        }
-    };
-    if (duel.wizard2 == sender) {
-        duel.wizard2_force = 128;
-        return DuelistCap {
-            id: object::new(ctx),
-            duel: duel.id.to_address().to_id(),
-            wizard: sender,
-            opponent: duel.wizard1,
-        }
-    };
-    if (duel.wizard1 == @0x0) {
-        duel.wizard1 = sender;
-        duel.wizard1_force = 128;
-        return DuelistCap {
-            id: object::new(ctx),
-            duel: duel.id.to_address().to_id(),
-            wizard: sender,
-            opponent: duel.wizard2,
-        }
-    };
-    if (duel.wizard2 == @0x0) {
-        duel.wizard2 = sender;
-        duel.wizard2_force = 128;
-        return DuelistCap {
-            id: object::new(ctx),
-            duel: duel.id.to_address().to_id(),
-            wizard: sender,
-            opponent: duel.wizard1,
-        }
-    };
-    abort (ENotDuelWizard)
 }
 
 public fun start(duel: &mut Duel, start_countdown_sec: u64, now: &Clock, ctx: &mut TxContext) {
@@ -319,7 +216,7 @@ public(package) fun defeat(duel: &mut Duel, target: address) {
     abort(ENotDuelWizard)
 }
 
-public fun end(duel: &mut Duel, duelistCap: DuelistCap , ctx: &mut TxContext) {
+public fun end(duel: &mut Duel, duelistCap: DuelistCap, ctx: &mut TxContext) {
     assert!(duel.started_at != 0, EDuelNotInAction);
     assert!(duel.wizard1_force == 0 || duel.wizard2_force == 0, EDuelStillInAction);
 
@@ -327,27 +224,59 @@ public fun end(duel: &mut Duel, duelistCap: DuelistCap , ctx: &mut TxContext) {
     let DuelistCap { id, .. } = duelistCap;
     object::delete(id);
 
-    if (duel.wizard1 == sender && duel.wizard1_force == 0) {
-        // TODO: winner takes staked Sui of the loser
-        // TODO: each player get reward points for the duel
-        return
-    };
+    // Winner gets the entire prize pool
     if (duel.wizard1 == sender && duel.wizard2_force == 0) {
-        // TODO: winner takes staked Sui of the loser
-        // TODO: each player get reward points for the duel
-        return
-    };
-    if (duel.wizard2 == sender && duel.wizard1_force == 0) {
-        // TODO: winner takes staked Sui of the loser
-        // TODO: each player get reward points for the duel
-        return
-    };
-    if (duel.wizard2 == sender && duel.wizard2_force == 0) {
-        // TODO: winner takes staked Sui of the loser
-        // TODO: each player get reward points for the duel
-        return
-    };
-    abort(EBadTx)
+        let prize_balance = balance::withdraw_all(&mut duel.prize_pool);
+        transfer::public_transfer(
+            coin::from_balance(prize_balance, ctx),
+            duel.wizard1
+        );
+    } else if (duel.wizard2 == sender && duel.wizard1_force == 0) {
+        let prize_balance = balance::withdraw_all(&mut duel.prize_pool);
+        transfer::public_transfer(
+            coin::from_balance(prize_balance, ctx),
+            duel.wizard2
+        );
+    }
+}
+
+//
+// # Getter functions
+//
+
+/// Get wizard1 address
+public fun wizard1(duel: &Duel): address {
+    duel.wizard1
+}
+
+/// Get wizard2 address
+public fun wizard2(duel: &Duel): address {
+    duel.wizard2
+}
+
+/// Get wizard1 force
+public fun wizard1_force(duel: &Duel): u64 {
+    duel.wizard1_force
+}
+
+/// Get wizard2 force
+public fun wizard2_force(duel: &Duel): u64 {
+    duel.wizard2_force
+}
+
+/// Get wizard1 effects
+public fun wizard1_effects(duel: &Duel): vector<u8> {
+    duel.wizard1_effects
+}
+
+/// Get wizard2 effects
+public fun wizard2_effects(duel: &Duel): vector<u8> {
+    duel.wizard2_effects
+}
+
+/// Get started_at timestamp
+public fun started_at(duel: &Duel): u64 {
+    duel.started_at
 }
 
 //

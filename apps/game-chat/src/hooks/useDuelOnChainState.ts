@@ -49,6 +49,7 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
       wizard2_force: Number(fields.wizard2_force),
       wizard1_effects: fields.wizard1_effects,
       wizard2_effects: fields.wizard2_effects,
+      prize_pool: fields.prize_pool,
     };
   }, [objectData, duelId]);
 

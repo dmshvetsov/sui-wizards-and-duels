@@ -1,6 +1,7 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { GameMenu } from '@/components/GameMenu'
 import { Loader } from '@/components/Loader'
+import { StakeSelector } from '@/components/StakeSelector'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
@@ -40,6 +41,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
   const [waitRoomStateIsReconciling, setWaitRoomStateIsReconciling] = useState(false)
+  const [selectedStake, setSelectedStake] = useState(0)
 
   const navigate = useNavigate()
 
@@ -63,7 +65,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     { refetchInterval: ONE_SECOND_IN_MS }
   )
 
-  const playerBalance = useSuiClientQuery(
+  const playerBalanceQuery = useSuiClientQuery(
     'getBalance',
     {
       owner: userAccount.id,
@@ -133,11 +135,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
   useEffect(() => {
     // Check if the wallet has enough SUI
-    if (!playerBalance.data) {
+    if (!playerBalanceQuery.data) {
       return
     }
 
-    const balanceInMist = BigInt(playerBalance.data.totalBalance)
+    const balanceInMist = BigInt(playerBalanceQuery.data.totalBalance)
     const requiredBalanceInMist = 12800000n * 2n // x2 0.0128 SUI in MIST
 
     console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
@@ -146,7 +148,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     if (balanceInMist < requiredBalanceInMist && waitState === 'iddle') {
       setWaitState('needs_funding')
     }
-  }, [playerBalance.data, waitState])
+  }, [playerBalanceQuery.data, waitState])
 
   const waitroomState = waitroomQuery.data?.data
   useEffect(() => {
@@ -173,14 +175,17 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }, [waitroomState, userAccount.id, waitState])
 
   const refetchWaitListState = waitroomQuery.refetch
+  const refetchBalance = playerBalanceQuery.refetch
   const handleJoinWaitlist = useCallback(() => {
     signAndExecute(
-      { transaction: joinTx() },
+      { transaction: joinTx(selectedStake * 1_000_000_000) },
       {
         onSuccess(_result) {
           console.debug('waitroom join tx success', _result)
+          toast.success(`Joined waitroom with ${selectedStake === 0 ? 'no stake' : `${selectedStake} SUI stake`}`)
         },
         onError(err) {
+          console.error(err)
           const appErr = new AppError('handleJoinWaitlist', err)
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
@@ -188,10 +193,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         onSettled() {
           setWaitRoomStateIsReconciling(true)
           refetchWaitListState()
+          refetchBalance()
         },
       }
     )
-  }, [signAndExecute, refetchWaitListState])
+  }, [selectedStake, signAndExecute, refetchWaitListState, refetchBalance])
 
   const handleLeave = useCallback(() => {
     signAndExecute(
@@ -209,10 +215,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         onSettled() {
           setWaitRoomStateIsReconciling(true)
           refetchWaitListState()
+          refetchBalance()
         },
       }
     )
-  }, [signAndExecute, refetchWaitListState])
+  }, [signAndExecute, refetchWaitListState, refetchBalance])
 
   if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
     return <Loader />
@@ -248,14 +255,22 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       ) : waitState === 'needs_funding' ? (
         <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
       ) : (
-        <ButtonWithFx
-          className="mt-12"
-          onClick={handleJoinWaitlist}
-          disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-          isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
-        >
-          Play
-        </ButtonWithFx>
+        <>
+          <div className="mt-8">
+            <StakeSelector
+              selectedStake={selectedStake}
+              onStakeSelect={setSelectedStake}
+            />
+          </div>
+          <ButtonWithFx
+            className="mt-6"
+            onClick={handleJoinWaitlist}
+            disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+            isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+          >
+            Play
+          </ButtonWithFx>
+        </>
       )}
 
       <div className="mt-12">
