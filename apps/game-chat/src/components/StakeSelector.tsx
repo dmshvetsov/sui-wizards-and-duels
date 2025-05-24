@@ -9,7 +9,7 @@ interface StakeSelectorProps {
 }
 
 // Allowed stake amounts in SUI (converted to MIST in the contract)
-export const ALLOWED_STAKES = [0, 1, 5, 10, 25, 50, 100]
+const ALLOWED_STAKES = [0, 1, 5, 10, 25, 50, 100]
 
 /**
  * Component for selecting stake amount for duels
@@ -57,12 +57,4 @@ export function StakeSelector({ selectedStake, onStakeSelect, className }: Stake
       </CardContent>
     </Card>
   )
-}
-
-/**
- * Convert MIST amount to SUI for display
- */
-export function mistToSui(mist: string | number): number {
-  const mistNum = typeof mist === 'string' ? parseInt(mist) : mist
-  return mistNum / 1_000_000_000
 }

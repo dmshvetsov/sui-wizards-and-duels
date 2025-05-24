@@ -15,3 +15,8 @@ export function formatMistBalance(balanceMist: string): string {
 
   return `${suiFormatted}.${mistFormatted}`;
 }
+
+export function mistToSui(mist: string | number): number {
+  const mistNum = typeof mist === 'string' ? parseInt(mist) : mist
+  return mistNum / 1_000_000_000
+}
