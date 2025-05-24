@@ -16,9 +16,9 @@ const ALLOWED_STAKES = [0, 1, 5, 10, 25, 50, 100]
  */
 export function StakeSelector({ selectedStake, onStakeSelect, className }: StakeSelectorProps) {
   return (
-    <Card className={cn('w-full max-w-md', className)}>
+    <Card className={cn('w-[300px] h-[370px] max-w-md', className)}>
       <CardHeader>
-        <CardTitle>Select Stake Amount</CardTitle>
+        <CardTitle><h3>Select Stake Amount</h3></CardTitle>
         <CardDescription>
           Choose how much SUI you want to stake for this duel. Winner takes all!
         </CardDescription>
@@ -28,32 +28,22 @@ export function StakeSelector({ selectedStake, onStakeSelect, className }: Stake
           {ALLOWED_STAKES.map((stake) => (
             <Button
               key={stake}
-              variant={selectedStake === stake ? 'default' : 'outline'}
+              variant={selectedStake === stake ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => onStakeSelect(stake)}
               className="text-center"
             >
-              {stake === 0 ? 'Free' : `${stake} SUI`}
+              {stake === 0 ? 'Free' : `${stake} Sui`}
             </Button>
           ))}
         </div>
-        {selectedStake > 0 && (
-          <div className="mt-4 p-3 bg-muted rounded-md">
-            <p className="text-sm text-muted-foreground">
-              <strong>Selected:</strong> {selectedStake} SUI
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              You will stake {selectedStake} SUI. If you win, you get {selectedStake * 2} SUI total.
-            </p>
-          </div>
-        )}
-        {selectedStake === 0 && (
-          <div className="mt-4 p-3 bg-muted rounded-md">
-            <p className="text-sm text-muted-foreground">
-              <strong>Free duel</strong> - No SUI at stake, just for fun!
-            </p>
-          </div>
-        )}
+        <div className="px-5 py-4 bg-muted rounded-md mt-8 h-[80px]">
+          <p className="text-sm text-muted-foreground">
+            {selectedStake > 0
+              ? `You will stake ${selectedStake} Sui to play. If you win, you get ${selectedStake * 2} Sui.`
+              : 'No Sui at stake, duel for fun, only pay for transactions gas!'}
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

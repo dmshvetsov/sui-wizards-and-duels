@@ -182,7 +182,9 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       {
         onSuccess(_result) {
           console.debug('waitroom join tx success', _result)
-          toast.success(`Joined waitroom with ${selectedStake === 0 ? 'no stake' : `${selectedStake} SUI stake`}`)
+          toast.success(
+            `Joined waitroom with ${selectedStake === 0 ? 'no stake' : `${selectedStake} SUI stake`}`
+          )
         },
         onError(err) {
           console.error(err)
@@ -226,71 +228,68 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <GameMenu userAccount={userAccount} />
-      <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
-      <p>Join other player in Player vs Player Wizards Duels.</p>
-      <p>Defeat your opponent to take away his Sui force.</p>
+    <div className="flex justify-center gap-8 items-center h-screen">
+      <div className="w-[300px]" />
+      <div className="flex flex-col items-center justify-center w-[480px]">
+        <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
+        <p>Join other player in Player vs Player Wizards Duels.</p>
+        <p>Defeat your opponent to take away his Sui force.</p>
 
-      {waitState === 'paired' ? (
-        <p className="mt-12">
-          <span className="animate-pulse font-semibold text-green-600">
-            OPPONENT FOUND! PREPARE FOR A DUEL...
-          </span>
-        </p>
-      ) : waitState === 'waiting' ? (
-        <>
+        {waitState === 'paired' ? (
           <p className="mt-12">
-            <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+            <span className="animate-pulse font-semibold text-green-600">
+              OPPONENT FOUND! PREPARE FOR A DUEL...
+            </span>
           </p>
-          <ButtonWithFx
-            className="mt-4"
-            onClick={handleLeave}
-            disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-            isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
-          >
-            Cancel
-          </ButtonWithFx>
-        </>
-      ) : waitState === 'needs_funding' ? (
-        <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
-      ) : (
-        <>
-          <div className="mt-8">
-            <StakeSelector
-              selectedStake={selectedStake}
-              onStakeSelect={setSelectedStake}
-            />
-          </div>
+        ) : waitState === 'waiting' ? (
+          <>
+            <p className="mt-12">
+              <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+            </p>
+            <ButtonWithFx
+              className="mt-4"
+              onClick={handleLeave}
+              disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+              isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+            >
+              Cancel
+            </ButtonWithFx>
+          </>
+        ) : waitState === 'needs_funding' ? (
+          <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
+        ) : (
           <ButtonWithFx
             className="mt-6"
             onClick={handleJoinWaitlist}
             disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
             isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
           >
-            Play
+            {selectedStake > 0 ? 'Stake and Play' : 'Play'}
           </ButtonWithFx>
-        </>
-      )}
+        )}
 
-      <div className="mt-12">
-        <p className="text-lg">
-          wizards online:{' '}
-          <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
-        </p>
+        <div className="mt-12">
+          <p className="text-lg">
+            wizards online:{' '}
+            <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
+          </p>
+        </div>
+
+        {onlineCount === 1 && (
+          <>
+            <p className="mt-2 text-center">
+              You are the only one in the Duelground. Wait for others to join or invite friends with
+              the following link
+            </p>
+            <p>
+              <span className="font-semibold">{window.location.toString()}</span>
+            </p>
+          </>
+        )}
       </div>
-
-      {onlineCount === 1 && (
-        <>
-          <p className="mt-2 text-center">
-            You are the only one in the Duelground. Wait for others to join or invite friends with
-            the following link
-          </p>
-          <p>
-            <span className="font-semibold">{window.location.toString()}</span>
-          </p>
-        </>
-      )}
+      <div className="mt-8">
+        <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+      </div>
       {isDevnetEnv && (
         <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
           <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
@@ -300,6 +299,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           </pre>
         </div>
       )}
+      <GameMenu userAccount={userAccount} />
     </div>
   )
 }
