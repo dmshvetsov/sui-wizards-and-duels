@@ -19,6 +19,7 @@ const STAKE_50_SUI: u64 = 50_000_000_000;
 const STAKE_100_SUI: u64 = 100_000_000_000;
 
 const EInvalidStakeAmount: u64 = 10;
+const EAlreadyInWaitroom: u64 = 20;
 
 //
 // Structs
@@ -52,12 +53,15 @@ public fun join(waitroom: &mut Waitroom, stake: Coin<SUI>, ctx: &mut TxContext) 
     let stake_amount = stake.value();
     assert!(is_valid_stake_amount(stake_amount), EInvalidStakeAmount);
 
+    let is_already_in_queue = waitroom.queue.any!(|p| p.wizard1 == sender);
+    assert!(!is_already_in_queue, EAlreadyInWaitroom);
+
     // Look for a matching stake amount in the queue
     let queue_length = vector::length(&waitroom.queue);
     let mut i = 0;
     while (i < queue_length) {
         let pairing = vector::borrow(&waitroom.queue, i);
-        if (pairing.stake_amount == stake_amount && sender != pairing.wizard1) {
+        if (pairing.stake_amount == stake_amount) {
             // Found a match, remove it from queue and create duel
             let mut prize_pool = waitroom.balance.split(stake_amount);
             let matched_pairing = vector::remove(&mut waitroom.queue, i);
