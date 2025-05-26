@@ -41,33 +41,28 @@ export function Landing() {
       </div>
 
       {/* About the Game */}
-      <div className="py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto py-16">
           <h2 className="text-4xl font-bold mb-8 text-center">About Wizards and Duels</h2>
           <div className="max-w-4xl mx-auto text-lg text-gray-700 leading-relaxed">
             <p className="mb-6">
-              <strong>Wizards and Duels</strong> is a revolutionary blockchain-based strategy game
-              where players embody powerful wizards engaging in real-time magical combat. Built on
-              the lightning-fast Sui blockchain, the game combines traditional turn-based strategy
-              with modern real-time mechanics and cryptocurrency rewards.
+              <strong>Wizards and Duels</strong> is a free to play, browser based, real-time
+              strategy game where players engage in chat-typing duels, casting spells to deplete
+              opponents' force. Think Hearthstone meets Street Fighter — but instantly accessible
+              with no download.
             </p>
             <p className="mb-6">
-              Each wizard starts with 128 force points and must strategically cast spells to defeat
-              their opponent. The game features a sophisticated spell system with four core spells:{' '}
-              <strong>Arrow</strong> (direct damage),
-              <strong>Choke</strong> (damage over time), <strong>Throw</strong> (removes opponent's
-              choke effects), and
-              <strong>Deflect</strong> (nullifies incoming damage). Victory goes to the wizard who
-              reduces their opponent's force to zero first.
+              Winners claim staked tokens and the opponent's equipment. Players can opt for a “play
+              for fun” mode without stakes and/or lost of equipment.
             </p>
             <p>
-              What sets Wizards and Duels apart is its integration with the Sui blockchain, enabling
-              true ownership of game assets, transparent gameplay mechanics, and real cryptocurrency
-              rewards for skilled players.
+              The game emphasises digital ownership, allowing the trading of Wizards, created
+              Equipment, and Artefacts on Sui NFT marketplaces. Spell duels follow
+              rock-paper-scissors mechanics, with “Dungeon & Dragons” dice roll mechanic (randomnes)
+              with hundreds of spells to choose from and combine into combo, each wizard is uniq due
+              to his developing path, ensuring no wizard is more powerful than another.
             </p>
           </div>
         </div>
-      </div>
 
       {/* Game Modes */}
       <div className="bg-gradient-to-r from-purple-100 to-blue-100 bg-opacity-95 py-14">
@@ -94,7 +89,7 @@ export function Landing() {
                 'Real-time player vs player duels',
                 'SUI token stakes',
                 'Prize pools',
-                'Level up wizards enabled (comming soon)',
+                'Level up our wizards by playing (comming soon)',
                 'In game token rewards (comming soon)',
               ]}
               buttonText="Enter Duelground"
@@ -102,12 +97,12 @@ export function Landing() {
             />
             <GameModeCard
               title="Play for Fun"
-              description=""
+              description="Duel for fun with friends or other glory-seeking wizards."
               features={[
                 'Real-time player vs player duels',
                 'No stakes',
                 'No prize pools',
-                'Level up wizards enabled (comming soon)',
+                'Level up our wizards by playing (comming soon)',
                 'In game token rewards (comming soon)',
               ]}
               buttonText="Enter Duelground"
