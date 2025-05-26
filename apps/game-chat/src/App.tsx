@@ -11,7 +11,7 @@ import { ClaimWelcomeReward } from './welcome-reward/ClaimWelcomReward'
 function App() {
   return (
     <BrowserRouter>
-      <div className="w-screen h-screen">
+      <div className="app-container w-screen h-screen">
         <Routes>
           <Route path="/d/:slug" element={<Authenticated component={DuelLayout} />} />
           <Route path="/d" element={<Authenticated component={WaitRoom} />} />
