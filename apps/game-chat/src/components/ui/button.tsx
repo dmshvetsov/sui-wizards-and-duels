@@ -3,7 +3,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
+import { LoaderPinwheel } from 'lucide-react'
 import { SFX } from '@/lib/sfx'
 
 type WithLoading = {
@@ -79,7 +79,7 @@ export function ButtonWithLoading({
   }) {
   return (
     <Button {...props}>
-      {isLoading ? <Loader2 className="animate-spin" /> : null} {children}
+      {isLoading ? <LoaderPinwheel className="animate-spin" /> : null} {children}
     </Button>
   )
 }
@@ -103,7 +103,7 @@ export function ButtonWithFx(props: React.ComponentProps<'button'> & WithLoading
           }
         }}
       >
-        {isLoading ? <Loader2 className="animate-spin" /> : null} {children}
+        {isLoading ? <LoaderPinwheel className="animate-spin" /> : null} {children}
       </button>
     </div>
   )
