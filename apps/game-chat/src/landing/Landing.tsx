@@ -1,4 +1,4 @@
-import { Button, ButtonWithFx } from '@/components/ui/button'
+import { ButtonWithFx } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
 export function Landing() {
@@ -261,6 +261,14 @@ export function Landing() {
                   className="block text-gray-400 hover:text-white transition-colors"
                 >
                   @wizardsnduels on X
+                </a>
+                <a
+                  href="https://www.canva.com/design/DAGoUJ7edcs/we2GlnnSc2lngri-IV4FYg/view?utm_content=DAGoUJ7edcs&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h20b6c4a40a"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-gray-400 hover:text-white transition-colors"
+                >
+                  Project pitch deck
                 </a>
               </div>
             </div>
