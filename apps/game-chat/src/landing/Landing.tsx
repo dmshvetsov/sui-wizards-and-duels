@@ -9,12 +9,12 @@ export function Landing() {
   return (
     <div>
       {/* Parallax Background */}
-      <div
-        className="absolute h-screen bg-gradient-to-b from-gray-50 to-gray-200"
-        style={{
-          backgroundImage: `url('/path/to/your/background-image.jpg')`, // Update with actual image path
-        }}
-      />
+      {/* <div */}
+      {/*   className="absolute h-screen bg-gradient-to-b from-gray-50 to-gray-200" */}
+      {/*   style={{ */}
+      {/*     backgroundImage: `url('assets/background.jpg')`, */}
+      {/*   }} */}
+      {/* /> */}
 
       {/* Hero Section */}
       <div className="container mx-auto h-[calc(100vh-120px)]">
@@ -33,7 +33,7 @@ export function Landing() {
           </div>
 
           <div className="mt-6">
-            <a href="https://x.com/wizardsandduels" target="_blank" rel="noopener noreferrer">
+            <a href="https://x.com/wizardsnduels" target="_blank" rel="noopener noreferrer">
               follow @wizardsandduels on X
             </a>
           </div>
@@ -51,14 +51,14 @@ export function Landing() {
               with no download.
             </p>
             <p className="mb-6">
-              Winners claim staked tokens and the opponent's equipment. Players can opt for a “play
-              for fun” mode without stakes and/or lost of equipment.
+            Winners claim staked tokens and the opponent's equipment. Players can opt for a "play
+              for fun" mode without stakes and/or loss of equipment.
             </p>
             <p>
               The game emphasises digital ownership, allowing the trading of Wizards, created
               Equipment, and Artefacts on Sui NFT marketplaces. Spell duels follow
-              rock-paper-scissors mechanics, with “Dungeon & Dragons” dice roll mechanic (randomnes)
-              with hundreds of spells to choose from and combine into combo, each wizard is uniq due
+              rock-paper-scissors mechanics, with "Dungeon & Dragons" dice roll mechanic (randomness)
+              with hundreds of spells to choose from and combine into combo, each wizard is unique due
               to his developing path, ensuring no wizard is more powerful than another.
             </p>
           </div>
@@ -89,8 +89,8 @@ export function Landing() {
                 'Real-time player vs player duels',
                 'SUI token stakes',
                 'Prize pools',
-                'Level up our wizards by playing (comming soon)',
-                'In game token rewards (comming soon)',
+                'Level up your wizards by playing (coming soon)',
+                'In game token rewards (coming soon)',
               ]}
               buttonText="Enter Duelground"
               onClick={handlePlayPvP}
@@ -102,8 +102,8 @@ export function Landing() {
                 'Real-time player vs player duels',
                 'No stakes',
                 'No prize pools',
-                'Level up our wizards by playing (comming soon)',
-                'In game token rewards (comming soon)',
+                'Level up your wizards by playing (coming soon)',
+                'In game token rewards (coming soon)',
               ]}
               buttonText="Enter Duelground"
               onClick={handlePlayPvP}
@@ -155,12 +155,12 @@ export function Landing() {
             <StepCard
               number="1"
               title="Start with practice"
-              description="Playe practice mode agains NPCs right avay no wallet required."
+              description="Playe practice mode agains NPCs right avay, no wallet required."
             />
             <StepCard
               number="2"
               title="Enter Battle"
-              description="Sing in with Google to enjoy PvP matchmaking and duels."
+              description="Sign in with Google to enjoy PvP matchmaking and duels."
             />
             <StepCard
               number="3"
@@ -188,7 +188,7 @@ export function Landing() {
             />
             <FeatureCard
               title="Music and Sound Effects"
-              description="Spell sound effects and atmospheric music are now available in the game to make your experience even more emersive"
+              description="Spell sound effects and atmospheric music are now available in the game to make your experience even more immersive"
             />
             <FeatureCard
               title="Practice Mode"
@@ -212,7 +212,7 @@ export function Landing() {
           <h2 className="text-4xl font-bold mb-6">Ready to Begin Your Magical Journey?</h2>
           <h3>Outwit! Outspell!</h3>
           <p className="text-xl mb-8 text-purple-100 max-w-2xl mx-auto">
-            Become the ultimate wizard duelist in fast and firce browser battles Start with practice
+            Become the ultimate wizard duelist in fast and fierce browser battles Start with practice
             mode or dive straight into competitive PvP duels!
           </p>
 
@@ -282,7 +282,7 @@ export function Landing() {
               </p>
               <p className="text-gray-400 mb-2">
                 <a
-                  href="oki.mystenlabs.com"
+                  href="https://enoki.mystenlabs.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block text-gray-400 hover:text-white transition-colors"
@@ -325,8 +325,6 @@ function GameModeCard({
   title: string
   description: string
   features: string[]
-  buttonText: string
-  onClick: () => void
 }) {
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
