@@ -591,11 +591,15 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
       />
       <ActionUi wizard={wizard} opponent={opponent} />
       {isDevnetEnv && (
-        <Button variant="link" className='my-2' onClick={() => onComplete()}>
+        <Button variant="link" className="my-2" onClick={() => onComplete()}>
           skip to completed state
         </Button>
       )}
-      {duelData.wizard2.force === 0 && <div className="w-fit mx-auto mt-4"><ButtonWithFx onClick={handleExitDuel}>Claim Reward</ButtonWithFx></div>}
+      {duelData.wizard2.force === 0 && (
+        <div className="w-fit mx-auto mt-4">
+          <ButtonWithFx onClick={handleExitDuel}>Claim Reward</ButtonWithFx>
+        </div>
+      )}
     </>
   )
 }
@@ -642,9 +646,11 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
         </div>
       </div>
 
-      {opponent.force !== 0 && <div className="flex gap-8 justify-center mt-4 text-center">
-        <Link to="/d">Skip Practice</Link>
-      </div>}
+      {opponent.force !== 0 && (
+        <div className="flex gap-8 justify-center mt-4 text-center">
+          <Link to="/d">Skip Practice</Link>
+        </div>
+      )}
     </div>
   )
 }
@@ -678,13 +684,18 @@ function Result() {
         </div>
       </div>
 
-      <p className="text-lg font-semibold mb-4">
+      <p className="text-lg font-semibold mb-8">
         {isWinner ? 'You have defeated your opponent!' : 'You have been defeated!'}
       </p>
 
-      <Link to="/">
-        Back to Home
+      <Link to="/d">
+        <ButtonWithFx>Claim reward (Sign Up required)</ButtonWithFx>
       </Link>
+
+      <p className="mt-4 text-center">
+        We welcome you into the game <br />
+        with "new player reward", sing up to claim.
+      </p>
     </div>
   )
 }

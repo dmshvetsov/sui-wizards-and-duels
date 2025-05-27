@@ -2,7 +2,7 @@
 
 ## GAME ROAD MAP
 
-- [ ] landing page (and project pitching deck)
+- [x] landing page (and project pitching deck)
 - [ ] MVP with two-three spells
   - [x] 3-5 spells
   - [x] spell sound FX
