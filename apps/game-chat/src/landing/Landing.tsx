@@ -17,7 +17,7 @@ function Content() {
           className="absolute h-screen w-screen my-16 z-1"
           ref={bg.ref}
           style={{
-            backgroundImage: `url('src/assets/bg.png')`,
+            backgroundImage: `url('/src/assets/bg.png')`,
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
