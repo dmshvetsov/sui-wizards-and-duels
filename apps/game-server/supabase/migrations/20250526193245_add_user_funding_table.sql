@@ -1,6 +1,7 @@
 CREATE TABLE user_funding (
   sui_address TEXT PRIMARY KEY,
-  timestamp TIMESTAMP DEFAULT now()
+  timestamp TIMESTAMP DEFAULT now(),
+  tx_digest TEXT NOT NULL
 );
 
 -- Enable RLS
