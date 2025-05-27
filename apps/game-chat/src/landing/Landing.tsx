@@ -2,6 +2,7 @@ import { ButtonWithFx } from '@/components/ui/button'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useParallax, ParallaxProvider } from 'react-scroll-parallax'
+import bgImage from '../assets/bg.png'
 
 function Content() {
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ function Content() {
           className="absolute h-screen w-screen my-16 z-1"
           ref={bg.ref}
           style={{
-            backgroundImage: `url('/src/assets/bg.png')`,
+            backgroundImage: `url(${bgImage})`,
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
