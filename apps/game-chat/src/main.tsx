@@ -8,9 +8,8 @@ import { appUrl } from './lib/utils.ts'
 
 import '@mysten/dapp-kit/dist/index.css'
 import './index.css'
-import { AppClientSetup } from './auth/AppClientSetup.tsx'
 
-const DEFAULT_NETWORK = import.meta.env.VITE_DEFAULT_NETWORK || 'localnet'
+const NETWORK = import.meta.env.VITE_DEFAULT_NETWORK || 'localnet'
 
 const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -39,10 +38,9 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <QueryClientProvider client={queryClient}>
-    <SuiClientProvider networks={networkConfig} defaultNetwork={DEFAULT_NETWORK}>
+    <SuiClientProvider networks={networkConfig} defaultNetwork={NETWORK}>
       <EnokiSetup apiKey={ENOKI_API_KEY} providers={authProviders} />
       <WalletProvider autoConnect>
-        <AppClientSetup />
         <App />
       </WalletProvider>
     </SuiClientProvider>
