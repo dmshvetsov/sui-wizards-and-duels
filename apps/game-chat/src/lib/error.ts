@@ -1,5 +1,5 @@
 /**
- * a class to wrap errors to have a common interface to display to the user and handle errars int the app
+ * a class to wrap errors to have a common interface to display to the user and handle errors int the app
  */
 export class AppError {
   public message: string
