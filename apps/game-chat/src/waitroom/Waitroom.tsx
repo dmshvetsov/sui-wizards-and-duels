@@ -1,8 +1,9 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
+import { FundWallet } from '@/components/FundWallet'
 import { GameMenu } from '@/components/GameMenu'
 import { Loader } from '@/components/Loader'
 import { StakeSelector } from '@/components/StakeSelector'
-import { Button, ButtonWithFx } from '@/components/ui/button'
+import { ButtonWithFx } from '@/components/ui/button'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
@@ -32,12 +33,14 @@ const UNCONNECTED_COUNTER_STATE = 0
 const THREE_SECONDS_IN_MS = 3000
 const ONE_SECOND_IN_MS = 1000
 
-type WaitState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'paired'
+const REQUIRED_BALANCE_TO_PLAY = 12800000n * 2n // x2 0.0128 SUI in MIST
+
+type UserWaitRoomState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'paired'
 
 export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const suiContext = useSuiClientContext()
   const [onlineCount, setOnlineCount] = useState(UNCONNECTED_COUNTER_STATE)
-  const [waitState, setWaitState] = useState<WaitState>('loading')
+  // const [userState, setUserState] = useState<WaitState>('loading')
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
   const [waitRoomStateIsReconciling, setWaitRoomStateIsReconciling] = useState(false)
@@ -51,7 +54,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       id: waitroom.object.waitroom,
       options: { showContent: true },
     },
-    { enabled: waitState !== 'loading', refetchInterval: THREE_SECONDS_IN_MS }
+    { refetchInterval: THREE_SECONDS_IN_MS }
   )
   const duelistCapQuery = useSuiClientQuery(
     'getOwnedObjects',
@@ -81,6 +84,28 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       MUSIC.duelground.stop()
     }
   }, [])
+
+  const waitroomState = waitroomQuery.data?.data
+  const userBalanceInMist = playerBalanceQuery.data
+    ? BigInt(playerBalanceQuery.data.totalBalance)
+    : 0
+  const queue =
+    waitroomState?.content?.dataType === 'moveObject'
+      ? (waitroomState.content.fields as Waitroom).queue
+      : []
+  const duelistCap = duelistCapQuery.data?.data?.at(-1)?.data ?? null
+  const isInQueue = queue.find((pair) => pair.fields.wizard1 === userAccount.id) != null
+  const isDataFetching =
+    duelistCapQuery.isPending || playerBalanceQuery.isPending || waitroomQuery.isPending
+  const userState: UserWaitRoomState = isDataFetching
+    ? 'loading'
+    : duelistCap
+      ? 'paired'
+      : isInQueue
+        ? 'waiting'
+        : userBalanceInMist < REQUIRED_BALANCE_TO_PLAY
+          ? 'needs_funding'
+          : 'iddle'
 
   useEffect(() => {
     const channel = createRoom('waitroom', { config: { presence: { key: userAccount.id } } })
@@ -116,63 +141,19 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }, [userAccount.id, navigate])
 
   useEffect(() => {
-    if (!duelistCapQuery.data) {
-      return
-    }
     // assume players will only have 1 duelistCap
     // but take the last one which should be the most recent in case if a player holds multiple DuelistCaps
-    const duelistCap = duelistCapQuery.data.data?.at(-1)?.data
+    const duelistCap = duelistCapQuery.data?.data?.at(-1)?.data
     if (!duelistCap || duelistCap.content?.dataType !== 'moveObject') {
-      console.debug('no existing duelist cap found')
-      setWaitState('iddle')
       return
     }
 
     console.debug('found existing duelist cap', duelistCap)
     const duelId = (duelistCap.content?.fields as DuelistCap).duel
-    navigate(`/d/${duelId}`)
+    setTimeout(() => {
+      navigate(`/d/${duelId}`)
+    }, 800)
   }, [duelistCapQuery.data, navigate])
-
-  useEffect(() => {
-    // Check if the wallet has enough SUI
-    if (!playerBalanceQuery.data) {
-      return
-    }
-
-    const balanceInMist = BigInt(playerBalanceQuery.data.totalBalance)
-    const requiredBalanceInMist = 12800000n * 2n // x2 0.0128 SUI in MIST
-
-    console.debug('Wizard wallet balance:', balanceInMist.toString(), 'MIST')
-
-    // If the wallet doesn't have enough SUI, set the state to needs_funding
-    if (balanceInMist < requiredBalanceInMist && waitState === 'iddle') {
-      setWaitState('needs_funding')
-    }
-  }, [playerBalanceQuery.data, waitState])
-
-  const waitroomState = waitroomQuery.data?.data
-  useEffect(() => {
-    if (!waitroomState) {
-      return
-    }
-    if (waitroomState.content?.dataType !== 'moveObject') {
-      console.warn('failed to load Waitroom state')
-      return
-    }
-
-    const queue = (waitroomState.content.fields as Waitroom).queue
-    const isInQueue = queue.find((pair) => pair.fields.wizard1 === userAccount.id) != null
-    if (isInQueue) {
-      setWaitState('waiting')
-    } else {
-      // Only set to idle if not in needs_funding state
-      // FIXME: how it must work now with zk wallets
-      if (waitState !== 'needs_funding') {
-        setWaitState('iddle')
-      }
-    }
-    setWaitRoomStateIsReconciling(false)
-  }, [waitroomState, userAccount.id, waitState])
 
   const refetchWaitListState = waitroomQuery.refetch
   const refetchBalance = playerBalanceQuery.refetch
@@ -223,8 +204,28 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     )
   }, [signAndExecute, refetchWaitListState, refetchBalance])
 
-  if (onlineCount === UNCONNECTED_COUNTER_STATE || waitState === 'loading') {
+  if (!waitroomQuery.data || onlineCount === UNCONNECTED_COUNTER_STATE || userState === 'loading') {
     return <Loader />
+  }
+
+  if (waitroomQuery.status === 'error') {
+    // network error
+    return (
+      <div className="flex flex-col justify-center gap-8 items-center h-screen">
+        <h1>Come back later!</h1>
+        <h3>Something is wrong and we are working on a fix for it.</h3>
+      </div>
+    )
+  }
+
+  if (waitroomQuery.data.error && waitroomQuery.data.error.code === 'notExists') {
+    // on chain error
+    return (
+      <div className="flex flex-col justify-center gap-8 items-center h-screen">
+        <h1>Come back later!</h1>
+        <h3>We upgrading our game, we will be back shortly.</h3>
+      </div>
+    )
   }
 
   return (
@@ -232,41 +233,43 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       <div className="w-[300px]" />
       <div className="flex flex-col items-center justify-center w-[480px]">
         <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
-        <p>Join other player in Player vs Player Wizards Duels.</p>
+        <p>Join others in Player vs Player Wizards Duels.</p>
         <p>Defeat your opponent to take away his Sui force.</p>
 
-        {waitState === 'paired' ? (
-          <p className="mt-12">
-            <span className="animate-pulse font-semibold text-green-600">
-              OPPONENT FOUND! PREPARE FOR A DUEL...
-            </span>
-          </p>
-        ) : waitState === 'waiting' ? (
-          <>
-            <p className="mt-12">
-              <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+        <div className="mt-8 text-center">
+          {userState === 'paired' ? (
+            <p className="mt-10">
+              <span className="animate-pulse font-semibold text-green-600">
+                OPPONENT FOUND! PREPARE FOR A DUEL...
+              </span>
             </p>
+          ) : userState === 'waiting' ? (
+            <>
+              <p>
+                <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+              </p>
+              <ButtonWithFx
+                className="mt-4"
+                onClick={handleLeave}
+                disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
+                isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+              >
+                Cancel
+              </ButtonWithFx>
+            </>
+          ) : userState === 'needs_funding' ? (
+            <FundWallet walletAddress={userAccount.id} />
+          ) : (
             <ButtonWithFx
-              className="mt-4"
-              onClick={handleLeave}
+              className="mt-10"
+              onClick={handleJoinWaitlist}
               disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
               isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
             >
-              Cancel
+              {selectedStake > 0 ? 'Stake and Play' : 'Play'}
             </ButtonWithFx>
-          </>
-        ) : waitState === 'needs_funding' ? (
-          <Button onClick={() => navigate('/welcome-reward')}>Claim Welcome Reward</Button>
-        ) : (
-          <ButtonWithFx
-            className="mt-6"
-            onClick={handleJoinWaitlist}
-            disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-            isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
-          >
-            {selectedStake > 0 ? 'Stake and Play' : 'Play'}
-          </ButtonWithFx>
-        )}
+          )}
+        </div>
 
         <div className="mt-12">
           <p className="text-lg">
@@ -274,7 +277,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
             <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
           </p>
         </div>
-
         {onlineCount === 1 && (
           <>
             <p className="mt-2 text-center">
@@ -287,8 +289,10 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           </>
         )}
       </div>
-      <div className="mt-8">
-        <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+      <div className="mt-8 w-[300px]">
+        {userState !== 'needs_funding' && (
+          <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+        )}
       </div>
       {isDevnetEnv && (
         <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">

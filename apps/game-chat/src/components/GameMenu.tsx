@@ -1,10 +1,11 @@
 import { formatMistBalance } from '@/lib/sui/coin'
-import { useDisconnectWallet, useSuiClientQuery } from '@mysten/dapp-kit'
+import { useSuiClientContext, useDisconnectWallet, useSuiClientQuery } from '@mysten/dapp-kit'
 import { useNavigate } from 'react-router-dom'
 import { UserAccount } from './Authenticated'
 import { Button } from './ui/button'
 
 export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
+  const suiClientContext = useSuiClientContext()
   const { mutate: disconnect } = useDisconnectWallet()
   const navigate = useNavigate()
 
@@ -24,7 +25,10 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 w-full flex gap-4 justify-center items-center px-12 py-8">
+    <div className="fixed bottom-0 left-0 w-full flex gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-4 duration-580 px-12 py-8">
+      <div>
+        <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{suiClientContext.network}</span>
+      </div>
       <div>
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{userAccount.id}</span>
       </div>
