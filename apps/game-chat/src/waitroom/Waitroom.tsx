@@ -245,7 +245,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
             </p>
           ) : userState === 'waiting' ? (
             <>
-              <p className="">
+              <p>
                 <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
               </p>
               <ButtonWithFx
@@ -258,7 +258,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
               </ButtonWithFx>
             </>
           ) : userState === 'needs_funding' ? (
-            <FundWallet userAccount={userAccount} />
+            <FundWallet walletAddress={userAccount.id} />
           ) : (
             <ButtonWithFx
               className="mt-10"
