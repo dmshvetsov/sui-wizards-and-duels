@@ -44,4 +44,16 @@ export class AppError {
 //     }
 // }
 
+// object not found
+// {
+//     "jsonrpc": "2.0",
+//     "id": 267,
+//     "result": {
+//         "error": {
+//             "code": "notExists",
+//             "object_id": "0xbd2995682239452f216ec517fbac6ff47cffaace23c53caa9f5539228b73d573"
+//         }
+//     }
+// }
+
 // Network error 502 Bad Gateway during RPC call

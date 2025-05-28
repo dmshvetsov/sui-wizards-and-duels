@@ -101,7 +101,7 @@ a {
 
 .app-container {
   background-image: url('/src/assets/bg.png');
-  background-size: contain;
+  background-size: 90vh;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
