@@ -1,25 +1,38 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Toaster } from 'sonner'
-import { Authenticated } from './components/Authenticated'
+import { AuthenticatedPage, WithUserAccount } from './components/Authenticated'
 import { DuelLayout } from './duel/Duel'
 import { Landing } from './landing/Landing'
 import { PracticeDuel } from './practice-duel/PracticeDuel'
-import { Signing } from './signing/Signin'
 import { WaitRoom } from './waitroom/Waitroom'
 import { ClaimWelcomeReward } from './welcome-reward/ClaimWelcomReward'
+import { WithRewardClaim } from './rewards/WithRewardClaim'
+import { NotFound } from './components/NotFound'
+
 
 function App() {
   return (
     <BrowserRouter>
       <div className="app-container w-screen h-screen">
         <Routes>
-          <Route path="/d/:slug" element={<Authenticated component={DuelLayout} />} />
-          <Route path="/d" element={<Authenticated component={WaitRoom} />} />
-          <Route path="/signin" element={<Signing />} />
-          <Route path="/practice" element={<PracticeDuel />} />
-          <Route path="/welcome-reward" element={<Authenticated component={ClaimWelcomeReward} />} />
-          <Route path="/" element={<Landing />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route index Component={Landing} />
+          <Route path="/practice" Component={PracticeDuel} />
+          <Route path="/d" Component={AuthenticatedPage}>
+            <Route
+              index
+              element={
+                <WithRewardClaim>
+                  <WithUserAccount Component={WaitRoom} />
+                </WithRewardClaim>
+              }
+            />
+            <Route path=":slug" element={<WithUserAccount Component={DuelLayout} />} />
+            <Route
+              path="welcome-reward"
+              element={<WithUserAccount Component={ClaimWelcomeReward} />}
+            />
+          </Route>
+          <Route path="*" Component={NotFound} />
         </Routes>
         <Toaster />
       </div>

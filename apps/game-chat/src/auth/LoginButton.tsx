@@ -1,7 +1,18 @@
 import { Loader } from '@/components/Loader'
 import { ButtonWithFx } from '@/components/ui/button'
-import { useConnectWallet, useCurrentAccount, useWallets } from '@mysten/dapp-kit'
-import { isEnokiWallet, type AuthProvider, type EnokiWallet } from '@mysten/enoki'
+import { logIn } from '@/lib/auth'
+import {
+  useConnectWallet,
+  useCurrentAccount,
+  useDisconnectWallet,
+  useSuiClientContext,
+  useWallets,
+} from '@mysten/dapp-kit'
+import {
+  isEnokiWallet,
+  type AuthProvider,
+  type EnokiWallet,
+} from '@mysten/enoki'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,19 +22,30 @@ interface LoginButtonProps {
   className?: string
 }
 
+const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY ?? ''
+if (!ENOKI_API_KEY) {
+  throw new Error('missing configuration for ZKLogin')
+}
+
 /**
  * Custom login button for a specific authentication provider
  * This component renders a button that initiates the zkLogin flow for the specified provider
  */
 export function LoginButton({ provider, label }: LoginButtonProps) {
   const { mutate: connect } = useConnectWallet()
+  const { mutate: disconnect } = useDisconnectWallet()
   const wallets = useWallets().filter(isEnokiWallet)
+  const network = useSuiClientContext().network
 
   // Find the wallet for the specified provider
   const wallet = wallets.find((wallet) => wallet.provider === provider)
 
   if (!wallet) {
     return null
+  }
+  if (!network) {
+    console.debug(`sui client network is misconfigured, current value ${network}`)
+    return
   }
 
   return (
@@ -32,12 +54,13 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
         connect(
           { wallet },
           {
-            onSettled(res, err) {
-              if (err) {
-                console.error('Login error:', err)
-              } else {
-                console.log('Login result:', res)
+            onSuccess(res) {
+              const account = getSelectedAccount(res.accounts)
+              const address = account?.address ?? null
+              if (!address) {
+                return
               }
+              logIn(address, network).catch(() => disconnect())
             },
           }
         )
@@ -80,4 +103,17 @@ export function LoginMenu({ redirectOnLgoin }: { redirectOnLgoin: string }) {
       ))}
     </div>
   )
+}
+
+function getSelectedAccount(accounts: any, accountAddress?: string) {
+  if (accounts.length === 0) {
+    return null
+  }
+
+  if (accountAddress) {
+    const selectedAccount = accounts.find((account) => account.address === accountAddress)
+    return selectedAccount ?? accounts[0]
+  }
+
+  return accounts[0]
 }
