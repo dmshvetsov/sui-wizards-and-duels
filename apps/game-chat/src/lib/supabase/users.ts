@@ -1,3 +1,4 @@
+import { displayName as displayNameFromAddress } from '../user'
 import { getClient, NOT_FOUND_ERR_CODE } from './client'
 
 /**
@@ -22,7 +23,6 @@ const USER_ACCOUNT_TABLE = 'user_accounts'
  */
 export async function createOrUpdateUserAccount(
   suiAddress: string,
-  displayName: string
 ): Promise<UserAccountsRelation> {
   // First, check if a user with this sui_address already exists
   const { data: existingUserAccount, error: existingfetchError } = await getClient()
@@ -36,6 +36,7 @@ export async function createOrUpdateUserAccount(
     throw existingfetchError
   }
 
+  const displayName = displayNameFromAddress(suiAddress)
   if (existingUserAccount && existingUserAccount.display_name === displayName) {
     return existingUserAccount
   } else if (existingUserAccount) {
