@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.5'
 import { SuiClient, getFullnodeUrl } from 'npm:@mysten/sui/client'
 import { Ed25519Keypair } from 'npm:@mysten/sui/keypairs/ed25519'
 import { Transaction } from 'npm:@mysten/sui/transactions'
+import { corsHeaders } from "../_shard/cors.ts";
 
 // --- Supabase Setup ---
 const supabase = createClient(
@@ -44,8 +45,11 @@ try {
 const client = new SuiClient({ url: ALLOWED_NETWORKS[NETWORK] })
 
 Deno.serve(async (req) => {
-  // TOOD: authenticate request
   try {
+    if (req.method === 'OPTIONS') {
+      return new Response('OK', { headers: corsHeaders })
+    }
+
     if (req.method === 'GET') {
       return await checkFundingForWallet(req)
     }
@@ -74,13 +78,6 @@ Deno.serve(async (req) => {
     return jsonResponse({ message: 'Internal Server Error' }, 500)
   }
 })
-
-function jsonResponse(result: Record<string | number, unknown>, status: number) {
-  return new Response(JSON.stringify({ result }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 async function fundWallet(req: Request) {
   const authHeader = req.headers.get('Authorization')!
@@ -202,4 +199,11 @@ async function checkFundingForWallet(req: Request) {
   }
 
   return jsonResponse({ funded: false }, 200)
+}
+
+function jsonResponse(result: Record<string | number, unknown>, status: number) {
+  return new Response(JSON.stringify({ result }), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
 }
