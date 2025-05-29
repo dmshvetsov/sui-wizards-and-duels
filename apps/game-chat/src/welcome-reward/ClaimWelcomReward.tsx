@@ -11,7 +11,7 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
   const suiClientContext = useSuiClientContext()
   const navigate = useNavigate()
 
-  const rewarchCheckQuery = useQuery({
+  const rewardCheckQuery = useQuery({
     queryKey: ['fund'],
     queryFn: () => api.get('fund'),
     retry: 2,
@@ -26,15 +26,15 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
     mutationKey: ['fuund'],
     mutationFn: () => api.post('fund', { address: userAccount.id }),
     onSettled: () => {
-      rewarchCheckQuery.refetch()
+      rewardCheckQuery.refetch()
     }
   })
 
-  if (rewarchCheckQuery.isPending || rewarchCheckQuery.data?.funded == null) {
+  if (rewardCheckQuery.isPending || rewardCheckQuery.data?.funded == null) {
     return <Loader />
   }
 
-  const isClaimed = rewarchCheckQuery.data.funded
+  const isClaimed = rewardCheckQuery.data.funded
   return (
     <div className="flex flex-col justify-center items-center mt-4 p-4 border text-center w-[480px] mx-auto bg-white h-screen">
       <h2 className="text-lg">

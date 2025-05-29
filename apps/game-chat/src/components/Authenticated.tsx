@@ -57,22 +57,6 @@ export function AuthenticatedPage() {
   }, [session, setSession, network, address])
 
   useEffect(() => {
-    // getClient()
-    //   .auth.getSession()
-    //   .then((res) => {
-    //     if (res.error) {
-    //       new AppError('Authenticated', res.error).log()
-    //       navigate('/signin')
-    //       return
-    //     }
-    //     if (!res.data.session) {
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     new AppError('Authenticated', err).log()
-    //     navigate('/signin')
-    //   })
-
     const listener = getClient().auth.onAuthStateChange((event, session) => {
       console.debug('AuthenticatedPage onAuthStateChange', { event, session })
       setSession(session)
@@ -99,20 +83,3 @@ export function AuthenticatedPage() {
 
   return <Outlet />
 }
-
-// type WithUserAccountProps = {
-//   userAccount: UserAccount
-// }
-//
-// export function withUserAccount<P>(Component: React.ComponentType<P>): React.FC<P & WithUserAccountProps> {
-//   const WithUserAccount: React.FC<P & WithUserAccountProps> = (props) => {
-//     const userAccount = useCurrentUser()
-//     if (!userAccount) {
-//       return <Loader />
-//     }
-//
-//     return <Component {...props} userAccont={userAccount} />
-//   }
-//
-//   return WithUserAccount
-// }

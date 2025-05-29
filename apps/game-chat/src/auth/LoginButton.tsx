@@ -61,46 +61,6 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
                 return
               }
               logIn(address, network).catch(() => disconnect())
-              // const enc = createDefaultEncryption()
-              // const val =
-              //   sessionStorage.getItem(`@enoki/flow/session/${ENOKI_API_KEY}/${network}`) ?? ''
-              // enc
-              //   .decrypt(ENOKI_API_KEY, val)
-              //   .then((res) => {
-              //     if (!res) {
-              //       throw new Error('failed to read zklogin token')
-              //     }
-              //
-              //     const session = JSON.parse(res) as { jwt?: string }
-              //     if (!session.jwt) {
-              //       throw new Error('current session missing token')
-              //     }
-              //
-              //     getClient()
-              //       .auth.signInWithIdToken({ provider: 'google', token: session.jwt })
-              //       .then((authRes) => {
-              //         if (authRes.error) {
-              //           throw authRes.error
-              //         }
-              //
-              //         createOrUpdateUserAccount(address)
-              //           .then(() => {
-              //             console.log('INITIALIZED')
-              //           })
-              //           .catch((err) => {
-              //             disconnect()
-              //             new AppError('createOrUpdateUserAccount', err).log()
-              //           })
-              //       })
-              //       .catch((err) => {
-              //         disconnect()
-              //         new AppError('signInWithIdToken', err).log()
-              //       })
-              //   })
-              //   .catch((err) => {
-              //     disconnect()
-              //     new AppError('createOrUpdateUserAccount', err).log()
-              //   })
             },
           }
         )
@@ -145,15 +105,15 @@ export function LoginMenu({ redirectOnLgoin }: { redirectOnLgoin: string }) {
   )
 }
 
-function getSelectedAccount(connectedAccounts: readonly WalletAccount[], accountAddress?: string) {
-  if (connectedAccounts.length === 0) {
+function getSelectedAccount(accounts: any, accountAddress?: string) {
+  if (accounts.length === 0) {
     return null
   }
 
   if (accountAddress) {
-    const selectedAccount = connectedAccounts.find((account) => account.address === accountAddress)
-    return selectedAccount ?? connectedAccounts[0]
+    const selectedAccount = accounts.find((account) => account.address === accountAddress)
+    return selectedAccount ?? accounts[0]
   }
 
-  return connectedAccounts[0]
+  return accounts[0]
 }
