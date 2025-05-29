@@ -1,13 +1,15 @@
+import { useSuiClientContext } from '@mysten/dapp-kit'
 import { SquareArrowOutUpRight } from 'lucide-react'
 import { Button } from './ui/button'
-import { useSuiClientContext } from '@mysten/dapp-kit'
+import { toast } from 'sonner'
 
 export function FundWallet({ walletAddress }: { walletAddress: string }) {
   const suiClientContext = useSuiClientContext()
 
   const handleFundWallet = () => {
     if (suiClientContext.network !== 'devnet' && suiClientContext.network !== 'testnet') {
-      throw new Error('Fund wallet is only available on devnetand testnet')
+      toast.error('Fund wallet is only available on devnet and testnet')
+      return
     }
     window.open(
       `https://faucet.sui.io/?network=${suiClientContext.network}&address=${walletAddress}`,
@@ -20,16 +22,19 @@ export function FundWallet({ walletAddress }: { walletAddress: string }) {
   }
 
   return (
-    <>
-      <div className="mt-4 p-4 border border-yellow-300 bg-yellow-50 rounded-md text-center">
-        <h2 className="text-lg font-semibold text-yellow-800">Get Tokens to play</h2>
-        <p className="mt-2 text-yellow-700">
-          Whoops your wallet has not enough Sui to play. No problem, you can get some free tookens.
-        </p>
-      </div>
+    <div className="bg-yellow-50 p-4 border border-yellow-500 rounded-md">
+      <p className="mt-2">
+        Whoa, your wallet doesn't have enough Sui to play the game.
+      </p>
+      <p className="mt-2">
+        No problem, you can get some free tokens.
+      </p>
       <Button className="mt-4" onClick={handleFundWallet}>
-        Get Test Sui Tokens <SquareArrowOutUpRight />
+        Get {suiClientContext.network} Sui Tokens <SquareArrowOutUpRight />
       </Button>
-    </>
+      <p className="mt-2">
+        Follow the instructions on the next page to get {suiClientContext.network} Sui tokens.
+      </p>
+    </div>
   )
 }

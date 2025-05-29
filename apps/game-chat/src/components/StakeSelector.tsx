@@ -16,7 +16,7 @@ const ALLOWED_STAKES = [0, 1, 5, 10, 25, 50, 100]
  */
 export function StakeSelector({ selectedStake, onStakeSelect, className }: StakeSelectorProps) {
   return (
-    <Card className={cn('w-[300px] h-[370px] max-w-md', className)}>
+    <Card className={cn('w-[300px] h-[370px] max-w-md animate-in fade-in slide-in-from-bottom-4 duration-580', className)}>
       <CardHeader>
         <CardTitle><h3>Select Stake Amount</h3></CardTitle>
         <CardDescription>

@@ -13,7 +13,7 @@ import { NotFound } from './components/NotFound'
 function App() {
   return (
     <BrowserRouter>
-      <div className="w-screen h-screen">
+      <div className="app-container w-screen h-screen">
         <Routes>
           <Route index Component={Landing} />
           <Route path="/practice" Component={PracticeDuel} />
