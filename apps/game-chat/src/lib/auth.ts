@@ -39,7 +39,7 @@ export async function logIn(address: string, network: string) {
       // do not await
       createOrUpdateUserAccount(address)
         .then(() => {
-          console.log('INITIALIZED')
+          console.debug('account initialized')
         })
         .catch((err) => {
           new AppError('logIn createOrUpdateUserAccount', err).log()
