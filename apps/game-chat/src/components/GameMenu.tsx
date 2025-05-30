@@ -32,9 +32,6 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{suiClientContext.network}</span>
       </div>
       <div>
-        <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{suiClientContext.network}</span>
-      </div>
-      <div>
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{userAccount.id}</span>
       </div>
       <div className="flex items-center gap-2 font-mono">
