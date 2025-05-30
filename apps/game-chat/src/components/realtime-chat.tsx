@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import { useRealtimeChat } from '@/hooks/use-realtime-chat'
-import { type ChatMessage } from '@/lib/message'
+import { isSpell, type ChatMessage } from '@/lib/message'
 import { useEffect, useMemo, useState } from 'react'
 
 interface RealtimeChatProps {
@@ -87,7 +87,7 @@ export const RealtimeChat = ({
 
       // Only allow printable characters
       if (e.key.length === 1) {
-        setNewMessage(prev => prev + e.key)
+        setNewMessage((prev) => prev + e.key)
       }
     }
 
@@ -123,15 +123,21 @@ export const RealtimeChat = ({
         </div>
       </div>
 
-      <div className="flex w-full gap-2 border-border py-4">
-        <div 
-          className={cn(
-            'w-full text-center min-h-[40px] px-3 py-2 bg-background transition-all duration-300',
-            !isConnected && 'opacity-50 cursor-not-allowed'
-          )}
-        >
-          {newMessage || <span className="text-muted-foreground">Type to cast a spell...</span>}
-        </div>
+      <div
+        className={cn(
+          'w-full my-4 text-center min-h-[40px] px-3 py-2 transition-all duration-300',
+          !isConnected && 'opacity-50 cursor-not-allowed'
+        )}
+      >
+        {isSpell(newMessage) ? (
+          <span className="bg-linear-295 from-indigo-600 to-indigo-800 text-white rounded-md px-3 py-2 ">
+            {newMessage}
+          </span>
+        ) : newMessage ? (
+          <span className="bg-black text-white rounded-md px-3 py-2 ">{newMessage}</span>
+        ) : (
+          <span className="text-muted-foreground">Type to cast a spell...</span>
+        )}
       </div>
     </div>
   )
