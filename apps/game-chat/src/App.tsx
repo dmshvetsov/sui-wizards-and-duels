@@ -8,7 +8,7 @@ import { WaitRoom } from './waitroom/Waitroom'
 import { ClaimWelcomeReward } from './welcome-reward/ClaimWelcomReward'
 import { WithRewardClaim } from './rewards/WithRewardClaim'
 import { NotFound } from './components/NotFound'
-
+import { DesctopOnly } from './components/DesctopOnly'
 
 function App() {
   return (
@@ -16,22 +16,26 @@ function App() {
       <div className="app-container w-screen h-screen">
         <Routes>
           <Route index Component={Landing} />
-          <Route path="/practice" Component={PracticeDuel} />
-          <Route path="/d" Component={AuthenticatedPage}>
-            <Route
-              index
-              element={
-                <WithRewardClaim>
-                  <WithUserAccount Component={WaitRoom} />
-                </WithRewardClaim>
-              }
-            />
-            <Route path=":slug" element={<WithUserAccount Component={DuelLayout} />} />
-            <Route
-              path="welcome-reward"
-              element={<WithUserAccount Component={ClaimWelcomeReward} />}
-            />
+
+          <Route Component={DesctopOnly}>
+            <Route path="/practice" Component={PracticeDuel} />
+            <Route path="/d" Component={AuthenticatedPage}>
+              <Route
+                index
+                element={
+                  <WithRewardClaim>
+                    <WithUserAccount Component={WaitRoom} />
+                  </WithRewardClaim>
+                }
+              />
+              <Route path=":slug" element={<WithUserAccount Component={DuelLayout} />} />
+              <Route
+                path="welcome-reward"
+                element={<WithUserAccount Component={ClaimWelcomeReward} />}
+              />
+            </Route>
           </Route>
+
           <Route path="*" Component={NotFound} />
         </Routes>
         <Toaster />
