@@ -69,60 +69,6 @@ function createOpponentMessage(opponentName: string, text: string): ChatMessage 
   }
 }
 
-/**
- * PRACTICE_STEP_1:
- * - change duel state, opponent name to "wood target" with force 20
- * - teacher wizard message: let's practive your skills, here is a wood target hit it with a magic arrow by typing "@arrow"
- * - wait for the player to cast "@arror" spell, if he types something else, teacher wizards reply "you must cast a magic arrow spell by typing @arrow"
- * - teacher wizard message: good, "@" sign means you are casting a spell on your opponent, and "arrow" is the name of the spell.
- * - teacher wizard message: this wood target is strong stuff, let's try to hit it harder by typing "@arrow" again
- * - wait for the player to cast "@arror" spell, if he types something else, teacher wizards reply "let's keep practicing, cast @arrow"
- * - teacher wizard message: good, as you can see in your future duels, for shure many to come, your typing skills matter.
- * - teacher wizard message tell me "ready" when you are ready for the next task
- * - wait for the player to type "ready"
- */
-
-/**
- * PRACTICE_STEP_2:
- * - change duel state, opponent name to "arrow machine" with force 20
- * - teacher wizard message: now it is time to practice defensive spell, cast a spell to deflect the machine arrow attack by typing "!deflect"
- * - arrow machine: casts "@arrow" spells every 2.5 seconds, ever time @arrow is not deflect by the player wizard teacher says "to defend yourself you must deflect the arrow, cast !deflect"
- * - wait for the player to cast "!deflect" spell, if he types something else, teacher wizards reply "defend yourself, cast !deflect"
- * - arrow machine stops casting arrows
- * - teacher wizard message: good, "!" sign means you are casting a spell on yourself, and "deflect" spell defends you agains attacks like the "arrow" spell
- * - teacher wizard message: now try to defeat the arrow machine, youse deflect message to defend yourself, and magic arrow spells to attack the machine
- * - teacher wizard message: we will start as you type "ready"
- * - arrow machine starts casting arrows every 2 seconds, if players get 48 damage reset the game state, teacher wizard message: you will be defeated this way, but you will get better, try again by typing "ready", repeat until player wins
- * - wait for the player to cast two @arrow to defeat the machine
- * - teacher wizard message: good, now you know how to deflect arrows and attack with arrows
- * - teacher wizard message: tell me "ready" when you are ready for the next task
- * - wait for the player to type "ready"
- */
-
-/**
- * PRACTICE_STEP_3:
- * - change duel state, opponent name to "throw machine"  with force 30
- * - teacher wizard message: now it is time to practice defence against "throw" spell, to counter attack throw spell cast arrow spell or deflect spell
- * - teacher wizard message: after successful counter attack to remove throw spell attack the machine to defeat it
- * - teacher wizard message tell me "ready" when you are ready to try
- * - wait for the player to type "ready"
- * - throw machine: casts "@throw" spells every 2.5 seconds, every time @throw is applien when player already has thrown effect wizard teacher says "counter attack throw spell to remove "thrown" effect on yourself and defeat the machine with @arrow spell"
- * - wait for the player to cast three @arrow to defeat the machine
- * - teacher wizard message: good, you have learned how to counter attack throw spell
- * - teacher wizard message: you are ready for the last challenge, tell me "ready" when you are ready
- * - wait for the player to type "ready"
- */
-
-/**
- * PRACTICE_STEP_4:
- * - change duel state, opponent name to "Apprentice Wizard"  with force 128
- * - teacher wizard message: you will face an apprentice wizard, he loves to choke their opponents
- * - teacher wizard message: @choke is dangerous spell if casted 3 times in a row it will defeat you, but you can protect yourself with @throw spell
- * - teacher wizard message: tell me when you "ready" to challenge the apprentice wizard
- * - apprentice wizard casts @choke every 2.5 seconds if he is thrown he casts an arrow, on 7 seconds just before 3rd choke reset the game state to 128 force for each wizards, teacher wizard says: "you was a moment avay from beign defeated, let's try again, throw your opponent to take advantage over him and choke him or cast arrows. Say "ready" when you are ready to try again"
- * - wait for the duel ends
- */
-
 function PracticeDuelContent() {
   const { dispatch } = useOffChainDuel()
   const [practiceStep, setPracticeStep] = useState<'script' | 'duel' | 'completed'>('script')
@@ -215,7 +161,7 @@ const SCRIPT: ScriptStep[] = [
     message:
       'Now it is time to practice defensive deflect spell. Your next practice target is an Arrow Machine.',
   },
-  { type: 'teacherMessage', message: 'Type "ready" when you are ready for the next task' },
+  { type: 'teacherMessage', message: 'Type and send anything when you are ready for the next task' },
   { type: 'playerMessage', message: 'ready' },
   {
     type: 'duelStateChange',
@@ -327,7 +273,7 @@ const SCRIPT: ScriptStep[] = [
   {
     type: 'teacherMessage',
     message:
-      'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Tell me whan you\'re "ready" to learn last spell for today.',
+      'In the last practice challenge you will face one odd apprentice wiazard. He likes to use only "choke" spell against his opponents. Type and send anything whan you\'re ready to learn last spell for today.',
   },
   { type: 'playerMessage', message: 'ready' },
   {
@@ -409,21 +355,22 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
 
       if (step.type === 'playerMessage') {
         const message = input.trim().toLowerCase()
-        if (step.message === 'ready' && /ready/.test(message)) {
-            setCurrentStepIndex((prev) => prev + 1)
+        if (step.message === 'ready') {
+          // any message
+          setCurrentStepIndex((prev) => prev + 1)
         } else if (message === step.message) {
-            const targetId = message[0] === '@' ? opponentId : currentWizardId
-            const spellName = message.slice(1)
-            SFX.spell.play(spellName)
-            dispatch({
-              type: 'CAST_SPELL',
-              payload: {
-                casterId: currentWizardId,
-                targetId,
-                spellName,
-              },
-            })
-            setCurrentStepIndex((prev) => prev + 1)
+          const targetId = message[0] === '@' ? opponentId : currentWizardId
+          const spellName = message.slice(1)
+          SFX.spell.play(spellName)
+          dispatch({
+            type: 'CAST_SPELL',
+            payload: {
+              casterId: currentWizardId,
+              targetId,
+              spellName,
+            },
+          })
+          setCurrentStepIndex((prev) => prev + 1)
         }
       }
     },
