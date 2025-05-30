@@ -3,7 +3,7 @@
 ## GAME ROAD MAP
 
 - [x] landing page (and project pitching deck)
-- [ ] MVP with two-three spells
+- [x] MVP with two-three spells
   - [x] 3-5 spells
   - [x] spell sound FX
   - [x] menu music
@@ -11,7 +11,7 @@
   - [ ] spell visual FX, casting, applying damage and effects (must be done after RPC call optimizations)
 - [x] auto-signing of duel transaction
 - [x] demo duels against NPCs for fun and engaging learning process and user acquisition
-- [ ] new players welcome reward claim
+- [x] new players welcome reward claim
 - [ ] duels with prizes, players can stake Sui before duel as a prize for the winner
 - [ ] WnD reward token
   - [ ] add use case for the token to the landing
