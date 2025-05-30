@@ -40,10 +40,9 @@ type UserWaitRoomState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'pa
 export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const suiContext = useSuiClientContext()
   const [onlineCount, setOnlineCount] = useState(UNCONNECTED_COUNTER_STATE)
-  // const [userState, setUserState] = useState<WaitState>('loading')
   const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
     useSignAndExecuteTransaction()
-  const [waitRoomStateIsReconciling, setWaitRoomStateIsReconciling] = useState(false)
+  const [isWaitRoomStateReconciling, setWaitRoomStateReconciling] = useState(false)
   const [selectedStake, setSelectedStake] = useState(0)
 
   const navigate = useNavigate()
@@ -56,6 +55,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     },
     { refetchInterval: THREE_SECONDS_IN_MS }
   )
+
   const duelistCapQuery = useSuiClientQuery(
     'getOwnedObjects',
     {
@@ -77,6 +77,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     { refetchInterval: 0 }
   )
 
+  // music
   useEffect(() => {
     MUSIC.duelground.play()
     MUSIC.duelground.fade(0, 0.5, 2500)
@@ -107,6 +108,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           ? 'needs_funding'
           : 'iddle'
 
+  // presence in waitroom tracker
   useEffect(() => {
     const channel = createRoom('waitroom', { config: { presence: { key: userAccount.id } } })
       .on('presence', { event: 'sync' }, () => {
@@ -140,6 +142,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     }
   }, [userAccount.id, navigate])
 
+  // pairing and duel creation event
   useEffect(() => {
     // assume players will only have 1 duelistCap
     // but take the last one which should be the most recent in case if a player holds multiple DuelistCaps
@@ -173,10 +176,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
         },
-        onSettled() {
-          setWaitRoomStateIsReconciling(true)
-          refetchWaitListState()
-          refetchBalance()
+        async onSettled() {
+          setWaitRoomStateReconciling(true)
+          await refetchWaitListState()
+          setWaitRoomStateReconciling(false)
+          await refetchBalance()
         },
       }
     )
@@ -195,10 +199,11 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           toast.error('An error occurred, refresh the page and try again')
           appErr.log()
         },
-        onSettled() {
-          setWaitRoomStateIsReconciling(true)
-          refetchWaitListState()
-          refetchBalance()
+        async onSettled() {
+          setWaitRoomStateReconciling(true)
+          await refetchWaitListState()
+          setWaitRoomStateReconciling(false)
+          await refetchBalance()
         },
       }
     )
@@ -251,8 +256,8 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
               <ButtonWithFx
                 className="mt-4"
                 onClick={handleLeave}
-                disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-                isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+                disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
+                isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
               >
                 Cancel
               </ButtonWithFx>
@@ -263,8 +268,8 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
             <ButtonWithFx
               className="mt-10"
               onClick={handleJoinWaitlist}
-              disabled={isSigningAndExecuting || waitRoomStateIsReconciling}
-              isLoading={isSigningAndExecuting || waitRoomStateIsReconciling}
+              disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
+              isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
             >
               {selectedStake > 0 ? 'Stake and Play' : 'Play'}
             </ButtonWithFx>
