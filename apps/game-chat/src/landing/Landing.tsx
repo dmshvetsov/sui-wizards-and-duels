@@ -20,7 +20,6 @@ function Content() {
           backgroundImage: `url(${bgImage})`,
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
         }}
       />
 
