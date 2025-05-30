@@ -47,7 +47,7 @@ function Content() {
                 rel="noopener noreferrer"
                 className="text-sm md:text-base"
               >
-                follow @wizardsandduels on X
+                follow @wizardsnduels on X
               </a>
             </div>
           </div>
@@ -223,12 +223,12 @@ function Content() {
                 Follow our development progress and get the latest updates:
               </p>
               <a
-                href="https://x.com/wizardsandduels"
+                href="https://x.com/wizardsnduels"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm md:text-base"
               >
-                @wizardsandduels on X
+                @wizardsnduels on X
               </a>
             </div>
           </div>
@@ -284,7 +284,7 @@ function Content() {
                     PvP Duels
                   </a>
                   <a
-                    href="https://x.com/wizardsandduels"
+                    href="https://x.com/wizardsnduels"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block text-sm md:text-base text-gray-400 hover:text-white transition-colors"
