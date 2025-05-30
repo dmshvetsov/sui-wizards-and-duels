@@ -38,6 +38,7 @@ export function Result(props: { userAccount: UserAccount }) {
       target: `${getPidLatest()}::duel::end`,
       arguments: [tx.object(duel.id), tx.object(duelistCap.id)],
     })
+    tx.setGasBudget(2_000_000)
 
     signAndExecute(
       {
