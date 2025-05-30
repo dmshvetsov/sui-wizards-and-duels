@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         return jsonResponse(
           {
             message:
-              'Invalid input: expected JSON with "address" fielw with Sui wallet address as value',
+              'Invalid input: expected JSON with "address" field with Sui wallet address as value',
           },
           400
         )
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
 })
 
 async function fundWallet(req: Request) {
-  const authHeader = req.headers.get('Authorization')!
+  const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return jsonResponse({ message: 'Unauthenticated' }, 401)
   }
@@ -125,7 +125,7 @@ async function fundWallet(req: Request) {
     .from('user_funding')
     .insert({ sui_address: address, tx_digest: '' })
   if (lockWalletFundingErr) {
-    return jsonResponse({ messag: 'Internal server error' }, 500)
+    return jsonResponse({ message: 'Internal server error' }, 500)
   }
 
   const tx = new Transaction()
@@ -143,7 +143,7 @@ async function fundWallet(req: Request) {
 
   if (!txRes.effects?.status?.status || txRes.effects.status.status !== 'success') {
     console.error('Transfer failed', txRes)
-    return jsonResponse({ message: 'Funding failed', txDigest: tx.digest }, 500)
+    return jsonResponse({ message: 'Funding failed', txDigest: txRes.digest }, 500)
   }
 
   const { error: updateFundingTxDigestError } = await supabase
@@ -159,7 +159,7 @@ async function fundWallet(req: Request) {
 }
 
 async function checkFundingForWallet(req: Request) {
-  const authHeader = req.headers.get('Authorization')!
+  const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return jsonResponse({ message: 'Unauthenticated' }, 401)
   }
