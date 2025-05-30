@@ -45,7 +45,6 @@ export function AuthenticatedPage() {
   const network = suiCLientContext.network
   const address = userAccount?.id ?? null
   useEffect(() => {
-    console.log('AuthenticatedPage', { address })
     if (!address) {
       return
     }
