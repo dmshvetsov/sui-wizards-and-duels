@@ -172,7 +172,7 @@ function Content() {
               <StepCard
                 number="1"
                 title="Start with practice"
-                description="Playe practice mode agains NPCs right avay, no wallet required."
+                description="Play practice mode agains NPCs right avay, no wallet required."
               />
               <StepCard
                 number="2"
