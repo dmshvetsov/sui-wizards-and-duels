@@ -395,7 +395,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
         setCurrentStepIndex((prev) => prev + 1)
       }, step.timeout ?? 0)
     } else if (step.type === 'playerMessage') {
-      // action is handled by handleCastSpell
+      // action is handled by handleUserInput
     }
   }, [currentStepIndex, currentWizardId, dispatch, onComplete, opponentId])
 
@@ -408,12 +408,12 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
       }
 
       if (step.type === 'playerMessage') {
-        if (input === step.message) {
-          if (input === 'ready') {
+        const message = input.trim().toLowerCase()
+        if (step.message === 'ready' && /ready/.test(message)) {
             setCurrentStepIndex((prev) => prev + 1)
-          } else {
-            const targetId = input[0] === '@' ? opponentId : currentWizardId
-            const spellName = input.slice(1).toLowerCase()
+        } else if (message === step.message) {
+            const targetId = message[0] === '@' ? opponentId : currentWizardId
+            const spellName = message.slice(1)
             SFX.spell.play(spellName)
             dispatch({
               type: 'CAST_SPELL',
@@ -424,7 +424,6 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
               },
             })
             setCurrentStepIndex((prev) => prev + 1)
-          }
         }
       }
     },
