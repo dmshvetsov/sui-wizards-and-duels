@@ -8,7 +8,7 @@ import { mistToSui } from '@/lib/sui/coin'
 import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -21,9 +21,10 @@ export function Result(props: { userAccount: UserAccount }) {
   })
 
   // Calculate prize information early so it's available in callbacks
-  const prizePool = duel ? mistToSui(duel.prize_pool|| '0') : 0
+  const prizePool = duel ? mistToSui(duel.prize_pool || '0') : 0
   const isCurrentUserWinner = props.userAccount.id === winner
   const isCurrentUserLoser = props.userAccount.id === loser
+  const [isEndTxSent, setEndTxSent] = useState(false)
 
   const handleEndDuel = useCallback(() => {
     if (!duel || !duelistCap) {
@@ -35,10 +36,7 @@ export function Result(props: { userAccount: UserAccount }) {
     const tx = new Transaction()
     tx.moveCall({
       target: `${getPidLatest()}::duel::end`,
-      arguments: [
-        tx.object(duel.id),
-        tx.object(duelistCap.id),
-      ],
+      arguments: [tx.object(duel.id), tx.object(duelistCap.id)],
     })
 
     signAndExecute(
@@ -46,20 +44,21 @@ export function Result(props: { userAccount: UserAccount }) {
         transaction: tx,
       },
       {
-        onSuccess: (result) => {
+        onSuccess(result) {
           if (isCurrentUserWinner && prizePool > 0) {
             toast.success(`Successfully claimed ${prizePool} SUI prize!`)
           } else {
             toast.success(`Duel ended successfully!`)
           }
+          setEndTxSent(true)
           console.debug('End duel transaction result:', result)
         },
-        onError: (err) => {
+        onError(err) {
           const appErr = new AppError('handleEndDuel', err)
           toast.error(`Failed to duel: ${appErr.message}`)
           appErr.log()
         },
-        onSettled: () => {
+        onSettled() {
           refetchDuelistCap()
         },
       }
@@ -96,7 +95,9 @@ export function Result(props: { userAccount: UserAccount }) {
               >
                 <span className="text-2xl">🧙</span>
               </div>
-              <p className="font-semibold">{wizard1 === props.userAccount.id ? 'You' : displayName(wizard1)}</p>
+              <p className="font-semibold">
+                {wizard1 === props.userAccount.id ? 'You' : displayName(wizard1)}
+              </p>
               <p className="text-sm text-gray-600">Final Force: {wizard1Force}</p>
               {wizard1 === winner && (
                 <p className="text-xs text-lime-800 font-semibold mt-1">WINNER</p>
@@ -114,11 +115,11 @@ export function Result(props: { userAccount: UserAccount }) {
               >
                 <span className="text-2xl">🧙‍♂️</span>
               </div>
-              <p className="font-semibold">{wizard2 === props.userAccount.id ? 'You' : displayName(wizard2)}</p>
+              <p className="font-semibold">
+                {wizard2 === props.userAccount.id ? 'You' : displayName(wizard2)}
+              </p>
               <p className="text-sm text-gray-600">Final Force: {wizard2Force}</p>
-              {wizard2 === winner && (
-                <p className="text-xs font-semibold mt-1">WINNER</p>
-              )}
+              {wizard2 === winner && <p className="text-xs font-semibold mt-1">WINNER</p>}
               {wizard2 === loser && (
                 <p className="text-xs text-red-800 font-semibold mt-1">DEFEATED</p>
               )}
@@ -139,9 +140,7 @@ export function Result(props: { userAccount: UserAccount }) {
               </div>
             ) : isCurrentUserLoser ? (
               <div>
-                <p className="mb-2">
-                  You have been defeated. Train harder for the next duel.
-                </p>
+                <p className="mb-2">You have been defeated. Train harder for the next duel.</p>
               </div>
             ) : (
               <p className="text-gray-600">
@@ -157,7 +156,7 @@ export function Result(props: { userAccount: UserAccount }) {
       )}
 
       {duelistCap != null ? (
-        <ButtonWithFx onClick={handleEndDuel} disabled={isTxInProgress} isLoading={isTxInProgress}>
+        <ButtonWithFx onClick={handleEndDuel} disabled={isTxInProgress || duelistCap != null && isEndTxSent} isLoading={isTxInProgress || duelistCap != null && isEndTxSent}>
           {isCurrentUserWinner
             ? prizePool > 0
               ? `Claim ${prizePool} Sui Prize`
@@ -165,9 +164,7 @@ export function Result(props: { userAccount: UserAccount }) {
             : 'End Duel'}
         </ButtonWithFx>
       ) : (
-        <Button onClick={handleNavigateToDuelgound}>
-          Back to Duelground
-        </Button>
+        <Button onClick={handleNavigateToDuelgound}>Back to Duelground</Button>
       )}
     </div>
   )
