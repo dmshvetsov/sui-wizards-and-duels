@@ -67,6 +67,11 @@ export const RealtimeChat = ({
     const handleKeyPress = (e: globalThis.KeyboardEvent) => {
       if (!isConnected) return
 
+      // Don't capture if modifier keys are pressed
+      if (e.ctrlKey || e.altKey || e.metaKey) {
+        return
+      }
+
       if (e.key === 'Enter') {
         e.preventDefault()
         if (!newMessage.trim()) return
@@ -85,7 +90,7 @@ export const RealtimeChat = ({
         return
       }
 
-      // Only allow printable characters
+      // Only allow printable characters, excluding special keys
       if (e.key.length === 1) {
         setNewMessage((prev) => prev + e.key)
       }
