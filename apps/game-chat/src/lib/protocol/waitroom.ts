@@ -38,7 +38,7 @@ export const waitroom = Object.freeze({
  */
 export function joinTx(stakeAmountInMist: number) {
   const tx = new Transaction()
-  tx.setGasBudget(2_000_000)
+  tx.setGasBudget(8_000_000)
   const [stake] = tx.splitCoins(tx.gas, [stakeAmountInMist]);
   tx.moveCall({
     target: waitroom.method.join,
