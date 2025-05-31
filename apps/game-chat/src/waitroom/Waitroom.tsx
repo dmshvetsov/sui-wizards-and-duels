@@ -8,10 +8,12 @@ import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
 import { joinTx, leaveTx, Waitroom, waitroom } from '@/lib/protocol/waitroom'
+import { executeWith } from '@/lib/sui/client'
 import { createRoom } from '@/lib/supabase/client'
 import { displayName } from '@/lib/user'
 import {
   useSignAndExecuteTransaction,
+  useSuiClient,
   useSuiClientContext,
   useSuiClientQuery,
 } from '@mysten/dapp-kit'
@@ -40,8 +42,12 @@ type UserWaitRoomState = 'loading' | 'iddle' | 'needs_funding' | 'waiting' | 'pa
 export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   const suiContext = useSuiClientContext()
   const [onlineCount, setOnlineCount] = useState(UNCONNECTED_COUNTER_STATE)
-  const { mutate: signAndExecute, isPending: isSigningAndExecuting } =
-    useSignAndExecuteTransaction()
+  const client = useSuiClient()
+  const { mutate: signAndExecute, isPending: isSigningAndExecuting } = useSignAndExecuteTransaction(
+    {
+      execute: executeWith(client, { showRawEffects: true, showEffects: true }),
+    }
+  )
   const [isWaitRoomStateReconciling, setWaitRoomStateReconciling] = useState(false)
   const [selectedStake, setSelectedStake] = useState(0)
 
@@ -164,8 +170,12 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     signAndExecute(
       { transaction: joinTx(selectedStake * 1_000_000_000) },
       {
-        onSuccess(_result) {
-          console.debug('waitroom join tx success', _result)
+        onSuccess(result) {
+          console.debug('waitroom join tx success', result)
+          if (result.effects?.status.status === 'failure') {
+            toast.error('Failed to join, please refresh the page and try again')
+            return
+          }
           toast.success(
             `Joined waitroom with ${selectedStake === 0 ? 'no stake' : `${selectedStake} SUI stake`}`
           )
