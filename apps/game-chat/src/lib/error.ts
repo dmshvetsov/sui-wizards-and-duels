@@ -57,3 +57,10 @@ export class AppError {
 // }
 
 // Network error 502 Bad Gateway during RPC call
+
+// when zkLogin token expired
+// Error: Missing required parameters for proof generation
+//     at INTERNAL_ONLY_EnokiFlow.getProof (@mysten_enoki.js?v=919df6c6:1535:13)
+//     at async INTERNAL_ONLY_EnokiFlow.getKeypair (@mysten_enoki.js?v=919df6c6:1559:5)
+//     at async Object.signTransaction (@mysten_enoki.js?v=919df6c6:1663:23)
+//     at async Object.mutationFn (@mysten_dapp-kit.js?v=919df6c6:13161:36)
