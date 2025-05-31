@@ -1,9 +1,8 @@
 import { UserAccount } from '@/components/Authenticated'
 import { Link } from '@/components/Link'
-import { Loader } from '@/components/Loader'
 import { RealtimeChat } from '@/components/realtime-chat'
-import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
+import type { Duel, DuelistCap, WithOnChainRef } from '@/lib/protocol/duel'
 import { getPidLatest } from '@/lib/protocol/package'
 import { getSpellSpec } from '@/lib/protocol/spell'
 import { SFX } from '@/lib/sfx'
@@ -11,15 +10,22 @@ import { executeWith } from '@/lib/sui/client'
 import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
 import { WizardEffects } from './WizardEffects'
 
-export function Action(props: { duelId: string; userAccount: UserAccount }) {
-  const { duel, duelistCap, isLoading } = useDuel()
+type ActionProps = {
+  duel: WithOnChainRef<Duel>
+  duelistCap: WithOnChainRef<DuelistCap>
+  userAccount: UserAccount
+}
+
+export function Action(props: ActionProps) {
+  const duel = props.duel
+  const [duelistCap, setDuelistCap] = useState<WithOnChainRef<DuelistCap>>(props.duelistCap)
   const client = useSuiClient()
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
+  const { mutate: signAndExecute, isPending: isSpellTxInProgress } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
 
@@ -36,7 +42,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       const target =
         targetChar === '@' ? duelistCap?.wizard : targetChar === '!' ? duelistCap?.opponent : null
       if (!target) {
-        // it is a chat message, do nothig
+        // it is a chat message, do nothing
         return
       }
 
@@ -74,7 +80,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       const target =
         targetChar === '@' ? duelistCap.opponent : targetChar === '!' ? duelistCap.wizard : null
       if (!target) {
-        // it is a chat message, do nothig
+        // it is a chat message, do nothing
         return
       }
 
@@ -87,11 +93,26 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
 
       SFX.spellCast.play()
 
+      if (!duel || !duelistCap) {
+        toast.error('Duel or DuelistCap is not available')
+        return
+      }
+
       const tx = new Transaction()
       tx.setGasBudget(2_000_000)
+      const duelInput = tx.sharedObjectRef({
+        objectId: duel.id,
+        mutable: true,
+        initialSharedVersion: duel._version,
+      })
+      const duelistCapInput = tx.objectRef({
+        objectId: duelistCap.id,
+        version: duelistCap._version,
+        digest: duelistCap._digest,
+      })
       const [force] = tx.moveCall({
         target: `${getPidLatest()}::duel::use_force`,
-        arguments: [tx.object(duel.id), tx.object(duelistCap.id), tx.pure.u64(spellSpec.cost)],
+        arguments: [duelInput, duelistCapInput, tx.pure.u64(spellSpec.cost)],
       })
       const [spell] = tx.moveCall({
         target: spellSpec.castMethod,
@@ -101,8 +122,8 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
         target: spellSpec.applyMethod,
         arguments:
           spellSpec.module === 'damage'
-            ? [tx.object(spell), tx.object(duel.id), tx.pure.address(target)]
-            : [tx.object(duel.id), tx.object(spell), tx.pure.address(target)],
+            ? [tx.object(spell), duelInput, tx.pure.address(target)]
+            : [duelInput, tx.object(spell), tx.pure.address(target)],
       })
       console.debug('cast spell tx', tx, duel.id, duelistCap.id, spellSpec)
 
@@ -121,10 +142,22 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
             toast.warning(`Failed to cast spell with ${appErr.message}`)
             appErr.log()
           },
-          onSettled: () => {
+          onSettled: (result) => {
             console.debug(
               `[performance] | ${message} spell transaction settled in ${Date.now() - start} ms`
             )
+
+            if (result?.objectChanges) {
+              result.objectChanges.forEach((obj) => {
+                if (obj.type === 'mutated' && obj.objectId === duelistCap.id) {
+                  setDuelistCap((prev) => ({
+                    ...prev!,
+                    _version: obj.version,
+                    _digest: obj.digest,
+                  }))
+                }
+              })
+            }
           },
         }
       )
@@ -132,9 +165,6 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
     [duel, duelistCap, signAndExecute]
   )
 
-  if (isLoading) {
-    return <Loader />
-  }
   if (!duel || !duelistCap) {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-md">
@@ -156,9 +186,10 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
   return (
     <>
       <RealtimeChat
-        roomName={props.duelId}
+        roomName={props.duel.id}
         username={props.userAccount.displayName}
         onMessage={handleUserInput}
+        disabled={isSpellTxInProgress}
         onIncomingMessage={handleOpponentInput}
       />
       <div className="flex flex-col w-full">
