@@ -1,3 +1,5 @@
+import { JsonRpcError } from "@mysten/sui/client";
+
 /**
  * a class to wrap errors to have a common interface to display to the user and handle errors int the app
  */
@@ -15,6 +17,14 @@ export class AppError {
       this.originalErr = null
     }
     this.ctx = ctx
+  }
+
+  get isTxInputError() {
+    if (this.originalErr instanceof JsonRpcError) {
+      // TransactionExecutionClientError
+      return this.originalErr.code === -32002
+    }
+    return false
   }
 
   log() {
