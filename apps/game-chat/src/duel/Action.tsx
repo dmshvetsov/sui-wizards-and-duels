@@ -100,6 +100,8 @@ export function Action(props: ActionProps) {
 
       const tx = new Transaction()
       tx.setGasBudget(2_000_000)
+      // TODO: it is ok in devnet/testnet but must be fetched and memoized for mainnet
+      tx.setGasPrice(1000)
       const duelInput = tx.sharedObjectRef({
         objectId: duel.id,
         mutable: true,
