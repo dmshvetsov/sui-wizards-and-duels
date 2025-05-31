@@ -86,16 +86,18 @@ function Duel({ userAccount }: { userAccount: UserAccount }) {
   }
 
   // Render different screens based on duel state
-  if (duelState === 'loading' || !duel || !duelistCap) {
+  if (duelState === 'loading') {
     return <Loader />
   }
-
 
   return (
     <div className="flex flex-col h-full">
       {duelState === 'pending' && <Start userAccount={userAccount} />}
 
-      {duelState === 'started' && <Action duel={duel} duelistCap={duelistCap} userAccount={userAccount} />}
+      {duelState === 'started' && (!duel || !duelistCap) && <Loader />}
+      {duelState === 'started' && duel && duelistCap && (
+        <Action duel={duel} duelistCap={duelistCap} userAccount={userAccount} />
+      )}
 
       {duelState === 'finished' && <Result userAccount={userAccount} />}
 
