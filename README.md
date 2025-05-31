@@ -3,7 +3,7 @@
 ## GAME ROAD MAP
 
 - [x] landing page (and project pitching deck)
-- [ ] MVP with two-three spells
+- [x] MVP with two-three spells
   - [x] 3-5 spells
   - [x] spell sound FX
   - [x] menu music
@@ -11,14 +11,18 @@
   - [ ] spell visual FX, casting, applying damage and effects (must be done after RPC call optimizations)
 - [x] auto-signing of duel transaction
 - [x] demo duels against NPCs for fun and engaging learning process and user acquisition
-- [ ] new players welcome reward claim
-- [ ] duels with prizes, players can stake Sui before duel as a prize for the winner
+- [x] new players welcome reward claim
+- [x] duels with prizes, players can stake Sui before duel as a prize for the winner
 - [ ] WnD reward token
   - [ ] add use case for the token to the landing
   - [ ] reward players for playing duels
   - [ ] reward new players as welcome gift, after demo duels with NPC
 - [ ] optimizations
-  - [ ] RPC calls optimizations, set gas coin, resolve object references to reduce number of RPC calls to make a spell
+  - RPC calls optimizations, set gas coin, resolve object references to reduce number of RPC calls to make a spell
+    - [x] hard-code gas budget per each transaction
+    - [ ] pass object references
+    - [ ] set gas price
+    - [ ] set gas coin
   - [ ] group players by location, do not pair players with that have big difference in latency, use multiple location RPCs, warn players if latency is too high
   - [ ] use gRPC for transaction performance
 - [ ] sponsored transactions, players pay in advance Gas to fund their force

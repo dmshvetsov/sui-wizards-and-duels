@@ -561,6 +561,7 @@ function ActionUi({ wizard, opponent }: { wizard: DuelWizard; opponent: DuelWiza
       wizard1_effects: wizard.effects,
       wizard2_effects: opponent.effects,
       started_at: 0,
+      prize_pool: '0',
     }),
     [opponent.effects, opponent.force, opponent.id, wizard.effects, wizard.force, wizard.id]
   )

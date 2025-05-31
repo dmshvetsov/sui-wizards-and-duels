@@ -88,6 +88,7 @@ export function Action(props: { duelId: string; userAccount: UserAccount }) {
       SFX.spellCast.play()
 
       const tx = new Transaction()
+      tx.setGasBudget(2_000_000)
       const [force] = tx.moveCall({
         target: `${getPidLatest()}::duel::use_force`,
         arguments: [tx.object(duel.id), tx.object(duelistCap.id), tx.pure.u64(spellSpec.cost)],

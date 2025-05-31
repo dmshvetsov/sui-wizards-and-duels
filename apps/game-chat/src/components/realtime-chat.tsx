@@ -2,11 +2,8 @@ import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import { useRealtimeChat } from '@/hooks/use-realtime-chat'
-import { type ChatMessage } from '@/lib/message'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Wand } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { isSpell, type ChatMessage } from '@/lib/message'
+import { useEffect, useMemo, useState } from 'react'
 
 interface RealtimeChatProps {
   roomName: string
@@ -66,21 +63,44 @@ export const RealtimeChat = ({
     scrollToBottom()
   }, [allMessages, scrollToBottom])
 
-  const handleSendMessage = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!newMessage.trim() || !isConnected) {
+  useEffect(() => {
+    const handleKeyPress = (e: globalThis.KeyboardEvent) => {
+      if (!isConnected) return
+
+      // Don't capture if modifier keys are pressed
+      if (e.ctrlKey || e.altKey || e.metaKey) {
         return
       }
 
-      sendMessage(newMessage)
-      if (onMessage) {
-        onMessage(newMessage)
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (!newMessage.trim()) return
+
+        sendMessage(newMessage)
+        if (onMessage) {
+          onMessage(newMessage)
+        }
+        setNewMessage('')
+        return
       }
-      setNewMessage('')
-    },
-    [newMessage, isConnected, sendMessage, onMessage]
-  )
+
+      if (e.key === 'Backspace') {
+        e.preventDefault()
+        setNewMessage((prev) => prev.slice(0, -1))
+        return
+      }
+
+      // Only allow printable characters, excluding special keys
+      if (e.key.length === 1) {
+        setNewMessage((prev) => prev + e.key)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [newMessage, isConnected, sendMessage, onMessage])
 
   return (
     <div className="flex flex-col h-3/5 w-full bg-background text-foreground antialiased">
@@ -108,31 +128,22 @@ export const RealtimeChat = ({
         </div>
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-border py-4">
-        <Input
-          id="user-input"
-          name="user-input"
-          className={cn(
-            'rounded-md bg-background text-sm transition-all duration-300',
-            isConnected && newMessage.trim() ? 'w-[calc(100%-36px)]' : 'w-full'
-          )}
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type to cast a spell..."
-          disabled={!isConnected}
-        />
-        {isConnected && newMessage.trim() && (
-          <Button
-            disableSfx
-            className="aspect-square rounded-md animate-in fade-in slide-in-from-right-4 duration-300"
-            type="submit"
-            disabled={!isConnected}
-          >
-            <Wand className="size-4" />
-          </Button>
+      <div
+        className={cn(
+          'w-full my-4 text-center min-h-[40px] px-3 py-2 transition-all duration-300',
+          !isConnected && 'opacity-50 cursor-not-allowed'
         )}
-      </form>
+      >
+        {isSpell(newMessage) ? (
+          <span className="bg-linear-295 from-indigo-600 to-indigo-800 text-white rounded-md px-3 py-2 ">
+            {newMessage}
+          </span>
+        ) : newMessage ? (
+          <span className="bg-black text-white rounded-md px-3 py-2 ">{newMessage}</span>
+        ) : (
+          <span className="text-muted-foreground">Type to cast a spell...</span>
+        )}
+      </div>
     </div>
   )
 }

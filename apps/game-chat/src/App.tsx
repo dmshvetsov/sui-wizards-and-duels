@@ -10,6 +10,10 @@ import { WithRewardClaim } from './rewards/WithRewardClaim'
 import { WaitRoom } from './waitroom/Waitroom'
 import { ClaimWelcomeReward } from './welcome-reward/ClaimWelcomReward'
 
+const TOAST_OPTIONS = {
+  duration: 6000
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -38,7 +42,7 @@ function App() {
 
           <Route path="*" Component={NotFound} />
         </Routes>
-        <Toaster />
+        <Toaster toastOptions={TOAST_OPTIONS}/>
       </div>
     </BrowserRouter>
   )

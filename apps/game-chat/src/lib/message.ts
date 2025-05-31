@@ -14,7 +14,7 @@ export function displayName(message: ChatMessage) {
   return address
 }
 
-export function isSpell(message: ChatMessage): boolean {
-  const text = message.text.trim()
+export function isSpell(message: ChatMessage | string): boolean {
+  const text = typeof message === 'string' ? message : message.text.trim()
   return text[0] === '@' || text[0] === '!'
 }

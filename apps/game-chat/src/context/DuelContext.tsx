@@ -125,6 +125,7 @@ export function DuelProvider({
       target: `${PACKAGE_ID_LATEST}::duel::start`,
       arguments: [tx.object(duelId), tx.pure.u64(args.countdownSeconds), tx.object.clock()],
     })
+    tx.setGasBudget(3_500_000)
 
     signAndExecute({ transaction: tx }, opts)
   }
