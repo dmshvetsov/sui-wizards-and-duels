@@ -12,14 +12,16 @@ function Content() {
   const bg = useParallax<HTMLDivElement>({ speed: -250, scale: [1, 1.5] })
 
   return (
-    <div className="relative" ref={target}>
+    <div className="relative overflow-x-hidden" ref={target}>
       <div
-        className="absolute hidden h-screen w-screen my-8 md:block md:my-16 z-1"
+        className="absolute hidden h-screen w-full max-w-[100vw] my-8 md:block md:my-16 z-1"
         ref={bg.ref}
         style={{
           backgroundImage: `url(${bgImage})`,
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          left: 0,
+          right: 0,
         }}
       />
 
@@ -172,7 +174,7 @@ function Content() {
               <StepCard
                 number="1"
                 title="Start with practice"
-                description="Play practice mode agains NPCs right avay, no wallet required."
+                description="Play practice mode against NPCs right away, no wallet required."
               />
               <StepCard
                 number="2"
