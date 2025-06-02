@@ -37,10 +37,10 @@
   - [ ] more spells and sophisticated strategies to win
   - [ ] spells combo
   - [ ] multiple schools of wizards, each school has it is own spells and artifacts, wizards need to practice spells in duels to be able to level up in a school of that spells, with higher level wizards are able to cast more powerful spells
-  - [ ] equipment and artifacts that can be created or won in a duel as loot
   - [ ] wizards level up in schools by using this school spells, higher level opens new spells and artifacts
   - [ ] wizards level affect spells damage and effect power
   - [ ] add dice for randomness of damage and effects
+  - [ ] wizard can use only spell that they prepared for the duel
 - [ ] split game into bot vs bot and player vs player modes, allow people to bot on chain package but bots must duel vs bots
 - [ ] leader board
 - [ ] rewrite in a game engine
