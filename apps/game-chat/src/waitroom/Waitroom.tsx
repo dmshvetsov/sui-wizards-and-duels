@@ -1,9 +1,9 @@
 import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { FundWallet } from '@/components/FundWallet'
-import { GameMenu } from '@/components/GameMenu'
 import { Loader } from '@/components/Loader'
 import { StakeSelector } from '@/components/StakeSelector'
 import { ButtonWithFx } from '@/components/ui/button'
+import { UserAccountMenu } from '@/components/UserAccountMenu'
 import { isDevnetEnv } from '@/lib/config'
 import { AppError } from '@/lib/error'
 import { DUEL, DuelistCap } from '@/lib/protocol/duel'
@@ -318,7 +318,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
           </pre>
         </div>
       )}
-      <GameMenu userAccount={userAccount} />
+      <UserAccountMenu userAccount={userAccount} />
     </div>
   )
 }

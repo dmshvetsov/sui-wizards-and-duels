@@ -12,3 +12,8 @@ export const isDevnetEnv = network === 'devnet'
 export const isTestnetEnv = network === 'testnet'
 export const isMainnetEnv = network === 'mainnet'
 
+export const treasuryAddress = import.meta.env.VITE_TREASURY_ADDRESS || '0x0'
+
+export const welcomeRewaard = Object.freeze({
+  sui: 2
+})

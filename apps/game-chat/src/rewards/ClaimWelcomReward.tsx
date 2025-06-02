@@ -2,14 +2,25 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { UserAccount } from '../components/Authenticated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import * as api from '@/lib/supabase/api'
-import { useSuiClientContext } from '@mysten/dapp-kit'
-import { ButtonWithFx } from '@/components/ui/button'
+import { useSuiClientContext, useSuiClientQuery } from '@mysten/dapp-kit'
+import { Button, ButtonWithFx } from '@/components/ui/button'
 import { Loader } from '@/components/Loader'
 import { useNavigate } from 'react-router-dom'
+import { treasuryAddress, welcomeRewaard } from '@/lib/config'
+import { mistToSui } from '@/lib/sui/coin'
 
 export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
   const navigate = useNavigate()
+
+  const treasuryBalanceQuery = useSuiClientQuery(
+    'getBalance',
+    {
+      owner: treasuryAddress,
+      coinType: '0x2::sui::SUI',
+    },
+    { refetchInterval: 0 }
+  )
 
   const rewardCheckQuery = useQuery({
     queryKey: ['fund'],
@@ -27,14 +38,22 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
     mutationFn: () => api.post('fund', { address: userAccount.id }),
     onSettled: () => {
       rewardCheckQuery.refetch()
-    }
+    },
   })
 
-  if (rewardCheckQuery.isPending || rewardCheckQuery.data?.funded == null) {
+  if (
+    treasuryBalanceQuery.isPending ||
+    treasuryBalanceQuery.data == null ||
+    rewardCheckQuery.isPending ||
+    rewardCheckQuery.data?.funded == null
+  ) {
     return <Loader />
   }
 
   const isClaimed = rewardCheckQuery.data.funded
+  const isEnoughTreasuryBalance =
+    mistToSui(treasuryBalanceQuery.data.totalBalance) > welcomeRewaard.sui
+
   return (
     <div className="flex flex-col justify-center items-center mt-4 p-4 border text-center w-[480px] mx-auto bg-white h-screen">
       <h2 className="text-lg">
@@ -46,7 +65,7 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
           <div className="mt-4 mb-8">
             <p>You have claimed the reward.</p>
           </div>
-          <ButtonWithFx onClick={() => navigate('/d')}>Step in to Duelground</ButtonWithFx>
+          <Button onClick={() => navigate('/d')}>Step in to Duelground</Button>
         </>
       ) : (
         <>
@@ -57,10 +76,21 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
           <Card className="w-[150px] h-auto mt-4 mb-8">
             <CardHeader>
               <CardTitle>{suiClientContext.network} Sui tokens</CardTitle>
-              <CardDescription>2 Sui</CardDescription>
+              <CardDescription>{welcomeRewaard.sui} Sui</CardDescription>
             </CardHeader>
           </Card>
-          <ButtonWithFx isLoading={claimMut.isPending} onClick={() => claimMut.mutate()}>Claim</ButtonWithFx>
+          {isEnoughTreasuryBalance ? (
+            <ButtonWithFx isLoading={claimMut.isPending} onClick={() => claimMut.mutate()}>
+              Claim
+            </ButtonWithFx>
+          ) : (
+          <>
+            <p className="mb-4 text-yellow-600">
+              Game Treasury is empty at this moment please come back later to claim your reward.
+            </p>
+            <Button onClick={() => navigate('/d')}>Back to Duelground</Button>
+          </>
+          )}
         </>
       )}
     </div>

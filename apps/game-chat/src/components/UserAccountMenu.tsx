@@ -3,8 +3,9 @@ import { getClient } from '@/lib/supabase/client'
 import { useSuiClientContext, useDisconnectWallet, useSuiClientQuery } from '@mysten/dapp-kit'
 import { UserAccount } from './Authenticated'
 import { Button } from './ui/button'
+import { ClaimRewardButton } from '@/rewards/ClaimRewardButton'
 
-export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
+export function UserAccountMenu({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
   const { mutate: disconnect } = useDisconnectWallet({
     onSuccess() {
@@ -28,6 +29,7 @@ export function GameMenu({ userAccount }: { userAccount: UserAccount }) {
 
   return (
     <div className="fixed bottom-0 left-0 w-full flex gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-4 duration-580 px-12 py-8">
+      <ClaimRewardButton />
       <div>
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{suiClientContext.network}</span>
       </div>
