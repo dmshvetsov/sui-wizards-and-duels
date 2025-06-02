@@ -12,14 +12,16 @@ function Content() {
   const bg = useParallax<HTMLDivElement>({ speed: -250, scale: [1, 1.5] })
 
   return (
-    <div className="relative" ref={target}>
+    <div className="relative overflow-x-hidden" ref={target}>
       <div
-        className="absolute h-screen w-screen my-8 md:my-16 z-1"
+        className="absolute hidden h-screen w-full max-w-[100vw] my-8 md:block md:my-16 z-1"
         ref={bg.ref}
         style={{
           backgroundImage: `url(${bgImage})`,
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          left: 0,
+          right: 0,
         }}
       />
 
@@ -172,7 +174,7 @@ function Content() {
               <StepCard
                 number="1"
                 title="Start with practice"
-                description="Play practice mode agains NPCs right avay, no wallet required."
+                description="Play practice mode against NPCs right away, no wallet required."
               />
               <StepCard
                 number="2"
@@ -193,6 +195,40 @@ function Content() {
           </div>
         </div>
 
+        {/* Roadmap */}
+        <div className="bg-gradient-to-r from-purple-100 to-blue-100 bg-opacity-95 py-8 md:py-16 px-4">
+          <div className="container mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">
+              Q2 Roadmap
+            </h2>
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizards and Duels Reward Token Launch</h3>
+                <p className="text-gray-700">
+                  We're excited to introduce our new token that will reward players for engaging in duels. 
+                  Earn tokens for every duel, with bonus rewards for dueling new opponents and climbing the ranks.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard NFTs on Sui Marketplaces</h3>
+                <p className="text-gray-700">
+                  Your reward tokens will unlock the ability to create unique Wizard NFTs. 
+                  These digital collectibles can be traded on Sui NFT marketplaces, allowing you to buy, sell, and trade your wizards with other players.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard Progression System</h3>
+                <p className="text-gray-700">
+                  Watch your wizard grow stronger with every duel! As your wizard levels up, 
+                  they'll unlock powerful new spells and abilities to enhance your strategic options in battle.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* What's New */}
         <div className="py-8 md:py-16 px-4">
           <div className="container mx-auto">
@@ -204,18 +240,22 @@ function Content() {
               <FeatureCard
                 title="Welcome Reward for new Players"
                 description="We welcome each and every player with a welcome reward. Join and claim your reward right away."
+                date="May 29, 2025"
               />
               <FeatureCard
                 title="Duels with stakes"
                 description="Players can now stake 0-100 SUI in PvP duels. Winners claim the entire prize pool of a duel"
+                date="May 24, 2025"
               />
               <FeatureCard
                 title="Music and Sound Effects"
                 description="Spell sound effects and atmospheric music are now available in the game to make your experience even more immersive"
+                date="May 22, 2025"
               />
               <FeatureCard
                 title="Practice Mode"
                 description="Practice ground with teacher who teach you spells and demo duels against NPCs to learn how to play and dominate in the game"
+                date="April 21, 2025"
               />
             </div>
             <div className="mt-8 md:mt-12 text-center">
@@ -351,10 +391,19 @@ export function Landing() {
   )
 }
 
-function FeatureCard({ title, description }: { title: string; description: string }) {
+function FeatureCard({
+  title,
+  description,
+  date,
+}: {
+  title: string
+  description: string
+  date?: string
+}) {
   return (
     <div className="bg-white p-4 md:p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-      <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3">{title}</h3>
+      {date && <div className="text-sm text-gray-500 whitespace-nowrap">{date}</div>}
+      <h3 className="text-lg md:text-xl font-bold mt-2 mb-4">{title}</h3>
       <p className="text-sm md:text-base text-gray-600">{description}</p>
     </div>
   )
