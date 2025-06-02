@@ -193,6 +193,40 @@ function Content() {
           </div>
         </div>
 
+        {/* Roadmap */}
+        <div className="bg-gradient-to-r from-purple-100 to-blue-100 bg-opacity-95 py-8 md:py-16 px-4">
+          <div className="container mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">
+              Q2 Roadmap
+            </h2>
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizards and Duels Reward Token Launch</h3>
+                <p className="text-gray-700">
+                  We're excited to introduce our new token that will reward players for engaging in duels. 
+                  Earn tokens for every duel, with bonus rewards for dueling new opponents and climbing the ranks.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard NFTs on Sui Marketplaces</h3>
+                <p className="text-gray-700">
+                  Your reward tokens will unlock the ability to create unique Wizard NFTs. 
+                  These digital collectibles can be traded on Sui NFT marketplaces, allowing you to buy, sell, and trade your wizards with other players.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard Progression System</h3>
+                <p className="text-gray-700">
+                  Watch your wizard grow stronger with every duel! As your wizard levels up, 
+                  they'll unlock powerful new spells and abilities to enhance your strategic options in battle.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* What's New */}
         <div className="py-8 md:py-16 px-4">
           <div className="container mx-auto">
