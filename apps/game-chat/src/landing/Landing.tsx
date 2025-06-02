@@ -238,18 +238,22 @@ function Content() {
               <FeatureCard
                 title="Welcome Reward for new Players"
                 description="We welcome each and every player with a welcome reward. Join and claim your reward right away."
+                date="May 29, 2025"
               />
               <FeatureCard
                 title="Duels with stakes"
                 description="Players can now stake 0-100 SUI in PvP duels. Winners claim the entire prize pool of a duel"
+                date="May 24, 2025"
               />
               <FeatureCard
                 title="Music and Sound Effects"
                 description="Spell sound effects and atmospheric music are now available in the game to make your experience even more immersive"
+                date="May 22, 2025"
               />
               <FeatureCard
                 title="Practice Mode"
                 description="Practice ground with teacher who teach you spells and demo duels against NPCs to learn how to play and dominate in the game"
+                date="April 21, 2025"
               />
             </div>
             <div className="mt-8 md:mt-12 text-center">
@@ -385,10 +389,19 @@ export function Landing() {
   )
 }
 
-function FeatureCard({ title, description }: { title: string; description: string }) {
+function FeatureCard({
+  title,
+  description,
+  date,
+}: {
+  title: string
+  description: string
+  date?: string
+}) {
   return (
     <div className="bg-white p-4 md:p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-      <h3 className="text-lg md:text-xl font-bold mb-2 md:mb-3">{title}</h3>
+      {date && <div className="text-sm text-gray-500 whitespace-nowrap">{date}</div>}
+      <h3 className="text-lg md:text-xl font-bold mt-2 mb-4">{title}</h3>
       <p className="text-sm md:text-base text-gray-600">{description}</p>
     </div>
   )
