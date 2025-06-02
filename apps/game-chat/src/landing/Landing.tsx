@@ -14,7 +14,7 @@ function Content() {
   return (
     <div className="relative" ref={target}>
       <div
-        className="absolute h-screen w-screen my-8 md:my-16 z-1"
+        className="absolute hidden h-screen w-screen my-8 md:block md:my-16 z-1"
         ref={bg.ref}
         style={{
           backgroundImage: `url(${bgImage})`,
