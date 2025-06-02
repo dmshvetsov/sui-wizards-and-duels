@@ -6,7 +6,7 @@ import { useSuiClientContext, useSuiClientQuery } from '@mysten/dapp-kit'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { Loader } from '@/components/Loader'
 import { useNavigate } from 'react-router-dom'
-import { treasuryAddress, welcomeRewaard } from '@/lib/config'
+import { treasuryAddress, welcomeReward } from '@/lib/config'
 import { mistToSui } from '@/lib/sui/coin'
 
 export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }) {
@@ -52,7 +52,7 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
 
   const isClaimed = rewardCheckQuery.data.funded
   const isEnoughTreasuryBalance =
-    mistToSui(treasuryBalanceQuery.data.totalBalance) > welcomeRewaard.sui
+    mistToSui(treasuryBalanceQuery.data.totalBalance) > welcomeReward.sui
 
   return (
     <div className="flex flex-col justify-center items-center mt-4 p-4 border text-center w-[480px] mx-auto bg-white h-screen">
@@ -76,7 +76,7 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
           <Card className="w-[150px] h-auto mt-4 mb-8">
             <CardHeader>
               <CardTitle>{suiClientContext.network} Sui tokens</CardTitle>
-              <CardDescription>{welcomeRewaard.sui} Sui</CardDescription>
+              <CardDescription>{welcomeReward.sui} Sui</CardDescription>
             </CardHeader>
           </Card>
           {isEnoughTreasuryBalance ? (

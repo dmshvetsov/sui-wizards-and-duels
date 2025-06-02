@@ -14,6 +14,6 @@ export const isMainnetEnv = network === 'mainnet'
 
 export const treasuryAddress = import.meta.env.VITE_TREASURY_ADDRESS || '0x0'
 
-export const welcomeRewaard = Object.freeze({
+export const welcomeReward = Object.freeze({
   sui: 2
 })
