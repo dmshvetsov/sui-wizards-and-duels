@@ -49,7 +49,7 @@ export function DuelLayout({ userAccount }: { userAccount: UserAccount }) {
 }
 
 function Duel({ userAccount }: { userAccount: UserAccount }) {
-  const { duel, duelState, duelId, winner } = useDuel()
+  const { duel, duelistCap, duelState, winner } = useDuel()
 
   useEffect(() => {
     if (duelState === 'pending') {
@@ -74,11 +74,6 @@ function Duel({ userAccount }: { userAccount: UserAccount }) {
     }
   }, [duelState, winner, userAccount.id])
 
-  // Render different screens based on duel state
-  if (duelState === 'loading') {
-    return <Loader />
-  }
-
   if (duelState === 'not-found') {
     return (
       <div className="flex flex-col items-center justify-center h-full">
@@ -90,11 +85,19 @@ function Duel({ userAccount }: { userAccount: UserAccount }) {
     )
   }
 
+  // Render different screens based on duel state
+  if (duelState === 'loading') {
+    return <Loader />
+  }
+
   return (
     <div className="flex flex-col h-full">
       {duelState === 'pending' && <Start userAccount={userAccount} />}
 
-      {duelState === 'started' && <Action duelId={duelId} userAccount={userAccount} />}
+      {duelState === 'started' && (!duel || !duelistCap) && <Loader />}
+      {duelState === 'started' && duel && duelistCap && (
+        <Action duel={duel} duelistCap={duelistCap} userAccount={userAccount} />
+      )}
 
       {duelState === 'finished' && <Result userAccount={userAccount} />}
 

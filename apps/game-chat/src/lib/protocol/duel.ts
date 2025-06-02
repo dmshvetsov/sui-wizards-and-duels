@@ -1,7 +1,13 @@
+import { SuiObjectResponse } from "@mysten/sui/client"
 import { getPid, getPidLatest } from "./package"
 
-export type DuelistCap = {
+export type WithOnChainRef<T> = T & {
   id: string,
+  _version: string,
+  _digest: string,
+}
+
+export type DuelistCap = {
   duel: string,
   wizard: string,
   opponent: string,
@@ -9,7 +15,6 @@ export type DuelistCap = {
 
 // TODO: make it camel case
 export type Duel = {
-  id: string
   started_at: number
   wizard1: string
   wizard2: string
@@ -36,3 +41,11 @@ export const DUEL = Object.freeze({
     spell: `${PACKAGE_ID_V1}::duel::Spell`,
   },
 })
+
+export function getInitialSharedVersion(data: SuiObjectResponse) {
+  const obj = data.data
+  if (obj && 'owner' in obj && obj.owner != null && typeof obj.owner === 'object' && 'Shared' in obj.owner) {
+    return obj.owner.Shared.initial_shared_version
+  }
+  return null
+}

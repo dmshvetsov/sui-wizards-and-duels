@@ -1,7 +1,7 @@
 import { UserAccount } from '@/components/Authenticated'
 import { useDuelOnChainState } from '@/hooks/useDuelOnChainState'
 import { useDuelistCapOnChainState } from '@/hooks/useDuelistCapOnChainState'
-import { Duel, DuelistCap } from '@/lib/protocol/duel'
+import { Duel, DuelistCap, WithOnChainRef } from '@/lib/protocol/duel'
 import { getPidLatest } from '@/lib/protocol/package'
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
@@ -22,7 +22,7 @@ export type DuelState =
 
 type DuelContextValue = {
   duelId: string
-  duel: Duel | null
+  duel: WithOnChainRef<Duel> | null
   duelState: DuelState
   startDuel: (
     args: { countdownSeconds: number },
@@ -32,7 +32,7 @@ type DuelContextValue = {
       onSettled?: (result: any | undefined, err: unknown | null) => void
     }
   ) => void
-  duelistCap: DuelistCap | null
+  duelistCap: WithOnChainRef<DuelistCap> | null
   refetchDuelistCap: () => void
   winner: string | null
   loser: string | null

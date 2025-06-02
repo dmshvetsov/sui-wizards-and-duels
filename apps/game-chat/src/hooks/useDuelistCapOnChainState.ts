@@ -1,9 +1,9 @@
 import { useSuiClientQuery } from '@mysten/dapp-kit'
 import { useMemo } from 'react'
-import { DUEL, DuelistCap } from '@/lib/protocol/duel'
+import { WithOnChainRef, DUEL, DuelistCap } from '@/lib/protocol/duel'
 
 export type DuelistCapOnChainState = {
-  duelistCap: DuelistCap | null
+  duelistCap: WithOnChainRef<DuelistCap> | null
   isPending: boolean
   isLoading: boolean
   isError: boolean
@@ -52,10 +52,14 @@ export function useDuelistCapOnChainState(
     const fields = lastItem.data?.content?.fields as DuelistCap
 
     return {
-      id: lastItem.data.objectId,
+      // fields
       duel: fields.duel,
       wizard: fields.wizard,
       opponent: fields.opponent,
+      // on chain ref
+      id: lastItem.data.objectId,
+      _digest: lastItem.data.digest,
+      _version: lastItem.data.version
     }
   }, [data])
 

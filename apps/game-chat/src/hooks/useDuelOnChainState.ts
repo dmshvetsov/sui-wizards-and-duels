@@ -1,9 +1,9 @@
 import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { useMemo } from 'react';
-import { Duel } from '@/lib/protocol/duel';
+import { Duel, getInitialSharedVersion, WithOnChainRef } from '@/lib/protocol/duel';
 
 export type DuelOnChaiState = {
-  duel: Duel | null;
+  duel: WithOnChainRef<Duel> | null;
   isPending: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -28,7 +28,7 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
     refetch
   } = useSuiClientQuery(
     'getObject',
-    { id: duelId, options: { showContent: true } },
+    { id: duelId, options: { showContent: true, showOwner: true } },
     { refetchInterval: opts.refetchInterval, enabled: !!duelId }
   );
 
@@ -39,9 +39,13 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
 
     // Extract the duel data from the Sui object response
     const fields = objectData.data.content.fields as unknown as Duel;
+    const initialShardVer = getInitialSharedVersion(objectData)
+    if (!initialShardVer) {
+      throw new Error('no intial shared version found for duel')
+    }
 
     return {
-      id: duelId,
+      // fields
       started_at: Number(fields.started_at),
       wizard1: fields.wizard1,
       wizard2: fields.wizard2,
@@ -50,6 +54,11 @@ export function useDuelOnChainState(duelId: string, opts: { refetchInterval?: nu
       wizard1_effects: fields.wizard1_effects,
       wizard2_effects: fields.wizard2_effects,
       prize_pool: fields.prize_pool,
+      // on chain ref
+      id: duelId,
+      /** initial shared version */
+      _version: initialShardVer,
+      _digest: objectData.data.digest
     };
   }, [objectData, duelId]);
 
