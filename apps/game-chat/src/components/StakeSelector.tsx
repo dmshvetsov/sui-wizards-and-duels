@@ -40,7 +40,7 @@ export function StakeSelector({ selectedStake, onStakeSelect, className }: Stake
         <div className="px-5 py-4 bg-muted rounded-md mt-8 h-[80px]">
           <p className="text-sm text-muted-foreground">
             {selectedStake > 0
-              ? `You will stake ${selectedStake} Sui to play. If you win, you get ${selectedStake * 2} Sui.`
+              ? `Your next duel stake will be ${selectedStake} Sui. If you win, you get ${selectedStake * 2} Sui.`
               : 'No Sui at stake, duel for fun, only pay for transactions gas!'}
           </p>
         </div>
