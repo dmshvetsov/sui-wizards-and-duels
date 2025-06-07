@@ -254,7 +254,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         <div className="mt-8 text-center">
           {userState === 'paired' ? (
             <p className="mt-10">
-              <span className="animate-pulse font-semibold text-green-600">
+              <span className="animate-pulse font-semibold">
                 OPPONENT FOUND! PREPARE FOR A DUEL...
               </span>
             </p>
@@ -281,7 +281,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
               disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
               isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
             >
-              {selectedStake > 0 ? 'Stake and Play' : 'Play'}
+              {selectedStake > 0 ? 'Make a Bet and Play' : 'Play'}
             </ButtonWithFx>
           )}
         </div>

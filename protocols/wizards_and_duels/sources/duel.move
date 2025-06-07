@@ -12,7 +12,7 @@ const EBadTx: u64 = 1;
 const ENotDuelWizard: u64 = 2;
 const EDuelNotInAction: u64 = 3;
 // const EDuelFinished: u64 = 4; no longer in use
-// const EDuelExpired: u64 = 5;
+// const EDuelExpired: u64 = 5; no longer in use
 const ENotEnoughForce: u64 = 6;
 const EDuelStillInAction: u64 = 7;
 const ENotCaster: u64 = 8;
@@ -202,18 +202,6 @@ public fun cast_effect(duel: &mut Duel, effect: Effect, target: address, ctx: &T
     } else {
         abort(ENotDuelWizard)
     }
-}
-
-public(package) fun defeat(duel: &mut Duel, target: address) {
-    if (duel.wizard1 == target) {
-        duel.wizard1_force = 0;
-        return
-    };
-    if (duel.wizard2 == target) {
-        duel.wizard2_force = 0;
-        return
-    };
-    abort(ENotDuelWizard)
 }
 
 public fun end(duel: &mut Duel, duelistCap: DuelistCap, ctx: &mut TxContext) {
