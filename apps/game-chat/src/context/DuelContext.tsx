@@ -68,7 +68,6 @@ export function DuelProvider({
   const duelData = duelOnChainStateQuery.duel ?? null
 
   useEffect(() => {
-    console.debug('context tick')
     const duelState: DuelState =
       duelOnChainStateQuery.isPending || duelistCapStateQuery.isPending
         ? 'loading'
