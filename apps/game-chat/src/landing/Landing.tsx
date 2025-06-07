@@ -38,9 +38,7 @@ function Content() {
               free, experience the future of gaming digital ownership on the Sui blockchain.
             </p>
 
-            <ButtonWithFx onClick={handleLaunchGame}>
-              Play
-            </ButtonWithFx>
+            <ButtonWithFx onClick={handleLaunchGame}>Play</ButtonWithFx>
 
             <div className="mt-6">
               <a
@@ -73,14 +71,13 @@ function Content() {
             </p>
             <p className="mb-4 md:mb-6">
               The game emphasises digital ownership, allowing the trading of Wizards, created
-              Equipment, and Artefacts on Sui NFT marketplaces. 
+              Equipment, and Artefacts on Sui NFT marketplaces.
             </p>
             <p>
-              Spell duels follow
-              rock-paper-scissors mechanics, with "Dungeon & Dragons" dice roll mechanic
-              (randomness) with hundreds of spells to choose from and combine into combo, each
-              wizard is unique due to his developing path, ensuring no wizard is more powerful than
-              others.
+              Spell duels follow rock-paper-scissors mechanics, with "Dungeon & Dragons" dice roll
+              mechanic (randomness) with hundreds of spells to choose from and combine into combo,
+              each wizard is unique due to his developing path, ensuring no wizard is more powerful
+              than others.
             </p>
           </div>
         </div>
@@ -198,31 +195,49 @@ function Content() {
         {/* Roadmap */}
         <div className="bg-gradient-to-r from-purple-100 to-blue-100 bg-opacity-95 py-8 md:py-16 px-4">
           <div className="container mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">
-              Q2 Roadmap
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">Roadmap</h2>
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizards and Duels Reward Token Launch</h3>
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">
+                  June 2025: Wizards and Duels Reward Token Launch
+                </h3>
                 <p className="text-gray-700">
-                  We're excited to introduce our new token that will reward players for engaging in duels. 
-                  Earn tokens for every duel, with bonus rewards for dueling new opponents and climbing the ranks.
+                  We're excited to introduce our new token that will reward players for engaging in
+                  duels. Earn tokens for every duel, with bonus rewards for dueling new opponents
+                  and climbing the ranks.
                 </p>
               </div>
-              
+
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard NFTs on Sui Marketplaces</h3>
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">
+                  Q3 2025: Wizard NFTs on Sui Marketplaces
+                </h3>
                 <p className="text-gray-700">
-                  Your reward tokens will unlock the ability to create unique Wizard NFTs. 
-                  These digital collectibles can be traded on Sui NFT marketplaces, allowing you to buy, sell, and trade your wizards with other players.
+                  Your reward tokens will unlock the ability to create unique Wizard NFTs. These
+                  digital collectibles can be traded on Sui NFT marketplaces, allowing you to buy,
+                  sell, and trade your wizards with other players.
                 </p>
               </div>
-              
+
               <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-semibold mb-3 text-purple-700">Wizard Progression System</h3>
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">
+                  Q3 2025: Wizard Progression System
+                </h3>
                 <p className="text-gray-700">
-                  Watch your wizard grow stronger with every duel! As your wizard levels up, 
-                  they'll unlock powerful new spells and abilities to enhance your strategic options in battle.
+                  Watch your wizard grow stronger with every duel! As your wizard levels up, they'll
+                  unlock powerful new spells and abilities to enhance your strategic options in
+                  battle.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-3 text-purple-700">
+                  Q3 2025: mobile friendly version of the game
+                </h3>
+                <p className="text-gray-700">
+                  Launch of the mobile version of the game, expanding access beyond the current
+                  browser-based desktop experience. This move aims to make the game more accessible
+                  and convenient for players who prefer gaming on the go.
                 </p>
               </div>
             </div>
