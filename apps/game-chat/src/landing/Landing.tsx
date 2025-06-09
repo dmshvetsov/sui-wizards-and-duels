@@ -82,6 +82,49 @@ function Content() {
           </div>
         </div>
 
+        {/* How to Play */}
+        <div className="bg-gray-50 bg-opacity-95 py-8 md:py-16 px-4">
+          <div className="container mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">
+              How to Play
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StepCard
+                number="1"
+                title="Start with practice"
+                description="Play practice mode against NPCs right away, no wallet required."
+              />
+              <StepCard
+                number="2"
+                title="Enter Duelground"
+                description="Sign in with Google to enjoy PvP matchmaking and free duels or duels with stakes."
+              />
+              <StepCard
+                number="3"
+                title="Cast Spells"
+                description="Outsmart and outtype the opponent with rock-paper-scissors like spell system."
+              />
+              <StepCard
+                number="4"
+                title="Claim Victory"
+                description="Reduce your opponent's force to zero to win the duel and claim your SUI prize pool! Free to play mode is available."
+              />
+            </div>
+          </div>
+          <div className="container mx-auto mt-6 md:mt-12">
+            <div className="relative pb-[62.06896551724138%] h-0">
+            <iframe
+              src="https://www.loom.com/embed/5e75f7c8e703404f99a2bec084c01d1e?sid=8a6e720f-b377-4f69-bdc7-5a14310858f0"
+              allowFullScreen
+              frameBorder="0"
+              loading="lazy"
+              className="absolute top-0 left-0 w-full h-full"
+            />
+            </div>
+          </div>
+        </div>
+
         {/* Game Modes */}
         <div className="bg-gradient-to-r from-purple-100 to-blue-100 bg-opacity-95 py-8 md:py-14 px-4">
           <div className="container mx-auto">
@@ -155,38 +198,6 @@ function Content() {
               <FeatureCard
                 title="Free to Play right in your Browser"
                 description="No need to install or pay for anything, jump into the game now."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* How to Play */}
-        <div className="bg-gray-50 bg-opacity-95 py-8 md:py-16 px-4">
-          <div className="container mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center">
-              How to Play
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StepCard
-                number="1"
-                title="Start with practice"
-                description="Play practice mode against NPCs right away, no wallet required."
-              />
-              <StepCard
-                number="2"
-                title="Enter Battle"
-                description="Sign in with Google to enjoy PvP matchmaking and duels."
-              />
-              <StepCard
-                number="3"
-                title="Cast Spells"
-                description="Outsmart and outtype the opponent with rock-paper-scissors like spell system."
-              />
-              <StepCard
-                number="4"
-                title="Claim Victory"
-                description="Reduce your opponent's force to zero to win the duel and claim your SUI prize pool! Free to play mode is available."
               />
             </div>
           </div>
@@ -271,6 +282,11 @@ function Content() {
                 title="Practice Mode"
                 description="Practice ground with teacher who teach you spells and demo duels against NPCs to learn how to play and dominate in the game"
                 date="April 21, 2025"
+              />
+              <FeatureCard
+                title="Live on Sui Testnet"
+                description="We are live on Sui Testnet, you can now play and test the game with testnet SUI tokens, can't wait to see you in the game and hear your feedback!"
+                date="April 16, 2025"
               />
             </div>
             <div className="mt-8 md:mt-12 text-center">
