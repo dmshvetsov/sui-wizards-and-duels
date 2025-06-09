@@ -4,10 +4,12 @@ import { useChatScroll } from '@/hooks/use-chat-scroll'
 import { useRealtimeChat } from '@/hooks/use-realtime-chat'
 import { isSpell, type ChatMessage } from '@/lib/message'
 import { useEffect, useMemo, useState } from 'react'
+import { LoadingSpin } from './Loader'
 
 interface RealtimeChatProps {
   roomName: string
   username: string
+  disabled?: boolean
   onMessage?: (messages: string) => void
   onIncomingMessage?: (message: string) => void
   messages?: ChatMessage[]
@@ -26,6 +28,7 @@ interface RealtimeChatProps {
 export const RealtimeChat = ({
   roomName,
   username,
+  disabled,
   onMessage,
   onIncomingMessage,
   messages: initialMessages = [],
@@ -66,6 +69,8 @@ export const RealtimeChat = ({
   useEffect(() => {
     const handleKeyPress = (e: globalThis.KeyboardEvent) => {
       if (!isConnected) return
+      // TODO: look for a way to block from typing spells without adding/removing handler for keypress
+      if (disabled) return
 
       // Don't capture if modifier keys are pressed
       if (e.ctrlKey || e.altKey || e.metaKey) {
@@ -100,7 +105,7 @@ export const RealtimeChat = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress)
     }
-  }, [newMessage, isConnected, sendMessage, onMessage])
+  }, [newMessage, isConnected, sendMessage, onMessage, disabled])
 
   return (
     <div className="flex flex-col h-3/5 w-full bg-background text-foreground antialiased">
@@ -134,7 +139,9 @@ export const RealtimeChat = ({
           !isConnected && 'opacity-50 cursor-not-allowed'
         )}
       >
-        {isSpell(newMessage) ? (
+        {disabled ? (
+          <div className="flex justify-center"><LoadingSpin /></div>
+        ) : isSpell(newMessage) ? (
           <span className="bg-linear-295 from-indigo-600 to-indigo-800 text-white rounded-md px-3 py-2 ">
             {newMessage}
           </span>
