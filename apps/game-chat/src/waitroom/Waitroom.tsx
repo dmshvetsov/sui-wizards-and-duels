@@ -2,6 +2,7 @@ import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { FundWallet } from '@/components/FundWallet'
 import { Loader } from '@/components/Loader'
 import { StakeSelector } from '@/components/StakeSelector'
+import { PrimeTimeMessage } from '@/components/TopLineMessage'
 import { ButtonWithFx } from '@/components/ui/button'
 import { UserAccountMenu } from '@/components/UserAccountMenu'
 import { isDevnetEnv } from '@/lib/config'
@@ -244,81 +245,84 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
   }
 
   return (
-    <div className="flex justify-center gap-8 items-center h-screen">
-      <div className="w-[300px]" />
-      <div className="flex flex-col items-center justify-center w-[480px]">
-        <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
-        <p>Join others in Player vs Player Wizards Duels.</p>
-        <p>Defeat your opponent to take away his Sui force.</p>
+    <div className="flex flex-col h-screen">
+      <PrimeTimeMessage />
+      <div className="flex justify-center gap-8 items-center flex-1">
+        <div className="w-[300px]" />
+        <div className="flex flex-col items-center justify-center w-[480px]">
+          <h1 className="text-2xl font-semibold mb-2">Duelground</h1>
+          <p>Join others in Player vs Player Wizards Duels.</p>
+          <p>Defeat your opponent to take away his Sui force.</p>
 
-        <div className="mt-8 text-center">
-          {userState === 'paired' ? (
-            <p className="mt-10">
-              <span className="animate-pulse font-semibold">
-                OPPONENT FOUND! PREPARE FOR A DUEL...
-              </span>
-            </p>
-          ) : userState === 'waiting' ? (
-            <>
-              <p>
-                <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+          <div className="mt-8 text-center">
+            {userState === 'paired' ? (
+              <p className="mt-10">
+                <span className="animate-pulse font-semibold">
+                  OPPONENT FOUND! PREPARE FOR A DUEL...
+                </span>
               </p>
+            ) : userState === 'waiting' ? (
+              <>
+                <p>
+                  <span className="animate-pulse font-semibold">FINDING OPPONENT</span>
+                </p>
+                <ButtonWithFx
+                  className="mt-4"
+                  onClick={handleLeave}
+                  disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
+                  isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
+                >
+                  Cancel
+                </ButtonWithFx>
+              </>
+            ) : userState === 'needs_funding' ? (
+              <FundWallet walletAddress={userAccount.id} />
+            ) : (
               <ButtonWithFx
-                className="mt-4"
-                onClick={handleLeave}
+                className="mt-10"
+                onClick={handleJoinWaitlist}
                 disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
                 isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
               >
-                Cancel
+                {selectedStake > 0 ? 'Make a Bet and Play' : 'Play'}
               </ButtonWithFx>
+            )}
+          </div>
+
+          <div className="mt-12">
+            <p className="text-lg">
+              wizards online:{' '}
+              <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
+            </p>
+          </div>
+          {onlineCount === 1 && (
+            <>
+              <p className="mt-2 text-center">
+                You are the only one in the Duelground. Wait for others to join or invite friends
+                with the following link
+              </p>
+              <p>
+                <span className="font-semibold">{window.location.toString()}</span>
+              </p>
             </>
-          ) : userState === 'needs_funding' ? (
-            <FundWallet walletAddress={userAccount.id} />
-          ) : (
-            <ButtonWithFx
-              className="mt-10"
-              onClick={handleJoinWaitlist}
-              disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
-              isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
-            >
-              {selectedStake > 0 ? 'Make a Bet and Play' : 'Play'}
-            </ButtonWithFx>
           )}
         </div>
-
-        <div className="mt-12">
-          <p className="text-lg">
-            wizards online:{' '}
-            <span className="font-bold">{onlineCount === 1 ? 'only you' : onlineCount}</span>
-          </p>
+        <div className="mt-8 w-[300px]">
+          {userState !== 'needs_funding' && (
+            <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+          )}
         </div>
-        {onlineCount === 1 && (
-          <>
-            <p className="mt-2 text-center">
-              You are the only one in the Duelground. Wait for others to join or invite friends with
-              the following link
-            </p>
-            <p>
-              <span className="font-semibold">{window.location.toString()}</span>
-            </p>
-          </>
+        {isDevnetEnv && (
+          <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
+            <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
+            <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
+            <pre className="text-gray-600 mt-2">
+              waitroom: {JSON.stringify(waitroomState, null, 4)}
+            </pre>
+          </div>
         )}
+        <UserAccountMenu userAccount={userAccount} />
       </div>
-      <div className="mt-8 w-[300px]">
-        {userState !== 'needs_funding' && (
-          <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
-        )}
-      </div>
-      {isDevnetEnv && (
-        <div className="top-0 left-0 absolute pl-6 pb-8 text-xs">
-          <p className="text-sm text-gray-600 mt-2">network: {suiContext.network}</p>
-          <p className="text-sm text-gray-600 mt-2">you: {userAccount.id}</p>
-          <pre className="text-gray-600 mt-2">
-            waitroom: {JSON.stringify(waitroomState, null, 4)}
-          </pre>
-        </div>
-      )}
-      <UserAccountMenu userAccount={userAccount} />
     </div>
   )
 }
