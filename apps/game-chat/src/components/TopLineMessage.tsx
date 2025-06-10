@@ -7,8 +7,8 @@ const formatTime = (hours: number) => {
 
 export function PrimeTimeMessage() {
   const timeInUtc = [
-    { start: 5, end: 6 },
     { start: 11, end: 12 },
+    { start: 16, end: 17 },
   ].map(({ start, end }) => ({
     start: formatTime(start),
     end: formatTime(end),
