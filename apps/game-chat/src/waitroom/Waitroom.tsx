@@ -31,6 +31,19 @@ const MUSIC = {
   }),
 }
 
+const SFX = {
+  playerJoin: new Howl({
+    src: ['/sfx/duelground-joined.ogg'],
+    volume: 0.5,
+    preload: true,
+  }),
+  playerLeave: new Howl({
+    src: ['/sfx/duelground-left.ogg'],
+    volume: 0.5,
+    preload: true,
+  }),
+}
+
 const UNCONNECTED_COUNTER_STATE = 0
 
 const THREE_SECONDS_IN_MS = 3000
@@ -125,11 +138,19 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.debug('join', key, newPresences)
-        toast(`${displayName(key)} joined the Duelground`)
+        const name = displayName(key)
+        toast(`${name} joined the Duelground`)
+        if (key !== userAccount.id) {
+          SFX.playerJoin.play()
+        }
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.debug('leave', key, leftPresences)
-        toast(`${displayName(key)} left the Duelground`)
+        const name = displayName(key)
+        toast(`${name} left the Duelground`)
+        if (key !== userAccount.id) {
+          SFX.playerLeave.play()
+        }
       })
 
     channel.subscribe((status, err?: Error) => {
