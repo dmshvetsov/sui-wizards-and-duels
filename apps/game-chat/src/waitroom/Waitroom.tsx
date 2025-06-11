@@ -31,6 +31,19 @@ const MUSIC = {
   }),
 }
 
+const SFX = {
+  playerJoin: new Howl({
+    src: ['/sfx/duelground-joined.ogg'],
+    volume: 0.5,
+    preload: true,
+  }),
+  playerLeave: new Howl({
+    src: ['/sfx/duelground-left.ogg'],
+    volume: 0.5,
+    preload: true,
+  }),
+}
+
 const UNCONNECTED_COUNTER_STATE = 0
 
 const THREE_SECONDS_IN_MS = 3000
@@ -125,11 +138,19 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.debug('join', key, newPresences)
-        toast(`${displayName(key)} joined the Duelground`)
+        const name = displayName(key)
+        toast(`${name} joined the Duelground`)
+        if (key !== userAccount.id) {
+          SFX.playerJoin.play()
+        }
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.debug('leave', key, leftPresences)
-        toast(`${displayName(key)} left the Duelground`)
+        const name = displayName(key)
+        toast(`${name} left the Duelground`)
+        if (key !== userAccount.id) {
+          SFX.playerLeave.play()
+        }
       })
 
     channel.subscribe((status, err?: Error) => {
@@ -244,6 +265,9 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     )
   }
 
+  const isFreeToPlayMode = selectedStake === 0
+  const isAddInQueue = queue.find(pair => pair.fields.stake_amount === (selectedStake * 1_000_000_000).toString()) == null
+
   return (
     <div className="flex flex-col h-screen">
       <PrimeTimeMessage />
@@ -284,7 +308,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
                 disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
                 isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
               >
-                {selectedStake > 0 ? 'Make a Bet and Play' : 'Play'}
+                {isFreeToPlayMode ? 'Play' : isAddInQueue ? 'Make a Bet and Wait for Opponent' : 'Make a Bet and Play'}
               </ButtonWithFx>
             )}
           </div>
@@ -309,7 +333,12 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         </div>
         <div className="mt-8 w-[300px]">
           {userState !== 'needs_funding' && (
-            <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+            <StakeSelector 
+              selectedStake={selectedStake} 
+              onStakeSelect={setSelectedStake} 
+              queue={waitroomState?.content?.dataType === 'moveObject' ? (waitroomState.content.fields as Waitroom).queue : []}
+              userAccount={userAccount}
+            />
           )}
         </div>
         {isDevnetEnv && (
