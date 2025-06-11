@@ -265,6 +265,9 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
     )
   }
 
+  const isFreeToPlayMode = selectedStake === 0
+  const isAddInQueue = queue.find(pair => pair.fields.stake_amount === (selectedStake * 1_000_000_000).toString()) == null
+
   return (
     <div className="flex flex-col h-screen">
       <PrimeTimeMessage />
@@ -305,7 +308,7 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
                 disabled={isSigningAndExecuting || isWaitRoomStateReconciling}
                 isLoading={isSigningAndExecuting || isWaitRoomStateReconciling}
               >
-                {selectedStake > 0 ? 'Make a Bet and Play' : 'Play'}
+                {isFreeToPlayMode ? 'Play' : isAddInQueue ? 'Make a Bet and Wait for Opponent' : 'Make a Bet and Play'}
               </ButtonWithFx>
             )}
           </div>
@@ -330,7 +333,12 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
         </div>
         <div className="mt-8 w-[300px]">
           {userState !== 'needs_funding' && (
-            <StakeSelector selectedStake={selectedStake} onStakeSelect={setSelectedStake} />
+            <StakeSelector 
+              selectedStake={selectedStake} 
+              onStakeSelect={setSelectedStake} 
+              queue={waitroomState?.content?.dataType === 'moveObject' ? (waitroomState.content.fields as Waitroom).queue : []}
+              userAccount={userAccount}
+            />
           )}
         </div>
         {isDevnetEnv && (
