@@ -8,18 +8,13 @@ import {
   useSuiClientContext,
   useWallets,
 } from '@mysten/dapp-kit'
-import {
-  isEnokiWallet,
-  type AuthProvider,
-  type EnokiWallet,
-} from '@mysten/enoki'
+import { isEnokiWallet, type AuthProvider, type EnokiWallet } from '@mysten/enoki'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 interface LoginButtonProps {
   provider: AuthProvider
   label?: string
-  className?: string
 }
 
 const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY ?? ''
@@ -49,25 +44,34 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
   }
 
   return (
-    <ButtonWithFx
-      onClick={() => {
-        connect(
-          { wallet },
-          {
-            onSuccess(res) {
-              const account = getSelectedAccount(res.accounts)
-              const address = account?.address ?? null
-              if (!address) {
-                return
-              }
-              logIn(address, network).catch(() => disconnect())
-            },
-          }
-        )
-      }}
-    >
-      {label || `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`}
-    </ButtonWithFx>
+    <div className="flex flex-col items-center gap-6">
+      <ButtonWithFx
+        onClick={() => {
+          connect(
+            { wallet },
+            {
+              onSuccess(res) {
+                const account = getSelectedAccount(res.accounts)
+                const address = account?.address ?? null
+                if (!address) {
+                  return
+                }
+                logIn(address, network).catch(() => disconnect())
+              },
+            }
+          )
+        }}
+      >
+        {label || `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`}
+      </ButtonWithFx>
+      {provider === 'google' && (
+        <p className="text-gray-500 text-center max-w-xs">
+          We do not store any information from your Google account. 'Sign in with Google' is only
+          used to create an in-game non-custodial wallet that is controlled solely by you, ensuring
+          the best in-game experience.
+        </p>
+      )}
+    </div>
   )
 }
 

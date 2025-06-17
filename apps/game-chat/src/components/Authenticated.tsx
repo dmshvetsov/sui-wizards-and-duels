@@ -68,7 +68,7 @@ export function AuthenticatedPage() {
       <>
         {isDevnetEnv && (
           <div className="absolute top-0 left-0 text-sm font-mono p-4">
-            <pre>{JSON.stringify({ userAccount, session }, null, 2)}</pre>
+            <pre className='w-[480px]'>{JSON.stringify({ userAccount, session }, null, 2)}</pre>
           </div>
         )}
         <SignIn />
