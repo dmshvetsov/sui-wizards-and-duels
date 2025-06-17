@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom'
 interface LoginButtonProps {
   provider: AuthProvider
   label?: string
-  className?: string
 }
 
 const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY ?? ''
