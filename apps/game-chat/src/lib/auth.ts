@@ -9,7 +9,7 @@ if (!ENOKI_API_KEY) {
   throw new Error('missing configuration for ZKLogin')
 }
 
-export async function logIn(address: string, network: string) {
+export async function logIn(address: string, network: string, provider: 'google' | 'twitter') {
   const enc = createDefaultEncryption()
   const val = sessionStorage.getItem(`@enoki/flow/session/${ENOKI_API_KEY}/${network}`) ?? ''
   if (!val) {
@@ -29,7 +29,7 @@ export async function logIn(address: string, network: string) {
 
     try {
       const authRes = await getClient().auth.signInWithIdToken({
-        provider: 'google',
+        provider,
         token: session.jwt,
       })
       if (authRes.error) {

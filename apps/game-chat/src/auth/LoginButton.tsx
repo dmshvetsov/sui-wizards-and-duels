@@ -8,12 +8,15 @@ import {
   useSuiClientContext,
   useWallets,
 } from '@mysten/dapp-kit'
-import { isEnokiWallet, type AuthProvider, type EnokiWallet } from '@mysten/enoki'
+import { isEnokiWallet, type EnokiWallet } from '@mysten/enoki'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+// Override AuthProvider type locally to support both google and twitter
+export type LocalAuthProvider = 'google' | 'twitter'
+
 interface LoginButtonProps {
-  provider: AuthProvider
+  provider: LocalAuthProvider
   label?: string
 }
 
@@ -56,7 +59,7 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
                 if (!address) {
                   return
                 }
-                logIn(address, network).catch(() => disconnect())
+                logIn(address, network, provider).catch(() => disconnect())
               },
             }
           )
@@ -67,6 +70,13 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
       {provider === 'google' && (
         <p className="text-gray-500 text-center max-w-xs">
           We do not store any information from your Google account. 'Sign in with Google' is only
+          used to create an in-game non-custodial wallet that is controlled solely by you, ensuring
+          the best in-game experience.
+        </p>
+      )}
+      {provider === 'twitter' && (
+        <p className="text-gray-500 text-center max-w-xs">
+          We do not store any information from your Twitter account. 'Sign in with Twitter' is only
           used to create an in-game non-custodial wallet that is controlled solely by you, ensuring
           the best in-game experience.
         </p>
@@ -85,8 +95,8 @@ export function LoginMenu({ redirectOnLgoin }: { redirectOnLgoin: string }) {
 
   // Group wallets by provider
   const walletsByProvider = wallets.reduce(
-    (map, wallet) => map.set(wallet.provider, wallet),
-    new Map<AuthProvider, EnokiWallet>()
+    (map, wallet) => map.set(wallet.provider as LocalAuthProvider, wallet),
+    new Map<LocalAuthProvider, EnokiWallet>()
   )
 
   useEffect(() => {
@@ -109,7 +119,8 @@ export function LoginMenu({ redirectOnLgoin }: { redirectOnLgoin: string }) {
   )
 }
 
-function getSelectedAccount(accounts: any, accountAddress?: string) {
+// Accept readonly array for accounts
+function getSelectedAccount(accounts: ReadonlyArray<{ address: string }>, accountAddress?: string) {
   if (accounts.length === 0) {
     return null
   }

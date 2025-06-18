@@ -13,7 +13,8 @@ const NETWORK = import.meta.env.VITE_DEFAULT_NETWORK || 'localnet'
 
 const ENOKI_API_KEY = import.meta.env.VITE_ENOKI_API_KEY
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-if (!ENOKI_API_KEY || typeof GOOGLE_CLIENT_ID !== 'string' || GOOGLE_CLIENT_ID.length === 0) {
+const TWITTER_CLIENT_ID = import.meta.env.VITE_TWITTER_CLIENT_ID
+if (!ENOKI_API_KEY || typeof GOOGLE_CLIENT_ID !== 'string' || GOOGLE_CLIENT_ID.length === 0 || typeof TWITTER_CLIENT_ID !== 'string' || TWITTER_CLIENT_ID.length === 0) {
   throw new Error('missing configuration for ZKLogin')
 }
 
@@ -27,6 +28,7 @@ const { networkConfig } = createNetworkConfig({
 
 const authProviders = {
   google: { clientId: GOOGLE_CLIENT_ID, redirectUrl: appUrl('/d') },
+  twitter: { clientId: TWITTER_CLIENT_ID, redirectUrl: appUrl('/d') },
 }
 
 const queryClient = new QueryClient()

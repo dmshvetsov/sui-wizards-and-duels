@@ -9,6 +9,10 @@ interface EnokiProviderProps {
     google?: {
       clientId: string
       redirectUrl?: string
+    },
+    twitter?: {
+      clientId: string
+      redirectUrl?: string
     }
   }
 }
