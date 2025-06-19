@@ -43,7 +43,24 @@ Mint Deadline: Before June 30, 2025 (UTC)
 
 ## Spec
 
-📈 Leaderboard Logic (Read-Only)
+implement all the logic for adding ESNC reward points to `user_account`.
+
+1. add `reward_points` supabase database table with `sui_address` column and `points` column
+2. add `users_rewards` supabase database table with `sui_address` column, `activity` column (see list activities below), `value` (store either invite or inviter address, or duel id)
+3. add `invite_binds` supabase database table with `inviter_sui_address` and `invitee_sui_address`
+4. add leaderboard page with 50 top point holders, leaderboard page can be viewed without authentication (public)
+5. add link in GameMenu to Leaderboard page
+6. implement reward login for activities:
+    1.  Signup, collect on the claim reward page
+    2. Daily Check-in (during Duelground slot) 
+    3. Duel (win or lose)                      
+    4. First duel vs a new sui address bonus   
+    5. Duel during Duelground gathering time   
+    6. Referral Bind - Invitee                 
+    7. Referral Bind - Inviter                 
+    8. Duel by referred invitee (per duel)     
+
+### 📈 Leaderboard page Logic (Read-Only)
 
 Maintain a sorted list of top ESNC holders
 
@@ -51,7 +68,7 @@ Purely for display/bragging rights
 
 No gating mint access based on leaderboard
 
-🛡️ Anti-Sybil Measures
+### 🛡️ Anti-Sybil Measures
 
 ESNC points are non-transferable
 
@@ -61,17 +78,21 @@ Wallet (sui address or user) cap: 5,000 ESNC points, more than that can not be g
 
 Mint cap: 10 NFTs
 
-📥 Reward System
+### 📥 Reward System
 
 Players/users can get ESNC points by completing activities
 
 | Activity                                | ESNC Reward | Notes                     |
 | --------------------------------------- | ----------- | ------------------------- |
-| Signup                                  | 50          | One-time                  |
+| Signup, collect on the claim reward page| 50          | One-time                  |
 | Daily Check-in (during Duelground slot) | 10          | Once per day              |
 | Duel (win or lose)                      | 10          | Both players              |
-| First duel vs a new wallet              | +10         | One-time per pair         |
+| First duel vs a new sui address bonus   | +10         | One-time per pair         |
 | Duel during Duelground gathering time   | +10         | Per duel                  |
 | Referral Bind - Invitee                 | 30          | One-time                  |
 | Referral Bind - Inviter                 | 20          | One-time                  |
 | Duel by referred invitee (per duel)     | 2           | Passive reward to inviter |
+
+Duelground gathering slots:
+- 11:00-12:00 UTC 
+- 20:00-21:00 UTC
