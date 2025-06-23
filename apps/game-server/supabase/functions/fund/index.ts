@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.5'
 import { SuiClient, getFullnodeUrl } from 'npm:@mysten/sui/client'
 import { Ed25519Keypair } from 'npm:@mysten/sui/keypairs/ed25519'
 import { Transaction } from 'npm:@mysten/sui/transactions'
-import { corsHeaders } from "../_shard/cors.ts";
+import { corsHeaders } from '../_shard/cors.ts'
 
 // --- Supabase Setup ---
 const supabase = createClient(
@@ -51,11 +51,21 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === 'GET') {
-      return await checkFundingForWallet(req)
+      const auth = await ensureAuthenticatedUser(req)
+      return await checkFundingForWallet(auth)
     }
 
     if (req.method === 'POST') {
-      return await fundWallet(req)
+      const auth = await ensureAuthenticatedUser(req)
+      const { address } = await req.json()
+      if (!address || typeof address !== 'string') {
+        return jsonResponse({ message: 'Missing or invalid sui_address' }, 400)
+      }
+
+
+      // Handle signup reward before funding
+      await handleSignupReward(address)
+      return await fundWallet(address, auth)
     }
 
     return jsonResponse({ message: 'Method Not Allowed' }, 405)
@@ -73,30 +83,19 @@ Deno.serve(async (req) => {
       if (err.message.match(/No valid gas coins found/)) {
         return jsonResponse({ message: 'Try again later' }, 503)
       }
+      if (err.message.toLowerCase() === 'unauthenticated') {
+        return jsonResponse({ message: 'Unauthenticated' }, 401)
+      }
+      if (err.message.toLowerCase() === 'unauthorized') {
+        return jsonResponse({ message: 'Unauthorized' }, 403)
+      }
     }
     console.error('Unexpected error:', err)
     return jsonResponse({ message: 'Internal Server Error' }, 500)
   }
 })
 
-async function fundWallet(req: Request) {
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return jsonResponse({ message: 'Unauthenticated' }, 401)
-  }
-
-  const { address } = await req.json()
-  if (!address || typeof address !== 'string') {
-    return jsonResponse({ message: 'Missing or invalid sui_address' }, 400)
-  }
-
-  const token = authHeader.replace('Bearer ', '')
-  const { data: auth, error: getUserErr } = await supabase.auth.getUser(token)
-
-  if (getUserErr) {
-    return jsonResponse({ message: 'Unauthorized' }, 403)
-  }
-
+async function fundWallet(address: string, auth: Authenticated) {
   const { data: userAccount } = await supabase
     .from('user_accounts')
     .select('sui_address')
@@ -158,19 +157,7 @@ async function fundWallet(req: Request) {
   return jsonResponse({ message: 'Funded successfully', txDigest: txRes.digest }, 200)
 }
 
-async function checkFundingForWallet(req: Request) {
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return jsonResponse({ message: 'Unauthenticated' }, 401)
-  }
-
-  const token = authHeader.replace('Bearer ', '')
-  const { data: auth, error: getUserErr } = await supabase.auth.getUser(token)
-
-  if (getUserErr) {
-    return jsonResponse({ message: 'Unauthorized' }, 403)
-  }
-
+async function checkFundingForWallet(auth: Authenticated) {
   const { data: userAccount } = await supabase
     .from('user_accounts')
     .select('sui_address')
@@ -181,6 +168,14 @@ async function checkFundingForWallet(req: Request) {
     // Silently ignore
     return jsonResponse({ message: 'OK' }, 200)
   }
+
+  // Check if signup reward claimed
+  const { data: signupReward } = await supabase
+    .from('users_rewards')
+    .select('id')
+    .eq('sui_address', userAccount.sui_address)
+    .eq('activity', 'signup')
+    .maybeSingle()
 
   const { data: funded, error: fetchFundingErr } = await supabase
     .from('user_funding')
@@ -195,10 +190,13 @@ async function checkFundingForWallet(req: Request) {
 
   if (funded) {
     // Silently ignore
-    return jsonResponse({ funded: true, txDigest: funded.tx_digest }, 200)
+    return jsonResponse(
+      { funded: true, txDigest: funded.tx_digest, rewardClaimed: !!signupReward },
+      200
+    )
   }
 
-  return jsonResponse({ funded: false }, 200)
+  return jsonResponse({ funded: false, rewardClaimed: !!signupReward }, 200)
 }
 
 function jsonResponse(result: Record<string | number, unknown>, status: number) {
@@ -207,3 +205,49 @@ function jsonResponse(result: Record<string | number, unknown>, status: number) 
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 }
+
+async function handleSignupReward(address: string) {
+  // Check if signup reward already claimed
+  const { data: signupReward } = await supabase
+    .from('users_rewards')
+    .select('id')
+    .eq('sui_address', address)
+    .eq('activity', 'signup')
+    .maybeSingle()
+
+  if (!signupReward) {
+    // Grant 50 ESNC points for signup
+    // Upsert into reward_points
+    await supabase.from('reward_points').upsert(
+      {
+        sui_address: address,
+        points: 50,
+      },
+      { onConflict: ['sui_address'] }
+    )
+    // Log the activity
+    await supabase.from('users_rewards').insert({
+      sui_address: address,
+      activity: 'signup',
+      value: null,
+    })
+  }
+}
+
+async function ensureAuthenticatedUser(req: Request) {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) {
+    throw new Error('unauthenticated')
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  const { data: auth, error: getUserErr } = await supabase.auth.getUser(token)
+
+  if (getUserErr) {
+    throw new Error('unauthorized')
+  }
+
+  return auth;
+}
+
+type Authenticated = Awaited<ReturnType<typeof ensureAuthenticatedUser>>;

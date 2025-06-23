@@ -73,23 +73,33 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
             <p>We welcome you in Wizards and Duels game.</p>
             <p>This reward will set you for the smooth start.</p>
           </div>
-          <Card className="w-[150px] h-auto mt-4 mb-8">
-            <CardHeader>
-              <CardTitle>{suiClientContext.network} Sui tokens</CardTitle>
-              <CardDescription>{welcomeReward.sui} Sui</CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="flex flex-wrap gap-4 mt-4 mb-8">
+            {/* Mint Essence Reward Section */}
+            <Card className="w-[150px] h-auto">
+              <CardHeader>
+                <CardTitle>50 Mint Essence</CardTitle>
+                <CardDescription>Soulbound Signup Reward</CardDescription>
+              </CardHeader>
+            </Card>
+            {/* End Mint Essence Reward Section */}
+            <Card className="w-[150px] h-auto">
+              <CardHeader>
+                <CardTitle>{welcomeReward.sui} Sui</CardTitle>
+                <CardDescription>{suiClientContext.network} Sui tokens</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
           {isEnoughTreasuryBalance ? (
             <ButtonWithFx isLoading={claimMut.isPending} onClick={() => claimMut.mutate()}>
               Claim
             </ButtonWithFx>
           ) : (
-          <>
-            <p className="mb-4 text-yellow-600">
-              Game Treasury is empty at this moment please come back later to claim your reward.
-            </p>
-            <Button onClick={() => navigate('/d')}>Back to Duelground</Button>
-          </>
+            <>
+              <p className="mb-4 text-yellow-600">
+                Game Treasury is empty at this moment please come back later to claim your reward.
+              </p>
+              <Button onClick={() => navigate('/d')}>Back to Duelground</Button>
+            </>
           )}
         </>
       )}
