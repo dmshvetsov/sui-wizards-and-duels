@@ -8,6 +8,7 @@ import { Landing } from './landing/Landing'
 import { PracticeDuel } from './practice-duel/PracticeDuel'
 import { WaitRoom } from './waitroom/Waitroom'
 import { ClaimWelcomeReward } from './rewards/ClaimWelcomReward'
+import { Leaderboard } from './rewards/Leaderboard'
 
 const TOAST_OPTIONS = {
   duration: 6000,
@@ -31,6 +32,8 @@ function App() {
               />
             </Route>
           </Route>
+
+          <Route path="/leaderboard" element={<Leaderboard />} />
 
           <Route path="*" Component={NotFound} />
         </Routes>
