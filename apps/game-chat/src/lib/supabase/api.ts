@@ -1,12 +1,18 @@
 import { getClient } from './client'
 
-type EdgeFunction = 'fund'
+// Allow any string for EdgeFunction for flexibility
+export type EdgeFunction = string
 
-type GetFundResult =
+export type GetFundResult =
   | { funded: false; rewardClaimed: boolean }
   | { funded: true; txDigest: string; rewardClaimed: boolean }
 
-export async function get(fn: EdgeFunction): Promise<GetFundResult> {
+export type DailyCheckinStatusResult = {
+  claimed: boolean
+  nextAvailable?: string
+}
+
+export async function get<T = any>(fn: EdgeFunction): Promise<T> {
   const res = await getClient().functions.invoke(fn, { method: 'GET' })
   if (res.error) {
     throw res.error
@@ -14,7 +20,7 @@ export async function get(fn: EdgeFunction): Promise<GetFundResult> {
   return res.data.result
 }
 
-export async function post(fn: EdgeFunction, body: Record<string, unknown>) {
+export async function post<T = any>(fn: EdgeFunction, body: Record<string, unknown>): Promise<T> {
   const res = await getClient().functions.invoke(fn, { method: 'POST', body })
   if (res.error) {
     throw res.error
