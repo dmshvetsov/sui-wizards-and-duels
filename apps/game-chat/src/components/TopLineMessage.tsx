@@ -19,6 +19,8 @@ export function PrimeTimeMessage() {
       Duelground gatherings, {timeInUtc[0].start}-{timeInUtc[0].end} and {timeInUtc[1].start}-
       {timeInUtc[1].end} ({Intl.DateTimeFormat().resolvedOptions().timeZone}){' '}
       prime-time matchmaking hours, always find players to duel with
+      <br/>
+      Check-in Daily during Duelground gatherings and get 10 Mint Essence
     </div>
   )
 }

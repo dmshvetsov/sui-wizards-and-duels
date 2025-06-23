@@ -4,6 +4,7 @@ import { useSuiClientContext, useDisconnectWallet, useSuiClientQuery } from '@my
 import { UserAccount } from './Authenticated'
 import { Button } from './ui/button'
 import { ClaimRewardButton } from '@/rewards/ClaimRewardButton'
+import { DailyCheckinButton } from '@/rewards/DailyCheckinButton'
 
 export function UserAccountMenu({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
@@ -30,6 +31,7 @@ export function UserAccountMenu({ userAccount }: { userAccount: UserAccount }) {
   return (
     <div className="fixed bottom-0 left-0 w-full flex gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-4 duration-580 px-12 py-8">
       <ClaimRewardButton />
+      <DailyCheckinButton />
       <div>
         <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">{suiClientContext.network}</span>
       </div>

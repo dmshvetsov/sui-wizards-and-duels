@@ -21,7 +21,6 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { DailyCheckinButton } from '@/rewards/DailyCheckinButton'
 
 const MUSIC = {
   duelground: new Howl({
@@ -271,9 +270,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex justify-center my-4">
-        <DailyCheckinButton />
-      </div>
       <PrimeTimeMessage />
       <div className="flex justify-center gap-8 items-center flex-1">
         <div className="w-[300px]" />

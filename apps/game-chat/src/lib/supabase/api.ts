@@ -1,7 +1,6 @@
 import { getClient } from './client'
 
-// Allow any string for EdgeFunction for flexibility
-export type EdgeFunction = string
+export type EdgeFunction = 'fund' | 'checkin'
 
 export type GetFundResult =
   | { funded: false; rewardClaimed: boolean }

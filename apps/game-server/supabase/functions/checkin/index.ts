@@ -27,6 +27,11 @@ Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response('OK', { headers: corsHeaders })
     }
+
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      return jsonResponse({ message: 'Method Not Allowed' }, 405)
+    }
+
     const auth = await ensureAuthenticatedUser(req)
     const { data: userAccount } = await supabase
       .from('user_accounts')
@@ -36,8 +41,10 @@ Deno.serve(async (req) => {
     if (!userAccount) {
       return jsonResponse({ message: 'User account not found' }, 404)
     }
+
     const sui_address = userAccount.sui_address
     const today = getTodayUTC()
+
     // Check if already claimed today
     const { data: alreadyClaimed } = await supabase
       .from('users_rewards')
@@ -46,20 +53,21 @@ Deno.serve(async (req) => {
       .eq('activity', 'daily_checkin')
       .eq('value', today)
       .maybeSingle()
+
     if (req.method === 'GET') {
       return jsonResponse({ claimed: !!alreadyClaimed, nextAvailable: today }, 200)
     }
-    if (req.method !== 'POST') {
-      return jsonResponse({ message: 'Method Not Allowed' }, 405)
-    }
+
     // POST: claim logic
+ 
     const now = new Date()
     if (!isWithinDuelgroundSlot(now)) {
-      return jsonResponse({ message: 'Not within Duelground slot' }, 403)
+      return jsonResponse({ message: 'Not within Duelground slot' }, 400)
     }
     if (alreadyClaimed) {
-      return jsonResponse({ message: 'Already claimed today' }, 409)
+      return jsonResponse({ message: 'Already claimed today' }, 400)
     }
+
     // Get current points
     const { data: pointsRow } = await supabase
       .from('reward_points')

@@ -1,25 +1,24 @@
-import { ButtonWithFx } from '@/components/ui/button'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import * as api from '@/lib/supabase/api'
+import { Button, ButtonWithFx } from '@/components/ui/button'
+import { AppError } from '@/lib/error'
 import type { DailyCheckinStatusResult } from '@/lib/supabase/api'
+import * as api from '@/lib/supabase/api'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { ClockAlert, SquareCheckBig } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 function isWithinDuelgroundSlot(date: Date) {
   const hour = date.getUTCHours()
   return (hour >= 11 && hour < 12) || (hour >= 20 && hour < 21)
 }
 
-function getTodayUtc() {
-  const now = new Date()
-  return now.toISOString().slice(0, 10)
-}
-
 export function DailyCheckinButton() {
-  // Query to check if already claimed today
+  const [_, setRerenderAt] = useState(Date.now())
+
   const checkinQuery = useQuery({
     queryKey: ['daily-checkin-status'],
     queryFn: async () => {
-      return api.get<DailyCheckinStatusResult>('rewards/checkins')
+      return api.get<DailyCheckinStatusResult>('checkin')
     },
     refetchOnWindowFocus: false,
     staleTime: 60 * 1000,
@@ -27,29 +26,60 @@ export function DailyCheckinButton() {
 
   const checkinMut = useMutation({
     mutationFn: async () => {
-      return api.post('rewards/checkins', {})
+      return api.post('checkin', {})
     },
     onSuccess: () => {
       toast.success('Daily check-in successful!')
       checkinQuery.refetch()
     },
-    onError: (err: any) => {
-      toast.error(err?.message || 'Check-in failed')
+    onError: (err: unknown) => {
+      const appErr = new AppError('DailyCheckinButton POST checkin', err)
+      appErr.log()
+      appErr.deriveUserMessage().then(toast.error)
     },
   })
 
   const now = new Date()
-  const isSlot = isWithinDuelgroundSlot(now)
   const isClaimed = checkinQuery.data?.claimed
   const isLoading = checkinQuery.isPending || checkinMut.isPending
 
+  if (!isWithinDuelgroundSlot(now)) {
+    return (
+      <Button
+        variant="secondary"
+        onClick={() => {
+          toast('10 Mint Essence check-in reward is available during Duelground gatherings')
+          setRerenderAt(Date.now())
+        }}
+      >
+        <ClockAlert />
+        Check-in (wait for the next Duelground gathering)
+      </Button>
+    )
+  }
+
+  if (isClaimed) {
+    return (
+      <Button
+        variant="secondary"
+        onClick={() =>
+          toast('Come back tomorrow during Duelground gatherings to get aditinal 10 Mint Essence')
+        }
+      >
+        <SquareCheckBig />
+        Checked in Today
+      </Button>
+    )
+  }
+
   return (
     <ButtonWithFx
-      disabled={!isSlot || isClaimed || isLoading}
+      disabled={isClaimed || isLoading}
       isLoading={isLoading}
       onClick={() => checkinMut.mutate()}
+      title="Check-in Daily during Duelground gatherings time for 10 Mint Essence reward"
     >
-      {isClaimed ? 'Checked in today' : 'Daily Check-in'}
+      Check-in
     </ButtonWithFx>
   )
-} 
+}
