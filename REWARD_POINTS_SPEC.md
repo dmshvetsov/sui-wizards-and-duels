@@ -53,9 +53,9 @@ implement all the logic for adding ESNC reward points to `user_account`.
 6. implement reward login for activities:
     1.  Signup, collect on the claim reward page
     2. Daily Check-in (during Duelground slot) 
-    3. Duel (win or lose)                      
-    4. First duel vs a new sui address bonus   
-    5. Duel during Duelground gathering time   
+    3. Duel (win or lose), use Duel ID as uniq identifier, must check that Duel object on-chain contains a wizard with sui_address of currently authenticated user
+    4. First duel vs a new sui address bonus, use Duel ID as uniq identifier, must check that Duel object on-chain contains a wizard with sui_address and opponent wizard address that havent been used for this bonus reward
+    5. Duel during Duelground gathering time
     6. Referral Bind - Invitee                 
     7. Referral Bind - Inviter                 
     8. Duel by referred invitee (per duel)     
