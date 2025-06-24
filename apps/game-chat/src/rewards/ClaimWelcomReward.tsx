@@ -1,4 +1,3 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserAccount } from '../components/Authenticated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import * as api from '@/lib/supabase/api'
@@ -8,6 +7,7 @@ import { Loader } from '@/components/Loader'
 import { useNavigate } from 'react-router-dom'
 import { treasuryAddress, welcomeReward } from '@/lib/config'
 import { mistToSui } from '@/lib/sui/coin'
+import { LootCard } from '@/components/LootCard'
 
 export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
@@ -74,20 +74,8 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
             <p>This reward will set you for the smooth start.</p>
           </div>
           <div className="flex flex-wrap gap-4 mt-4 mb-8">
-            {/* Mint Essence Reward Section */}
-            <Card className="w-[150px] h-auto">
-              <CardHeader>
-                <CardTitle>50 Mint Essence</CardTitle>
-                <CardDescription>Soulbound Signup Reward</CardDescription>
-              </CardHeader>
-            </Card>
-            {/* End Mint Essence Reward Section */}
-            <Card className="w-[150px] h-auto">
-              <CardHeader>
-                <CardTitle>{welcomeReward.sui} Sui</CardTitle>
-                <CardDescription>{suiClientContext.network} Sui tokens</CardDescription>
-              </CardHeader>
-            </Card>
+            <LootCard title="50 Mint Essence" description="Soulbound Signup Reward" />
+            <LootCard title={`${welcomeReward.sui} Sui`} description={`${suiClientContext.network} Sui tokens`} />
           </div>
           {isEnoughTreasuryBalance ? (
             <ButtonWithFx isLoading={claimMut.isPending} onClick={() => claimMut.mutate()}>
