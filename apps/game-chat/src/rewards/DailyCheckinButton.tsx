@@ -48,7 +48,7 @@ export function DailyCheckinButton() {
       <Button
         variant="secondary"
         onClick={() => {
-          toast('10 Mint Essence check-in reward is available during Duelground gatherings')
+          toast('You can get 10 Mint Essence when you check-in during Duelground gatherings')
           setRerenderAt(Date.now())
         }}
       >
@@ -63,7 +63,7 @@ export function DailyCheckinButton() {
       <Button
         variant="secondary"
         onClick={() =>
-          toast('Come back tomorrow during Duelground gatherings to get aditinal 10 Mint Essence')
+          toast('Come back tomorrow during Duelground gatherings to get additional 10 Mint Essence')
         }
       >
         <SquareCheckBig />
