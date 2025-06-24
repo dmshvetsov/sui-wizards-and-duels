@@ -237,6 +237,7 @@ export function Result(props: { userAccount: UserAccount }) {
               <br />• +10 ESNC if the duel was fought during a Duelground gathering slot{' '}
               {timeInLocal[0].start}-{timeInLocal[0].end} or {timeInLocal[1].start}-
               {timeInLocal[1].end} ({Intl.DateTimeFormat().resolvedOptions().timeZone} time)
+              <br />• you can earn as many ESNC without limits but can 5000 ESNC max is redeemable
             </p>
           </>
         ) : (

@@ -74,9 +74,9 @@ ESNC points are non-transferable
 
 Referral is one-time + static (per sui address)
 
-Wallet (sui address or user) cap: 5,000 ESNC points, more than that can not be given to a single player
+Wallet (sui address or user) can use/redeem 5,000 ESNC points max, more than that can be given but only for score/leaderboard purpose, each wallet can only spend 5,000 ESNC max
 
-Mint cap: 10 NFTs
+Mint cap per wallet : 10 NFTs (500 ESNC * 10 NFTs = 5000 ESNC spend limit)
 
 ### 📥 Reward System
 

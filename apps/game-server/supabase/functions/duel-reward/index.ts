@@ -19,7 +19,7 @@ const DUELGROUND_SLOTS = [
 
 function isWithinDuelgroundSlot(date: Date) {
   const hour = date.getUTCHours()
-  return DUELGROUND_SLOTS.some(slot => hour >= slot.start && hour < slot.end)
+  return DUELGROUND_SLOTS.some((slot) => hour >= slot.start && hour < slot.end)
 }
 
 Deno.serve(async (req) => {
@@ -27,6 +27,9 @@ Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response('OK', { headers: corsHeaders })
     }
+
+    // GET check available duel rewards
+
     if (req.method === 'GET') {
       // Extract duelId from URL path /duel-reward/:duelId
       const pathnameParts = new URL(req.url).pathname.split('/').filter(Boolean)
@@ -67,7 +70,10 @@ Deno.serve(async (req) => {
 
       // Ensure user participates in this duel
       if (userAccount.sui_address !== wizard1 && userAccount.sui_address !== wizard2) {
-        return jsonResponse({ availableReward: 0, message: 'User not a participant in this duel' }, 200)
+        return jsonResponse(
+          { availableReward: 0, message: 'User not a participant in this duel' },
+          200
+        )
       }
 
       let availableReward = 0
@@ -115,6 +121,8 @@ Deno.serve(async (req) => {
       return jsonResponse({ availableReward, message: 'OK' }, 200)
     }
 
+    // POST claim rewards
+
     if (req.method !== 'POST') {
       return jsonResponse({ message: 'Method Not Allowed' }, 405)
     }
@@ -140,7 +148,11 @@ Deno.serve(async (req) => {
       id: duelId,
       options: { showContent: true },
     })
-    if (duelFetchErr || !duelFetchResponse?.content || duelFetchResponse.content.dataType !== 'moveObject') {
+    if (
+      duelFetchErr ||
+      !duelFetchResponse?.content ||
+      duelFetchResponse.content.dataType !== 'moveObject'
+    ) {
       return jsonResponse({ message: 'duel not found' }, 400)
     }
 
@@ -174,8 +186,6 @@ Deno.serve(async (req) => {
 
     // 2. First duel vs new address bonus (+10 ESNC, one-time per pair)
     const opponent = userAccount.sui_address === wizard1 ? wizard2 : wizard1
-    // FIXME: do we need to use current userAccount sui address in pair?
-    // const pairKey = [(userAccount.sui_address), opponent].sort().join(':')
     const { data: alreadyPaired } = await supabase
       .from('users_rewards')
       .select('id')
@@ -212,7 +222,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Cap at 5000 ESNC
     const { data: pointsRow } = await supabase
       .from('reward_points')
       .select('points')
@@ -220,7 +229,7 @@ Deno.serve(async (req) => {
       .maybeSingle()
     let newPoints = totalReward
     if (pointsRow && typeof pointsRow.points === 'number') {
-      newPoints = Math.min(pointsRow.points + totalReward, 5000)
+      newPoints = pointsRow.points + totalReward
     }
     await supabase.from('reward_points').upsert(
       {
@@ -230,7 +239,14 @@ Deno.serve(async (req) => {
       { onConflict: ['sui_address'] }
     )
 
-    return jsonResponse({ message: `${totalReward} duel rewards granted, ${newPoints} total points`, points: newPoints, totalReward }, 200)
+    return jsonResponse(
+      {
+        message: `${totalReward} duel rewards granted, ${newPoints} total points`,
+        points: newPoints,
+        totalReward,
+      },
+      200
+    )
   } catch (err) {
     if (err instanceof Error) {
       if (err.message.toLowerCase() === 'unauthenticated') {
@@ -263,4 +279,5 @@ async function ensureAuthenticatedUser(req: Request) {
     throw new Error('unauthorized')
   }
   return auth
-} 
+}
+
