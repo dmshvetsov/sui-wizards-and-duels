@@ -4,7 +4,6 @@ import { AuthenticatedPage, WithUserAccount } from './components/Authenticated'
 import { DesktopOnly } from './components/DesctopOnly'
 import { NotFound } from './components/NotFound'
 import { DuelLayout } from './duel/Duel'
-import { Landing } from './landing/Landing'
 import { PracticeDuel } from './practice-duel/PracticeDuel'
 import { WaitRoom } from './waitroom/Waitroom'
 import { ClaimWelcomeReward } from './rewards/ClaimWelcomReward'
@@ -15,10 +14,10 @@ const TOAST_OPTIONS = {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className="app-container w-screen h-screen">
         <Routes>
-          <Route index Component={Landing} />
+          <Route index Component={PracticeDuel} />
 
           <Route Component={DesktopOnly}>
             <Route path="/practice" Component={PracticeDuel} />
