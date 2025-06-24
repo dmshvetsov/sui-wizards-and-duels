@@ -1,6 +1,6 @@
 import { getClient } from './client'
 
-export type EdgeFunction = 'fund' | 'checkin'
+export type EdgeFunction = 'fund' | 'checkin' | 'duel-reward'
 
 export type GetFundResult =
   | { funded: false; rewardClaimed: boolean }

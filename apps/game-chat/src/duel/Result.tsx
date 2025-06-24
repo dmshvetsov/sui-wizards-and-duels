@@ -9,8 +9,12 @@ import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
 import { useCallback, useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import * as api from '@/lib/supabase/api'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { LootCard } from '@/components/LootCard'
+import { timeInLocal } from '@/lib/rewards'
 
 export function Result(props: { userAccount: UserAccount }) {
   const { duel, duelistCap, refetchDuelistCap, winner, loser } = useDuel()
@@ -19,8 +23,12 @@ export function Result(props: { userAccount: UserAccount }) {
   const { mutate: signAndExecute, isPending: isTxInProgress } = useSignAndExecuteTransaction({
     execute: executeWith(client, { showRawEffects: true, showObjectChanges: true }),
   })
+  const duelRewardPointsMut = useMutation({
+    mutationKey: ['duel-reward', duel?.id],
+    mutationFn: (duelId: string) =>
+      api.post<{ totalReward: number; points: number; message: string }>('duel-reward', { duelId }),
+  })
 
-  // Calculate prize information early so it's available in callbacks
   const prizePool = duel ? mistToSui(duel.prize_pool || '0') : 0
   const isCurrentUserWinner = props.userAccount.id === winner
   const isCurrentUserLoser = props.userAccount.id === loser
@@ -32,6 +40,17 @@ export function Result(props: { userAccount: UserAccount }) {
       new AppError('handleEndDuel', new Error('duel or duelistCap is null')).log()
       return
     }
+
+    duelRewardPointsMut.mutate(duel.id, {
+      onSuccess(data) {
+        toast.success(data.message)
+      },
+      onError(err) {
+        const appErr = new AppError('Result POST duel-reward', err)
+        appErr.log()
+        appErr.deriveUserMessage().then(toast.error)
+      },
+    })
 
     const tx = new Transaction()
     tx.moveCall({
@@ -64,7 +83,15 @@ export function Result(props: { userAccount: UserAccount }) {
         },
       }
     )
-  }, [duel, duelistCap, refetchDuelistCap, signAndExecute, isCurrentUserWinner, prizePool])
+  }, [
+    duel,
+    duelistCap,
+    refetchDuelistCap,
+    signAndExecute,
+    isCurrentUserWinner,
+    prizePool,
+    duelRewardPointsMut,
+  ])
 
   const handleNavigateToDuelgound = useCallback(() => {
     navigate('/d')
@@ -89,7 +116,7 @@ export function Result(props: { userAccount: UserAccount }) {
 
       {winner ? (
         <div className="w-full mb-8">
-          <div className="w-full flex items-center mb-6">
+          <div className="w-full flex items-center mb-12">
             <div className="flex flex-col items-center w-1/3">
               <div
                 className={`w-16 h-16 ${wizard1 === winner ? 'bg-yellow-300' : 'bg-gray-100'} rounded-full flex items-center justify-center mb-2`}
@@ -127,21 +154,28 @@ export function Result(props: { userAccount: UserAccount }) {
             </div>
           </div>
 
-          {/* Prize Information */}
-          {prizePool > 0 && (
-            <h3 className="text-lg font-semibold mt-8 text-center">Prize Pool {prizePool} Sui</h3>
-          )}
+          <div className="flex flex-wrap justify-center items-center gap-4">
+            {isCurrentUserWinner && prizePool > 0 && (
+              <LootCard title={`${prizePool} Sui`} description="Prize pool of the duel" />
+            )}
+            {isCurrentUserLoser && prizePool > 0 && (
+              <LootCard title={`-${prizePool / 2} Sui`} description="You have lost your bet" />
+            )}
+            <LootCard title="10-30 ESNC" description="Mint Essence reward" />
+          </div>
 
-          <div className="text-center mb-6">
+          <div className="text-center my-6">
             {isCurrentUserWinner ? (
               <div>
                 <p className="mb-2">
-                  Congratulations! You have won the duel and gained magical force!
+                  Congratulations! You have won the duel and gained magical Sui force and earned
+                  Mint Essence reward!
                 </p>
               </div>
             ) : isCurrentUserLoser ? (
               <div>
-                <p className="mb-2">You have been defeated. Train harder for the next duel.</p>
+                <p className="mb-2">You have been defeated but earned Mint Essence reward! Keep pushing fight for future prizes and guranteed rewards!
+                </p>
               </div>
             ) : (
               <p className="text-gray-600">
@@ -157,16 +191,30 @@ export function Result(props: { userAccount: UserAccount }) {
       )}
 
       {duelistCap != null ? (
-        <ButtonWithFx onClick={handleEndDuel} disabled={isTxInProgress || duelistCap != null && isEndTxSent} isLoading={isTxInProgress || duelistCap != null && isEndTxSent}>
+        <ButtonWithFx
+          onClick={handleEndDuel}
+          disabled={isTxInProgress || (duelistCap != null && isEndTxSent)}
+          isLoading={isTxInProgress || (duelistCap != null && isEndTxSent)}
+        >
           {isCurrentUserWinner
             ? prizePool > 0
-              ? `Claim ${prizePool} Sui Prize`
-              : 'Claim Victory'
+              ? `Claim Prize and Mint Essence Reward`
+              : 'Claim Mint Essence Reward'
             : 'End Duel'}
         </ButtonWithFx>
       ) : (
         <Button onClick={handleNavigateToDuelgound}>Back to Duelground</Button>
       )}
+
+      {/* Reward Explanation */}
+      <p className="text-sm text-muted-foreground my-6">
+        Ending the duel will grant Mint Essence (ESNC) points:
+        <br />• 10 ESNC for participating in the duel
+        <br />• +10 ESNC if this is your first duel versus this opponent
+        <br />• +10 ESNC if the duel was fought during a Duelground gathering slot{' '}
+        {timeInLocal[0].start}-{timeInLocal[0].end} or {timeInLocal[1].start}-{timeInLocal[1].end} (
+        {Intl.DateTimeFormat().resolvedOptions().timeZone} time)
+      </p>
     </div>
   )
 }
