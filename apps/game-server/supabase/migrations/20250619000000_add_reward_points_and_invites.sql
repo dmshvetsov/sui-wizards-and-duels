@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- 1. reward_points table
 CREATE TABLE IF NOT EXISTS public.reward_points (
   sui_address TEXT PRIMARY KEY CHECK (sui_address ~ '^0x[a-fA-F0-9]{64}$'),
