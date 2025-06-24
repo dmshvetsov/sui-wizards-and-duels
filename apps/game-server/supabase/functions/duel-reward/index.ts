@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       options: { showContent: true },
     })
     if (duelFetchErr || !duelFetchResponse?.content || duelFetchResponse.content.dataType !== 'moveObject') {
-      return jsonResponse({ message: 'Duel not found on chain' }, 400)
+      return jsonResponse({ message: 'duel not found' }, 400)
     }
 
     const duel = duelFetchResponse.content.fields as any
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
       { onConflict: ['sui_address'] }
     )
 
-    return jsonResponse({ message: 'Duel rewards granted', points: newPoints, totalReward }, 200)
+    return jsonResponse({ message: `${totalReward} duel rewards granted, ${newPoints} total points`, points: newPoints, totalReward }, 200)
   } catch (err) {
     if (err instanceof Error) {
       if (err.message.toLowerCase() === 'unauthenticated') {
