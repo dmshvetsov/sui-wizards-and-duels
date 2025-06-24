@@ -6,6 +6,7 @@ import { Button } from './ui/button'
 import { ClaimRewardButton } from '@/rewards/ClaimRewardButton'
 import { DailyCheckinButton } from '@/rewards/DailyCheckinButton'
 import { Link } from 'react-router-dom'
+import { List, LogOut } from 'lucide-react'
 
 export function UserAccountMenu({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
@@ -28,17 +29,19 @@ export function UserAccountMenu({ userAccount }: { userAccount: UserAccount }) {
 
   return (
     <div className="fixed bottom-0 left-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-580 px-12 py-8">
-      <div className='flex gap-4 justify-center mb-6'>
+      <div className="flex gap-4 justify-center mb-6">
         <ClaimRewardButton />
         <DailyCheckinButton />
         <Button variant="secondary">
+          <List />
           <Link to="/leaderboard">Mint Essence Leaderboard</Link>
         </Button>
         <Button variant="secondary" onClick={handleSignOut}>
+          <LogOut />
           Sign Out
         </Button>
       </div>
-      <div className='flex gap-4 justify-center'>
+      <div className="flex gap-4 justify-center">
         <div>
           <span className="bg-gray-100 p-2 rounded-lg text-sm font-mono text-gray-500 ">
             {suiClientContext.network}
