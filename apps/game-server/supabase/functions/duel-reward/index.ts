@@ -27,6 +27,94 @@ Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response('OK', { headers: corsHeaders })
     }
+    if (req.method === 'GET') {
+      // Extract duelId from URL path /duel-reward/:duelId
+      const pathnameParts = new URL(req.url).pathname.split('/').filter(Boolean)
+      const duelId = pathnameParts[pathnameParts.length - 1]
+      if (!duelId || duelId === 'duel-reward') {
+        return jsonResponse({ message: 'Missing duelId in path' }, 400)
+      }
+
+      // Authenticate the caller – same as POST flow
+      const auth = await ensureAuthenticatedUser(req)
+
+      // Get user's SUI address
+      const { data: userAccount } = await supabase
+        .from('user_accounts')
+        .select('sui_address')
+        .eq('user_id', auth.user.id)
+        .single()
+      if (!userAccount) {
+        return jsonResponse({ message: 'Unauthorized' }, 403)
+      }
+
+      // Fetch duel from chain to validate participation and gather metadata
+      const { data: duelFetchResponse, error: duelFetchErr } = await suiClient.getObject({
+        id: duelId,
+        options: { showContent: true },
+      })
+      if (
+        duelFetchErr ||
+        !duelFetchResponse?.content ||
+        duelFetchResponse.content.dataType !== 'moveObject'
+      ) {
+        return jsonResponse({ message: 'duel not found' }, 400)
+      }
+      const duel = duelFetchResponse.content.fields as any
+      const wizard1 = duel.wizard1
+      const wizard2 = duel.wizard2
+      const started_at = Number(duel.started_at)
+
+      // Ensure user participates in this duel
+      if (userAccount.sui_address !== wizard1 && userAccount.sui_address !== wizard2) {
+        return jsonResponse({ availableReward: 0, message: 'User not a participant in this duel' }, 200)
+      }
+
+      let availableReward = 0
+
+      // 1. Participation reward
+      const { data: alreadyRewarded } = await supabase
+        .from('users_rewards')
+        .select('id')
+        .eq('sui_address', userAccount.sui_address)
+        .eq('activity', 'duel-participation')
+        .eq('value', duelId)
+        .maybeSingle()
+      if (!alreadyRewarded) {
+        availableReward += 10
+      }
+
+      // 2. First duel vs new opponent bonus
+      const opponent = userAccount.sui_address === wizard1 ? wizard2 : wizard1
+      const { data: alreadyPaired } = await supabase
+        .from('users_rewards')
+        .select('id')
+        .eq('sui_address', userAccount.sui_address)
+        .eq('activity', 'duel-against-new-opponent')
+        .eq('value', opponent)
+        .maybeSingle()
+      if (!alreadyPaired) {
+        availableReward += 10
+      }
+
+      // 3. Duel during Duelground gathering time bonus
+      const duelDate = new Date(started_at)
+      if (isWithinDuelgroundSlot(duelDate)) {
+        const { data: alreadySlotReward } = await supabase
+          .from('users_rewards')
+          .select('id')
+          .eq('sui_address', userAccount.sui_address)
+          .eq('activity', 'duel-during-duelground-gathering')
+          .eq('value', duelId)
+          .maybeSingle()
+        if (!alreadySlotReward) {
+          availableReward += 10
+        }
+      }
+
+      return jsonResponse({ availableReward, message: 'OK' }, 200)
+    }
+
     if (req.method !== 'POST') {
       return jsonResponse({ message: 'Method Not Allowed' }, 405)
     }
@@ -92,14 +180,14 @@ Deno.serve(async (req) => {
       .from('users_rewards')
       .select('id')
       .eq('sui_address', userAccount.sui_address)
-      .eq('activity', 'duel_against_new_opponent')
+      .eq('activity', 'duel-against-new-opponent')
       .eq('value', opponent)
       .maybeSingle()
     if (!alreadyPaired) {
       totalReward += 10
       await supabase.from('users_rewards').insert({
         sui_address: userAccount.sui_address,
-        activity: 'duel_against_new_opponent',
+        activity: 'duel-against-new-opponent',
         value: opponent,
       })
     }
@@ -111,14 +199,14 @@ Deno.serve(async (req) => {
         .from('users_rewards')
         .select('id')
         .eq('sui_address', userAccount.sui_address)
-        .eq('activity', 'duel_during_duelground_gathering')
+        .eq('activity', 'duel-during-duelground-gathering')
         .eq('value', duelId)
         .maybeSingle()
       if (!alreadySlotReward) {
         totalReward += 10
         await supabase.from('users_rewards').insert({
           sui_address: userAccount.sui_address,
-          activity: 'duel_during_duelground_gathering',
+          activity: 'duel-during-duelground-gathering',
           value: duelId,
         })
       }

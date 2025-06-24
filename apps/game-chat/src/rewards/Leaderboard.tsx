@@ -3,6 +3,7 @@ import { getClient } from '../lib/supabase/client'
 import { Loader } from '../components/Loader'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
+import { ArrowLeftFromLine } from 'lucide-react'
 
 interface LeaderboardEntry {
   sui_address: string
@@ -40,8 +41,7 @@ export function Leaderboard() {
   }, [])
 
   return (
-    <div className="flex gap-8 items-start justify-center min-h-screen py-12 px-4">
-      <div className="w-[225px]"></div>
+    <div className="flex gap-8 items-start justify-center min-h-screen py-12 px-4 pb-24">
       <div className="bg-white min-h-48 rounded-lg shadow-lg p-8 w-full max-w-2xl">
         <h1 className="text-3xl font-bold mb-6 text-center">Mint Essence Leaderboard</h1>
         <p className="mb-8 text-center text-gray-600">Top 50 ESNC holders</p>
@@ -65,16 +65,21 @@ export function Leaderboard() {
                   <td className="py-2 px-3 font-mono">
                     {entry.sui_address === '' ? 'you' : shortenAddress(entry.sui_address)}
                   </td>
-                  <td className="py-2 px-3 text-right font-bold">{entry.points}</td>
-                </tr>
-              ))}
+                    <td className="py-2 px-3 text-right font-bold">{entry.points}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         )}
       </div>
-      <Button variant="secondary">
-        <Link to="/d">Back to Duelground</Link>
-      </Button>
+      <div className="fixed bottom-0 left-0 w-full text-center py-8">
+        <div className="py-4 px-2 bg-white w-[400px] mx-auto rounded-lg">
+          <Button variant="secondary">
+            <ArrowLeftFromLine />
+            <Link to="/d">Back to Duelground</Link>
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

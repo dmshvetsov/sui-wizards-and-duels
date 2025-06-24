@@ -19,6 +19,14 @@ export async function get<T = any>(fn: EdgeFunction): Promise<T> {
   return res.data.result
 }
 
+export async function getAvailableReward(duelId: string): Promise<{ availableReward: number }> {
+  const res = await getClient().functions.invoke(`/duel-reward/${duelId}`, { method: 'GET' })
+  if (res.error) {
+    throw res.error
+  }
+  return res.data.result as { availableReward: number }
+}
+
 export async function post<T = any>(fn: EdgeFunction, body: Record<string, unknown>): Promise<T> {
   const res = await getClient().functions.invoke(fn, { method: 'POST', body })
   if (res.error) {
