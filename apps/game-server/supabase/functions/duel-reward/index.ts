@@ -166,84 +166,26 @@ Deno.serve(async (req) => {
       return jsonResponse({ message: 'User not a participant in this duel' }, 403)
     }
 
-    // 1. Participation reward (10 ESNC, win or lose)
-    const { data: alreadyRewarded } = await supabase
-      .from('users_rewards')
-      .select('id')
-      .eq('sui_address', userAccount.sui_address)
-      .eq('activity', 'duel-participation')
-      .eq('value', duelId)
-      .maybeSingle()
-    let totalReward = 0
-    if (!alreadyRewarded) {
-      totalReward += 10
-      await supabase.from('users_rewards').insert({
-        sui_address: userAccount.sui_address,
-        activity: 'duel-participation',
-        value: duelId,
-      })
-    }
-
-    // 2. First duel vs new address bonus (+10 ESNC, one-time per pair)
     const opponent = userAccount.sui_address === wizard1 ? wizard2 : wizard1
-    const { data: alreadyPaired } = await supabase
-      .from('users_rewards')
-      .select('id')
-      .eq('sui_address', userAccount.sui_address)
-      .eq('activity', 'duel-against-new-opponent')
-      .eq('value', opponent)
-      .maybeSingle()
-    if (!alreadyPaired) {
-      totalReward += 10
-      await supabase.from('users_rewards').insert({
-        sui_address: userAccount.sui_address,
-        activity: 'duel-against-new-opponent',
-        value: opponent,
-      })
-    }
+    const duringSlot = isWithinDuelgroundSlot(new Date(started_at))
 
-    // 3. Duel during Duelground gathering time (+10 ESNC)
-    const duelDate = new Date(started_at)
-    if (isWithinDuelgroundSlot(duelDate)) {
-      const { data: alreadySlotReward } = await supabase
-        .from('users_rewards')
-        .select('id')
-        .eq('sui_address', userAccount.sui_address)
-        .eq('activity', 'duel-during-duelground-gathering')
-        .eq('value', duelId)
-        .maybeSingle()
-      if (!alreadySlotReward) {
-        totalReward += 10
-        await supabase.from('users_rewards').insert({
-          sui_address: userAccount.sui_address,
-          activity: 'duel-during-duelground-gathering',
-          value: duelId,
-        })
-      }
-    }
+    const { data: claimData, error: claimErr } = await supabase.rpc('claim_duel_reward', {
+      p_sui_address: userAccount.sui_address,
+      p_duel_id: duelId,
+      p_opponent: opponent,
+      p_during_slot: duringSlot,
+    })
 
-    const { data: pointsRow } = await supabase
-      .from('reward_points')
-      .select('points')
-      .eq('sui_address', userAccount.sui_address)
-      .maybeSingle()
-    let newPoints = totalReward
-    if (pointsRow && typeof pointsRow.points === 'number') {
-      newPoints = pointsRow.points + totalReward
+    if (claimErr) {
+      console.error('claim_duel_reward error', claimErr)
+      return jsonResponse({ message: 'Failed to claim duel reward' }, 500)
     }
-    await supabase.from('reward_points').upsert(
-      {
-        sui_address: userAccount.sui_address,
-        points: newPoints,
-      },
-      { onConflict: ['sui_address'] }
-    )
 
     return jsonResponse(
       {
-        message: `${totalReward} duel rewards granted, ${newPoints} total points`,
-        points: newPoints,
-        totalReward,
+        message: `${claimData?.total_reward ?? 0} duel rewards granted, ${claimData?.new_points ?? 0} total points`,
+        points: claimData?.new_points ?? 0,
+        totalReward: claimData?.total_reward ?? 0,
       },
       200
     )

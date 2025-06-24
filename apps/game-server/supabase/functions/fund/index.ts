@@ -207,30 +207,12 @@ function jsonResponse(result: Record<string | number, unknown>, status: number) 
 }
 
 async function handleSignupReward(address: string) {
-  // Check if signup reward already claimed
-  const { data: signupReward } = await supabase
-    .from('users_rewards')
-    .select('id')
-    .eq('sui_address', address)
-    .eq('activity', 'signup')
-    .maybeSingle()
-
-  if (!signupReward) {
-    // Grant 50 ESNC points for signup
-    // Upsert into reward_points
-    await supabase.from('reward_points').upsert(
-      {
-        sui_address: address,
-        points: 50,
-      },
-      { onConflict: ['sui_address'] }
-    )
-    // Log the activity
-    await supabase.from('users_rewards').insert({
-      sui_address: address,
-      activity: 'signup',
-      value: null,
-    })
+  // Atomic signup reward claim via Postgres function
+  const { error } = await supabase.rpc('claim_signup_reward', {
+    p_sui_address: address,
+  })
+  if (error) {
+    console.error('claim_signup_reward error', error)
   }
 }
 
