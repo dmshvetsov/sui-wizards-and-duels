@@ -74,7 +74,7 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
             <p>This reward will set you for the smooth start.</p>
           </div>
           <div className="flex flex-wrap gap-4 mt-4 mb-8">
-            <LootCard title="50 Mint Essence" description="Soulbound Signup Reward" />
+            <LootCard title={`${welcomeReward.esnc} Mint Essence`} description="Soulbound Signup Reward" />
             <LootCard title={`${welcomeReward.sui} Sui`} description={`${suiClientContext.network} Sui tokens`} />
           </div>
           {isEnoughTreasuryBalance ? (
