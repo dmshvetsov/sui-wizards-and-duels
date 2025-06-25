@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
       p_duel_id: duelId,
       p_opponent: opponent,
       p_during_slot: duringSlot,
-    })
+    }).single()
 
     if (claimErr) {
       console.error('claim_duel_reward error', claimErr)
@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse(
       {
-        message: `${claimData?.total_reward ?? 0} duel rewards granted, ${claimData?.new_points ?? 0} total points`,
+        message: `${claimData?.total_reward ?? 0} ESNC duel rewards granted, you now have ${claimData?.new_points ?? 0} total points`,
         points: claimData?.new_points ?? 0,
         totalReward: claimData?.total_reward ?? 0,
       },
