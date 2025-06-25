@@ -32,7 +32,6 @@ export class AppError {
       if (this.originalErr.context.headers.get('content-type') === 'application/json') {
         try {
           const body = await this.originalErr.context.json()
-          console.debug('b', body)
           return body?.result?.message || DEFAULT_USER_MESSAGE
         } catch {
           return DEFAULT_USER_MESSAGE
