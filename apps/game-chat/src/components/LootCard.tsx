@@ -12,7 +12,7 @@ export function LootCard(props: LootCardProps) {
   return (
     <Card className="w-[150px] h-auto text-center">
       <CardHeader>
-        <CardTitle>props.title</CardTitle>
+        <CardTitle>{props.title}</CardTitle>
         <CardDescription>{props.description}</CardDescription>
       </CardHeader>
     </Card>
