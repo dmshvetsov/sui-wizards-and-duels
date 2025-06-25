@@ -33,7 +33,7 @@ BEGIN
     v_existing_points := 0;
   END IF;
 
-  new_points := v_existing_points + 10
+  new_points := v_existing_points + 10;
 
   -- Upsert new balance ---------------------------------------------------------
   INSERT INTO reward_points (sui_address, points)
