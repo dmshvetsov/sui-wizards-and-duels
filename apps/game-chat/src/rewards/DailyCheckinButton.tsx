@@ -13,7 +13,7 @@ function isWithinDuelgroundSlot(date: Date) {
 }
 
 export function DailyCheckinButton() {
-  const [_, setRerenderAt] = useState(Date.now())
+  const [, setRerenderAt] = useState(Date.now())
 
   const checkinQuery = useQuery({
     queryKey: ['daily-checkin-status'],
@@ -29,7 +29,7 @@ export function DailyCheckinButton() {
       return api.post('checkin', {})
     },
     onSuccess: () => {
-      toast.success('Daily check-in successful!')
+      toast.success('Daily check-in successful! +10 Mint Essence')
       checkinQuery.refetch()
     },
     onError: (err: unknown) => {
