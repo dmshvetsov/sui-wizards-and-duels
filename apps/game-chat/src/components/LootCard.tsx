@@ -45,7 +45,6 @@ export function LootCardCountable(props: LootCardCountableProps) {
     return () => controls.stop()
   }, [animatedValue, props.number])
 
-  console.log(displayedNumber.get(), props.number)
   return (
     <Card className="w-[150px] h-auto text-center">
       <CardHeader>
