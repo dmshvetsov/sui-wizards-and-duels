@@ -14,7 +14,7 @@ const DUELGROUND_SLOTS = [
 
 function isWithinDuelgroundSlot(date: Date) {
   const hour = date.getUTCHours()
-  return DUELGROUND_SLOTS.some(slot => hour >= slot.start && hour < slot.end)
+  return DUELGROUND_SLOTS.some((slot) => hour >= slot.start && hour < slot.end)
 }
 
 function getTodayUTC() {
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     }
 
     // POST: claim logic
- 
+
     const now = new Date()
     if (!isWithinDuelgroundSlot(now)) {
       return jsonResponse({ message: 'Not within Duelground slot' }, 400)
@@ -92,7 +92,13 @@ Deno.serve(async (req) => {
       activity: 'daily_checkin',
       value: today,
     })
-    return jsonResponse({ message: 'Daily check-in successful', points: newPoints }, 200)
+    return jsonResponse(
+      {
+        message: `Daily check-in successful. Now you have ${newPoints} Mint Essence`,
+        points: newPoints,
+      },
+      200
+    )
   } catch (err) {
     if (err instanceof Error) {
       if (err.message.toLowerCase() === 'unauthenticated') {
@@ -125,4 +131,4 @@ async function ensureAuthenticatedUser(req: Request) {
     throw new Error('unauthorized')
   }
   return auth
-} 
+}
