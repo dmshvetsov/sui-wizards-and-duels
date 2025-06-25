@@ -26,10 +26,10 @@ export function DailyCheckinButton() {
 
   const checkinMut = useMutation({
     mutationFn: async () => {
-      return api.post('checkin', {})
+      return api.post<{ message: string }>('checkin', {})
     },
-    onSuccess: () => {
-      toast.success('Daily check-in successful! +10 Mint Essence')
+    onSuccess: (res) => {
+      toast.success(res.message)
       checkinQuery.refetch()
     },
     onError: (err: unknown) => {

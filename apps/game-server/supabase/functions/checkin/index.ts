@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       .from('users_rewards')
       .select('id')
       .eq('sui_address', sui_address)
-      .eq('activity', 'daily_checkin')
+      .eq('activity', 'daily-checkin')
       .eq('value', today)
       .maybeSingle()
 
@@ -64,38 +64,26 @@ Deno.serve(async (req) => {
     if (!isWithinDuelgroundSlot(now)) {
       return jsonResponse({ message: 'Not within Duelground slot' }, 400)
     }
-    if (alreadyClaimed) {
-      return jsonResponse({ message: 'Already claimed today' }, 400)
+    const { data: claimData, error: claimErr } = await supabase
+      .rpc('claim_daily_checkin', {
+        p_sui_address: sui_address,
+        p_today: today,
+      })
+      .single()
+
+    if (claimErr) {
+      console.error('claim_daily_checkin error', claimErr)
+      // If the function indicates user has already checked in today
+      if (claimErr.message?.toLowerCase().includes('already')) {
+        return jsonResponse({ message: 'Already checked in today' }, 400)
+      }
+      return jsonResponse({ message: 'Failed to claim daily check-in' }, 500)
     }
 
-    // Get current points
-    const { data: pointsRow } = await supabase
-      .from('reward_points')
-      .select('points')
-      .eq('sui_address', sui_address)
-      .maybeSingle()
-    let newPoints = 10
-    if (pointsRow && typeof pointsRow.points === 'number') {
-      newPoints = Math.min(pointsRow.points + 10, 5000)
-    }
-    // Upsert points
-    await supabase.from('reward_points').upsert(
-      {
-        sui_address,
-        points: newPoints,
-      },
-      { onConflict: ['sui_address'] }
-    )
-    // Log the activity
-    await supabase.from('users_rewards').insert({
-      sui_address,
-      activity: 'daily_checkin',
-      value: today,
-    })
     return jsonResponse(
       {
-        message: `Daily check-in successful. Now you have ${newPoints} Mint Essence`,
-        points: newPoints,
+        message: `Daily check-in successful +10 Mint Essence. Now you have ${claimData?.new_points ?? 0} Mint Essence`,
+        points: claimData?.new_points ?? 0,
       },
       200
     )
