@@ -1,3 +1,7 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
+
+const DEFAULT_USER_MESSAGE = 'Something went wrong, try again or ask help in Wizards and Duels telegram'
+
 /**
  * a class to wrap errors to have a common interface to display to the user and handle errors int the app
  */
@@ -21,6 +25,20 @@ export class AppError {
     if (this.originalErr) {
       console.debug(`[${this.ctx}] | ${this.originalErr}`)
     }
+  }
+
+  async deriveUserMessage(): Promise<string> {
+    if (this.originalErr instanceof FunctionsHttpError) {
+      if (this.originalErr.context.headers.get('content-type') === 'application/json') {
+        try {
+          const body = await this.originalErr.context.json()
+          return body?.result?.message || DEFAULT_USER_MESSAGE
+        } catch {
+          return DEFAULT_USER_MESSAGE
+        }
+      }
+    }
+    return DEFAULT_USER_MESSAGE
   }
 }
 

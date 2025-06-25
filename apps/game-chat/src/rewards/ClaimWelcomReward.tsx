@@ -1,4 +1,3 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserAccount } from '../components/Authenticated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import * as api from '@/lib/supabase/api'
@@ -8,6 +7,7 @@ import { Loader } from '@/components/Loader'
 import { useNavigate } from 'react-router-dom'
 import { treasuryAddress, welcomeReward } from '@/lib/config'
 import { mistToSui } from '@/lib/sui/coin'
+import { LootCard } from '@/components/LootCard'
 
 export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }) {
   const suiClientContext = useSuiClientContext()
@@ -73,23 +73,21 @@ export function ClaimWelcomeReward({ userAccount }: { userAccount: UserAccount }
             <p>We welcome you in Wizards and Duels game.</p>
             <p>This reward will set you for the smooth start.</p>
           </div>
-          <Card className="w-[150px] h-auto mt-4 mb-8">
-            <CardHeader>
-              <CardTitle>{suiClientContext.network} Sui tokens</CardTitle>
-              <CardDescription>{welcomeReward.sui} Sui</CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="flex flex-wrap gap-4 mt-4 mb-8">
+            <LootCard title={`${welcomeReward.esnc} Mint Essence`} description="Soulbound Signup Reward" />
+            <LootCard title={`${welcomeReward.sui} Sui`} description={`${suiClientContext.network} Sui tokens`} />
+          </div>
           {isEnoughTreasuryBalance ? (
             <ButtonWithFx isLoading={claimMut.isPending} onClick={() => claimMut.mutate()}>
               Claim
             </ButtonWithFx>
           ) : (
-          <>
-            <p className="mb-4 text-yellow-600">
-              Game Treasury is empty at this moment please come back later to claim your reward.
-            </p>
-            <Button onClick={() => navigate('/d')}>Back to Duelground</Button>
-          </>
+            <>
+              <p className="mb-4 text-yellow-600">
+                Game Treasury is empty at this moment please come back later to claim your reward.
+              </p>
+              <Button onClick={() => navigate('/d')}>Back to Duelground</Button>
+            </>
           )}
         </>
       )}
