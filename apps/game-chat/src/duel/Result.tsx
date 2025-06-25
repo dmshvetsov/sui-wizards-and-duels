@@ -1,21 +1,20 @@
 import { UserAccount } from '@/components/Authenticated'
+import { LootCardCountable } from '@/components/LootCard'
 import { Button, ButtonWithFx } from '@/components/ui/button'
 import { useDuel } from '@/context/DuelContext'
 import { AppError } from '@/lib/error'
 import { getPidLatest } from '@/lib/protocol/package'
+import { timeInLocal } from '@/lib/rewards'
 import { executeWith } from '@/lib/sui/client'
 import { mistToSui } from '@/lib/sui/coin'
+import * as api from '@/lib/supabase/api'
 import { displayName } from '@/lib/user'
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit'
 import { Transaction } from '@mysten/sui/transactions'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import * as api from '@/lib/supabase/api'
-import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { LootCard } from '@/components/LootCard'
-import { timeInLocal } from '@/lib/rewards'
 
 export function Result(props: { userAccount: UserAccount }) {
   const { duel, duelistCap, refetchDuelistCap, winner, loser } = useDuel()
@@ -178,16 +177,17 @@ export function Result(props: { userAccount: UserAccount }) {
           <>
             <div className="flex flex-wrap justify-center items-center gap-4">
               {isCurrentUserWinner && prizePool > 0 && (
-                <LootCard title={`${prizePool} Sui`} description="Prize pool of the duel" />
+                <LootCardCountable item="SUI" number={prizePool} description="Prize pool of the duel" />
               )}
               {isCurrentUserLoser && prizePool > 0 && (
-                <LootCard title={`-${prizePool / 2} Sui`} description="You have lost your bet" />
+                <LootCardCountable item="SUI" number={prizePool / -2} description="You have lost your bet" />
               )}
-              <LootCard
-                title={
+              <LootCardCountable
+                item="ESNC"
+                number={
                   availableRewardQuery.isSuccess
-                    ? `${availableRewardQuery.data.availableReward} ESNC`
-                    : '...'
+                    ? availableRewardQuery.data.availableReward
+                    : 0
                 }
                 description="Mint Essence reward"
               />
@@ -230,14 +230,14 @@ export function Result(props: { userAccount: UserAccount }) {
                 : 'End Duel'}
             </ButtonWithFx>
             {/* Reward Explanation */}
-            <p className="text-sm text-muted-foreground my-6">
+            <p className="text-sm text-muted-foreground my-6 text-left">
               Ending the duel will grant Mint Essence (ESNC) points:
               <br />• 10 ESNC for participating in the duel
               <br />• +10 ESNC if this is your first duel versus this opponent
               <br />• +10 ESNC if the duel was fought during a Duelground gathering slot{' '}
               {timeInLocal[0].start}-{timeInLocal[0].end} or {timeInLocal[1].start}-
               {timeInLocal[1].end} ({Intl.DateTimeFormat().resolvedOptions().timeZone} time)
-              <br />• you can earn as many ESNC without limits but can 5000 ESNC max is redeemable
+              <br />• you can earn ESNC without limits but only 5000 ESNC is redeemable for in game assets
             </p>
           </>
         ) : (
