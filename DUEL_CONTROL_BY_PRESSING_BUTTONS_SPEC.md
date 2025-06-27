@@ -15,37 +15,34 @@ Replace spell casting by typing spells in the chat by pressing buttons.
 
 This specification defines hot players casts spells in the game.
 
-First step, choose target:
-- press 1 to cast spell on yourself
-- press 2 to cast spell on opponent
-
-Second step, choose spell:
-- press i to cast choke spell
+- press k to cast choke spell
 - press j to cast arrow spell
-- press k to cast deflect spell
+- press i to cast deflect spell
 - press l to cast throw spell
+- press \ to switch to chat mode, ESC or ENTER key press switches back to spell casting mode
 
 ### Casting UI
+
+Has two modes, "spell casting" and "chat".
+
+Duel action user interface displays "spell book". Spell book contains list of actions for the 2 steps of "Casting with key pressing" section. First step icons with corresponding letter key bellow icons "1", "2" for choosing target. Second step spell icons with corresponding letter below icons to cast spells "i", "j", "k", or "l".
 
 Consist of two elements
 1. Spell book
 2. Wizard characters, one for player and another for his opponent
 
 Wizard character states:
-- ready (ready for actions)
-- preparing (preparing spell)
-- casting (applying spell to target)
-- affected (receiving negative spell effect, choke, thrown)
-- damaged
-- defeated
+- ready (ready for actions), sprite `src/assets/wizard_ready.webp`
+- preparing (preparing spell), sprite `src/assets/wizard_preparing.webp` 
+- casting (applying spell to target), sprite `src/assets/wizard_casting.webp`
+- affected (receiving negative spell effect, choke, thrown), sprite `src/assets/wizard_defending.webp`
+- damaged, sprite `src/assets/wizard_defending.webp`
+- defeated, sprite `src/assets/wizard_defeated.webp`
 
 UI display state:
 - idle
 - preparing, display loading spin instead of spell casting icons.
 - action, dim whole screen with 0.5 opacity black color. Display wizards characters 50% bigger, animate wizard characters left wizards moves 20% to left, right wizard moves 20% to right.
-
-
-Duel action user interface displays "spell book". Spell book contains list of actions for the 2 steps of "Casting with key pressing" section. First step icons with corresponding letter key bellow icons "1", "2" for choosing target. Second step spell icons with corresponding letter below icons to cast spells "i", "j", "k", or "l".
 
 - UI initially displays the first step icons, player wizard state ready
 - user press the first step key, player wizard state ready
@@ -56,14 +53,10 @@ Duel action user interface displays "spell book". Spell book contains list of ac
   - UI displays action state
   - UI update wizards force
   - UI update wizards effects
-  - after 2 seconds switch UI to idle state
+  - after 0.5 seconds switch UI to idle state
 - if spell transaction fails
   - play sound of spell error
   - switch UI to idle state immediately
-
-### UI Loading state
-
-### UI action state
 
 ## Game log spec
 
