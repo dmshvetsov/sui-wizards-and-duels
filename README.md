@@ -41,6 +41,8 @@
   - [ ] wizards level affect spells damage and effect power
   - [ ] add dice for randomness of damage and effects
   - [ ] wizard can use only spell that they prepared for the duel
+  - [ ] maps with interactive items, e.g. rock, stone, tree, wall, tower e.t.c.
+  - [ ] changing duel environment that wizards can use to buf their next spell, sun, storm, wind
 - [ ] split game into bot vs bot and player vs player modes, allow people to bot on chain package but bots must duel vs bots
 - [ ] leader board
 - [ ] rewrite in a game engine
