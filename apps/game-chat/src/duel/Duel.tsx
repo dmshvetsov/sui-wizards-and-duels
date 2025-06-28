@@ -10,23 +10,23 @@ import { useEffect } from 'react'
 
 const MUSIC = {
   duelStart: new Howl({
-    src: ['/music/duel-start.ogg'],
+    src: ['/g/music/duel-start.ogg'],
     loop: false,
     preload: true,
   }),
   duelAction: new Howl({
-    src: ['/music/duel-action.ogg'],
+    src: ['/g/music/duel-action.ogg'],
     volume: 0.3,
     loop: true,
     preload: true,
   }),
   duelResultDefeat: new Howl({
-    src: ['/music/duel-result-defeat.ogg'],
+    src: ['/g/music/duel-result-defeat.ogg'],
     loop: false,
     preload: true,
   }),
   duelResultVictory: new Howl({
-    src: ['/music/duel-result-victory.ogg'],
+    src: ['/g/music/duel-result-victory.ogg'],
     loop: false,
     preload: true,
   }),

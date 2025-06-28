@@ -20,13 +20,13 @@ const TUTORIAL_MESSAGES_DELAY_MS = 800
 
 const MUSIC = {
   script: new Howl({
-    src: ['/music/practice-script.ogg'],
+    src: ['/g/music/practice-script.ogg'],
     volume: 1,
     loop: true,
     preload: true,
   }),
   duel: new Howl({
-    src: ['/music/practice-duel.ogg'],
+    src: ['/g/music/practice-duel.ogg'],
     volume: 0.8,
     loop: true,
     preload: true,

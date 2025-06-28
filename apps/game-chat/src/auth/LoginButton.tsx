@@ -65,7 +65,7 @@ export function LoginButton({ provider, label }: LoginButtonProps) {
         {label || `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`}
       </ButtonWithFx>
       {provider === 'google' && (
-        <p className="text-gray-500 text-center max-w-xs">
+        <p className="text-muted-foreground text-center max-w-xl">
           We do not store any information from your Google account. 'Sign in with Google' is only
           used to create an in-game non-custodial wallet that is controlled solely by you, ensuring
           the best in-game experience.

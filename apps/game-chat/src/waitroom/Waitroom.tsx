@@ -24,7 +24,7 @@ import { toast } from 'sonner'
 
 const MUSIC = {
   duelground: new Howl({
-    src: ['/music/duelground.ogg'],
+    src: ['/g/music/duelground.ogg'],
     volume: 0,
     loop: true,
     preload: true,
@@ -33,12 +33,12 @@ const MUSIC = {
 
 const SFX = {
   playerJoin: new Howl({
-    src: ['/sfx/duelground-joined.ogg'],
+    src: ['/g/sfx/duelground-joined.ogg'],
     volume: 0.5,
     preload: true,
   }),
   playerLeave: new Howl({
-    src: ['/sfx/duelground-left.ogg'],
+    src: ['/g/sfx/duelground-left.ogg'],
     volume: 0.5,
     preload: true,
   }),
