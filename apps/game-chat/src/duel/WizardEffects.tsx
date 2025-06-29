@@ -22,12 +22,11 @@ export function WizardEffects({ effects }: WizardEffectsProps) {
   const [showDeflectTooltip, setShowDeflectTooltip] = useState(false)
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex items-center gap-2">
       {chokeEffect > 0 && (
         <div className="relative">
           <Badge
-            variant="destructive"
-            className="flex items-center gap-1 cursor-help text-white"
+            className="flex bg-gray-700 items-center gap-1 cursor-help text-white"
             onMouseEnter={() => setShowChokeTooltip(true)}
             onMouseLeave={() => setShowChokeTooltip(false)}
           >
@@ -68,7 +67,7 @@ export function WizardEffects({ effects }: WizardEffectsProps) {
         <div className="relative">
           <Badge
             variant="outline"
-            className="border-green-500 text-green-600 cursor-help"
+            className="border-indigo-500 text-indigo-600 cursor-help"
             onMouseEnter={() => setShowDeflectTooltip(true)}
             onMouseLeave={() => setShowDeflectTooltip(false)}
           >

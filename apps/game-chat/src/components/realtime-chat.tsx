@@ -6,6 +6,8 @@ import { isSpell, type ChatMessage } from '@/lib/message'
 import { useEffect, useMemo, useState } from 'react'
 
 interface RealtimeChatProps {
+  /* Whether the chat is in active typing mode. If false, keyboard shortcuts are ignored */
+  active?: boolean;
   roomName: string
   username: string
   onMessage?: (messages: string) => void
@@ -19,7 +21,7 @@ interface RealtimeChatProps {
  * @param roomName - The name of the room to join. Each room is a unique chat.
  * @param username - The username of the user
  * @param onMessage - The callback function to handle the messages.
- * @param onIncomingMessage - The callback function to handle the incomming messages.
+ * @param onIncomingMessage - The callback function to handle the incoming messages.
  * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
  * @returns The chat component
  */
@@ -30,6 +32,7 @@ export const RealtimeChat = ({
   onIncomingMessage,
   messages: initialMessages = [],
   disablePersistentStorage,
+  active = true,
 }: RealtimeChatProps) => {
   const { containerRef, scrollToBottom } = useChatScroll()
 
@@ -64,6 +67,8 @@ export const RealtimeChat = ({
   }, [allMessages, scrollToBottom])
 
   useEffect(() => {
+    if (!active) return
+
     const handleKeyPress = (e: globalThis.KeyboardEvent) => {
       if (!isConnected) return
 
@@ -100,10 +105,10 @@ export const RealtimeChat = ({
     return () => {
       window.removeEventListener('keydown', handleKeyPress)
     }
-  }, [newMessage, isConnected, sendMessage, onMessage])
+  }, [newMessage, isConnected, sendMessage, onMessage, active])
 
   return (
-    <div className="flex flex-col h-3/5 w-full bg-background text-foreground antialiased">
+    <div className="flex flex-col h-3/5 w-full h-full bg-background text-foreground antialiased">
       {/* Messages */}
       <div ref={containerRef} className="flex flex-col justify-end flex-1 overflow-y-hidden">
         {' '}
@@ -141,7 +146,7 @@ export const RealtimeChat = ({
         ) : newMessage ? (
           <span className="bg-black text-white rounded-md px-3 py-2 ">{newMessage}</span>
         ) : (
-          <span className="text-muted-foreground">Type to cast a spell...</span>
+          <span className="text-muted-foreground">{active ? 'Type to send a message with ENTER, ESC to exit chat mode...' : 'Press \\ to send chat message'}</span>
         )}
       </div>
     </div>

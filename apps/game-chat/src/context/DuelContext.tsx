@@ -63,13 +63,16 @@ export function DuelProvider({
   const [duelState, setDuelState] = useState<DuelState>('loading')
 
   const duelOnChainStateQuery = useDuelOnChainState(duelId, { refetchInterval: 1000 })
-  const duelistCapStateQuery = useDuelistCapOnChainState(currentUser.id, { refetchInterval: 0 })
+  const duelistCapStateQuery = useDuelistCapOnChainState(currentUser.id, {
+    refetchInterval: 0,
+    enabled: duelId !== 'demo',
+  })
 
   const duelData = duelOnChainStateQuery.duel ?? null
 
   useEffect(() => {
     const duelState: DuelState =
-      duelOnChainStateQuery.isPending || duelistCapStateQuery.isPending
+      duelOnChainStateQuery.isPending || (duelistCapStateQuery.isPending && duelId !== 'demo')
         ? 'loading'
         : !duelData
           ? 'not-found'
@@ -79,7 +82,7 @@ export function DuelProvider({
               ? 'started'
               : 'pending'
     setDuelState(duelState)
-  }, [duelData, duelOnChainStateQuery.isPending, duelistCapStateQuery.isPending])
+  }, [duelData, duelId, duelOnChainStateQuery.isPending, duelistCapStateQuery.isPending])
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout
@@ -136,7 +139,15 @@ export function DuelProvider({
         duel: duelData,
         duelState,
         startDuel,
-        duelistCap: duelistCapStateQuery.duelistCap,
+        duelistCap:
+          duelId === 'demo'
+            ? {
+                id: 'demo-duelist-cap',
+                duel: duelId,
+                wizard: '0x111',
+                opponent: '0x112',
+              }
+            : duelistCapStateQuery.duelistCap,
         refetchDuelistCap: duelistCapStateQuery.refetch,
         winner,
         loser,

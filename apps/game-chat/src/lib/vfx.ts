@@ -1,0 +1,1 @@
+export const SPELL_CAST_ANIMATION_DURATION = 500

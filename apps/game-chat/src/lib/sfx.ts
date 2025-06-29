@@ -1,6 +1,8 @@
 import { Howl } from 'howler'
 
 export const SFX = {
+  spellPreparing: new Howl({ src: ['/sfx/spell-preparing.ogg'], preload: true }),
+  spellError: new Howl({ src: ['/sfx/spell-error.ogg'], preload: true }),
   spellCast: new Howl({
     src: ['/sfx/spell-cast.ogg'],
     preload: true,
