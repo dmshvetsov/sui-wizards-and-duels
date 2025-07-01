@@ -193,21 +193,13 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         target: spellSpec.castMethod,
         arguments: [tx.object(force)],
       })
-      const targetAddress = target === 'opponent' ? duelistCap.opponent : duelistCap.wizard;
+      const targetAddress = target === 'opponent' ? duelistCap.opponent : duelistCap.wizard
       tx.moveCall({
         target: spellSpec.applyMethod,
         arguments:
           spellSpec.module === 'damage'
-            ? [
-                tx.object(spell),
-                tx.object(duel.id),
-                tx.pure.address(targetAddress),
-              ]
-            : [
-                tx.object(duel.id),
-                tx.object(spell),
-                tx.pure.address(targetAddress),
-              ],
+            ? [tx.object(spell), tx.object(duel.id), tx.pure.address(targetAddress)]
+            : [tx.object(duel.id), tx.object(spell), tx.pure.address(targetAddress)],
       })
 
       signAndExecute(
@@ -309,12 +301,20 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
 
   const getSprite = (isCurrentPlayer: boolean): string => {
     if (isCurrentPlayer) {
-      if (opponentState === 'casting' && opponentSpell.spellName !== 'deflect') {
+      if (
+        opponentState === 'casting' &&
+        playerState !== 'casting' &&
+        opponentSpell.spellName !== 'deflect'
+      ) {
         return sprites.defending
       }
       return sprites[playerState] ?? sprites.ready
     } else {
-      if (playerState === 'casting' && playerSpell.spellName !== 'deflect') {
+      if (
+        playerState === 'casting' &&
+        opponentState !== 'casting' &&
+        playerSpell.spellName !== 'deflect'
+      ) {
         return sprites.defending
       }
       return sprites[opponentState] ?? sprites.ready
