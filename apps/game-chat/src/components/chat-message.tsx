@@ -31,7 +31,7 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
               {
                 'bg-primary text-primary-foreground': isOwnMessage && !isSpell(message),
                 'bg-muted text-foreground': !isOwnMessage && !isSpell(message),
-                'bg-transparent text-foreground py-1': isLog(message),
+                'bg-transparent text-foreground py-0': isLog(message),
                 'italic text-black font-bold': isSpell(message) && !isOwnMessage,
                 'italic text-indigo-800 font-bold':
                   isSpell(message) && isOwnMessage,
