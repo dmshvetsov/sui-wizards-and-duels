@@ -142,7 +142,7 @@ export const RealtimeChat = ({
         ) : newMessage ? (
           <span className="bg-black text-white rounded-md px-3 py-2 ">{newMessage}</span>
         ) : (
-          <span className="text-muted-foreground">{active ? 'Type to send a message with ENTER, ESC to exit chat mode...' : 'Press \\ to send chat message'}</span>
+          <span className="text-muted-foreground">{active ? 'Type and send a message with ENTER, press ESC to switch to spell mode' : 'Press \\ to send chat message'}</span>
         )}
       </div>
     </div>
