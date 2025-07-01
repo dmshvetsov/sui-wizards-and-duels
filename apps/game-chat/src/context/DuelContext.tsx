@@ -144,7 +144,7 @@ export function DuelProvider({
             ? {
                 id: 'demo-duelist-cap',
                 duel: duelId,
-                wizard: '0x111',
+                wizard: currentUser.id,
                 opponent: '0x112',
               }
             : duelistCapStateQuery.duelistCap,

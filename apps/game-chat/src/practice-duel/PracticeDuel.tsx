@@ -384,7 +384,7 @@ function ScriptAction({ onComplete }: { onComplete: () => void }) {
     <>
       <RealtimeChat
         roomName={PRACTICE_DUEL_ID}
-        username="Promising Wizard"
+        currentUserId="Promising Wizard"
         onMessage={handleUserInput}
         messages={tutorialMessages}
         disablePersistentStorage
@@ -530,7 +530,7 @@ function ApprenticeDuelAction({ onComplete }: { onComplete: () => void }) {
     <>
       <RealtimeChat
         roomName={PRACTICE_DUEL_ID}
-        username="Promising Wizard"
+        currentUserId="Promising Wizard"
         onMessage={handleUserInput}
         messages={tutorialMessages}
         disablePersistentStorage

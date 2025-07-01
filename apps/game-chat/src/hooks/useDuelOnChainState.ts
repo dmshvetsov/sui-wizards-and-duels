@@ -2,7 +2,7 @@ import { useSuiClientQuery } from '@mysten/dapp-kit'
 import { useMemo } from 'react'
 import { Duel } from '@/lib/protocol/duel'
 
-export type DuelOnChaiState = {
+export type DuelOnChainState = {
   duel: Duel | null
   isPending: boolean
   isLoading: boolean
@@ -23,7 +23,7 @@ const noOp = () => {}
 export function useDuelOnChainState(
   duelId: string,
   opts: { refetchInterval?: number }
-): DuelOnChaiState {
+): DuelOnChainState {
   const {
     data: objectData,
     isPending,

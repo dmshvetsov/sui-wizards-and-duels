@@ -13,7 +13,7 @@ Replace spell casting by typing spells in the chat by pressing buttons.
 
 ### Casting with key pressing
 
-This specification defines hot players casts spells in the game.
+This specification defines how players cast spells in the game.
 
 - press k to cast choke spell
 - press j to cast arrow spell
@@ -42,7 +42,7 @@ Wizard character states:
 UI display state:
 - idle
 - preparing, display loading spin instead of spell casting icons.
-- action, dim whole screen with 0.5 opacity black color. Display wizards characters 50% bigger, animate wizard characters left wizards moves 20% to left, right wizard moves 20% to right.
+- action, dim whole screen with 0.5 opacity black color. Display wizards characters 50% bigger, animate wizard characters: left wizard moves 20% to left, right wizard moves 20% to right.
 
 - UI initially displays the first step icons, player wizard state ready
 - user press the first step key, player wizard state ready
@@ -66,7 +66,7 @@ Spell will be logged to the game chat immediately as player or opponent casts it
 
 As soon as spell blockchain transaction succeeded on the blockchain log spell force cost, effects or/and damage in the game log chat. 
 
-Casting spell cost example `<player display name> -4 force used`. 
+Casting spell cost example `<player display name> 4 force used`. 
 
 Damage example `<player display name> -12 force damage`
 

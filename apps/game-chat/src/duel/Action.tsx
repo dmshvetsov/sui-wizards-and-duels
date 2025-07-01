@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ForceBar } from './ForceBar'
 import { WizardEffects } from './WizardEffects'
+import { logMessage, type ChatMessage } from '@/lib/message'
 
 import wizardCasting from '@/assets/wizard_casting.webp'
 import wizardDefeated from '@/assets/wizard_defeated.webp'
@@ -21,6 +22,7 @@ import wizardPreparing from '@/assets/wizard_preparing.webp'
 import wizardReady from '@/assets/wizard_ready.webp'
 import { LoadingSpin } from '@/components/Loader'
 import { SPELL_CAST_ANIMATION_DURATION } from '@/lib/vfx'
+import { cn } from '@/lib/utils'
 
 const SPELL_KEYS: Record<string, { name: string; icon: string }> = {
   k: { name: 'choke', icon: '😶' },
@@ -38,10 +40,18 @@ const getSpellIcon = (spellName: string): string | null => {
   return entry?.icon ?? null
 }
 
+const sprites = {
+  ready: wizardReady,
+  preparing: wizardPreparing,
+  casting: wizardCasting,
+  defending: wizardDefending,
+  defeated: wizardDefeated,
+} as const
+
 export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount: UserAccount }) {
   const { duel, duelistCap } = props
 
-  const [chatMode, setChatMode] = useState(false)
+  const [isInChatMode, setChatMode] = useState(false)
   // Player and opponent character state
   const [playerState, setPlayerState] = useState<PlayerState>('ready')
   const [opponentState, setOpponentState] = useState<PlayerState>('ready')
@@ -49,27 +59,7 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
   const [playerSpell, setPlayerSpell] = useState<SpellState>({ spellName: null, target: null })
   const [opponentSpell, setOpponentSpell] = useState<SpellState>({ spellName: null, target: null })
 
-  const sprites = {
-    ready: wizardReady,
-    preparing: wizardPreparing,
-    casting: wizardCasting,
-    defending: wizardDefending,
-    defeated: wizardDefeated,
-  } as const
-
-  const getSprite = (isCurrentPlayer: boolean): string => {
-    if (isCurrentPlayer) {
-      if (opponentState === 'casting' && opponentSpell.spellName !== 'deflect') {
-        return sprites.defending
-      }
-      return sprites[playerState] ?? sprites.ready
-    } else {
-      if (playerState === 'casting' && playerSpell.spellName !== 'deflect') {
-        return sprites.defending
-      }
-      return sprites[opponentState] ?? sprites.ready
-    }
-  }
+  const [duelLog, setDuelLog] = useState<ChatMessage[]>([])
 
   const client = useSuiClient()
   const { mutate: signAndExecute } = useSignAndExecuteTransaction({
@@ -96,18 +86,25 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         console.debug('opponent spell', spellName)
         SFX.spellCast.play()
         setOpponentState('preparing')
-        // SFX.spellPreparing.play()
+        setDuelLog((prev) => [
+          ...prev,
+          logMessage(duelistCap.opponent, `${target === 'player' ? '@' : '!'}${spellName}`),
+        ])
         setTimeout(() => {
           SFX.spell.play(spellName)
           setOpponentSpell({ spellName, target: targetChar === '@' ? 'player' : 'opponent' })
-          // if (playerState !== 'casting') {
-          //   setPlayerSpell({ spellName: null, target: null })
-          // }
           setOpponentState('casting')
+          setDuelLog((prev) => [
+            ...prev,
+            logMessage(duelistCap.opponent, `used ${spellSpec.cost} force`),
+            logMessage(
+              duelistCap.opponent,
+              `cast ${spellName} on ${targetChar === '@' ? 'you' : 'opponent'}`
+            ),
+          ])
           setTimeout(() => {
-            if (playerState === 'ready') {
-              setOpponentSpell({ spellName: null, target: null })
-            }
+            // TODO: need to handle this state centralized way
+            setOpponentSpell({ spellName: null, target: null })
             setOpponentState('ready')
           }, SPELL_CAST_ANIMATION_DURATION)
         }, 700)
@@ -118,9 +115,13 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
 
   const castSpell = useCallback(
     (spellName: string, target: 'player' | 'opponent') => {
-      const txExecutionSimTimeout = 700
       if (duel.id === 'demo') {
+        const txExecutionSimTimeout = 700
         setPlayerState('preparing')
+        setDuelLog((prev) => [
+          ...prev,
+          logMessage(duelistCap.wizard, `${target === 'opponent' ? '@' : '!'}${spellName}`),
+        ])
         // SFX.spellPreparing.play()
         setTimeout(() => {
           setPlayerSpell({ spellName, target })
@@ -129,11 +130,23 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
           // if (opponentState !== 'casting') {
           //   setOpponentSpell({ spellName: null, target: null })
           // }
+          const spellSpec = getSpellSpec(spellName)
+          if (!spellSpec) {
+            toast.warning(`${spellName} is not a spell`)
+            return
+          }
           setTimeout(() => {
-            if (opponentState === 'ready') {
-              setPlayerSpell({ spellName: null, target: null })
-            }
+            // TODO: need to handle this state centralized way
+            setPlayerSpell({ spellName: null, target: null })
             setPlayerState('ready')
+            setDuelLog((prev) => [
+              ...prev,
+              logMessage(duelistCap.wizard, `used ${spellSpec.cost} force`),
+              logMessage(
+                duelistCap.wizard,
+                `cast ${spellName} on ${target === 'opponent' ? displayName(duelistCap.opponent) : 'self'}`
+              ),
+            ])
           }, SPELL_CAST_ANIMATION_DURATION)
         }, txExecutionSimTimeout)
         return
@@ -150,6 +163,10 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
       const start = Date.now()
       setPlayerState('preparing')
       SFX.spellPreparing.play()
+      setDuelLog((prev) => [
+        ...prev,
+        logMessage(duelistCap.wizard, `${target === 'opponent' ? '@' : '!'}${spellName}`),
+      ])
 
       const tx = new Transaction()
       tx.setGasBudget(2_000_000)
@@ -184,21 +201,28 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
             SFX.spell.play(spellName)
             setPlayerState('casting')
             setPlayerSpell({ spellName, target })
-            // if (opponentState !== 'casting') {
-            //   setOpponentSpell({ spellName: null, target: null })
-            // }
             setTimeout(() => {
-              if (opponentState === 'ready') {
-                setPlayerSpell({ spellName: null, target: null })
-              }
+              // TODO: need to handle this state centralized way
+              // remove both opponent and player spells together
+              // keep both until lastest spell will be shown SPELL_CAST_ANIMATION_DURATION time if one spell was casted later than the first one
+              setPlayerSpell({ spellName: null, target: null })
               setPlayerState('ready')
             }, SPELL_CAST_ANIMATION_DURATION)
-            toast.success(`Cast spell ${message} successfully! (${Date.now() - start} ms)`) // log
+            setDuelLog((prev) => [
+              ...prev,
+              logMessage(duelistCap.wizard, `used ${spellSpec.cost} force`),
+              logMessage(
+                duelistCap.wizard,
+                `cast ${spellName} on ${target === 'opponent' ? displayName(duelistCap.wizard) : 'self'}`
+              ),
+            ])
+            toast.success(`Cast spell ${message} successfully! (${Date.now() - start} ms)`)
           },
           onError: (err) => {
             setPlayerState('ready')
             SFX.spellError.play()
             toast.warning(`Failed to cast spell: ${err}`)
+            setDuelLog((prev) => [...prev, logMessage(duelistCap.wizard, `Spell failed: ${err}`)])
           },
           onSettled: () => {
             console.debug(`[performance] | ${message} spell tx settled in ${Date.now() - start} ms`)
@@ -212,7 +236,7 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
   // global key handler for casting flow
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (chatMode) {
+      if (isInChatMode) {
         // when typing chat, ignore casting keys
         return
       }
@@ -239,7 +263,7 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
 
     window.addEventListener('keydown', handleKey, true) // capture phase
     return () => window.removeEventListener('keydown', handleKey, true)
-  }, [playerState, castSpell, chatMode])
+  }, [playerState, castSpell, isInChatMode])
 
   const opponentId = duelistCap?.opponent || ''
   const wizardEffects =
@@ -251,11 +275,11 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
     // Global hotkeys for entering/exiting chat mode
     const handleChatToggle = (e: KeyboardEvent) => {
       // Do not trigger when already in chat and backslash typed as part of message
-      if (e.key === '\\' && !chatMode) {
+      if (e.key === '\\' && !isInChatMode) {
         setChatMode(true)
         e.preventDefault()
         e.stopPropagation()
-      } else if (e.key === 'Escape' && chatMode) {
+      } else if (e.key === 'Escape' && isInChatMode) {
         setChatMode(false)
         e.preventDefault()
         e.stopPropagation()
@@ -263,12 +287,26 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
     }
     window.addEventListener('keydown', handleChatToggle, true)
     return () => window.removeEventListener('keydown', handleChatToggle, true)
-  }, [chatMode])
+  }, [isInChatMode])
+
+  const getSprite = (isCurrentPlayer: boolean): string => {
+    if (isCurrentPlayer) {
+      if (opponentState === 'casting' && opponentSpell.spellName !== 'deflect') {
+        return sprites.defending
+      }
+      return sprites[playerState] ?? sprites.ready
+    } else {
+      if (playerState === 'casting' && playerSpell.spellName !== 'deflect') {
+        return sprites.defending
+      }
+      return sprites[opponentState] ?? sprites.ready
+    }
+  }
 
   // useEffect(() => {
   //   const id = setInterval(() => {
   //     handleOpponentInput(['!deflect', '@choke', '@throw', '@arrow'][Math.round(Math.random() * 4)])
-  //   }, 2000)
+  //   }, 4000)
   //   return () => clearInterval(id)
   // }, [])
 
@@ -277,10 +315,11 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
       {/* Overlay for action state */}
       <div className="h-2/5">
         <RealtimeChat
-          active={chatMode}
           roomName={duel.id}
-          username={props.userAccount.displayName}
+          active={isInChatMode}
+          currentUserId={props.userAccount.id}
           onIncomingMessage={handleOpponentInput}
+          messages={duelLog}
         />
       </div>
       <div className="flex flex-col items-center w-full h-3/5">
@@ -307,18 +346,21 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
           >
             <div className="flex flex-col items-center w-[300px]">
               <div className="relative w-[300px] h-[300px] flex items-center justify-center mb-2">
-
-                {(playerState === 'casting' || opponentState === 'casting') && 
+                {(playerState === 'casting' || opponentState === 'casting') &&
                   (playerSpell.target === 'opponent' || opponentSpell.target === 'opponent') && (
-                  <div className="absolute top-24 left-1/3 -translate-x-1/2 flex gap-2">
-                    {playerSpell.target === 'opponent' && playerSpell.spellName && (
-                      <span className="text-6xl select-none">{getSpellIcon(playerSpell.spellName)}</span>
-                    )}
-                    {opponentSpell.target === 'opponent' && opponentSpell.spellName && (
-                      <span className="text-6xl select-none">{getSpellIcon(opponentSpell.spellName)}</span>
-                    )}
-                  </div>
-                )}
+                    <div className="absolute top-24 left-1/3 -translate-x-1/2 flex gap-2">
+                      {playerSpell.target === 'opponent' && playerSpell.spellName && (
+                        <span className="text-6xl select-none">
+                          {getSpellIcon(playerSpell.spellName)}
+                        </span>
+                      )}
+                      {opponentSpell.target === 'opponent' && opponentSpell.spellName && (
+                        <span className="text-6xl select-none">
+                          {getSpellIcon(opponentSpell.spellName)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 <img src={getSprite(false)} alt="opponent wizard" className="object-contain" />
               </div>
               {opponentState !== 'casting' && playerState !== 'casting' && (
@@ -329,7 +371,11 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
 
           {/* Spell Book */}
           {opponentState !== 'casting' && playerState !== 'casting' && (
-            <div className="flex flex-col items-center w-[120px]">
+            <div
+              className={cn('flex flex-col items-center w-[120px] transition-opacity', {
+                'opacity-0': isInChatMode,
+              })}
+            >
               {playerState === 'ready' ? (
                 <div className="flex flex-wrap">
                   {['', 'i', '', 'j', 'k', 'l'].map((key, idx) =>
@@ -367,17 +413,21 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
           >
             <div className="flex flex-col items-center w-[300px]">
               <div className="relative w-[300px] h-[300px] flex items-center justify-center mb-2 scale-x-[-1]">
-                {(playerState === 'casting' || opponentState === 'casting') && 
+                {(playerState === 'casting' || opponentState === 'casting') &&
                   (playerSpell.target === 'player' || opponentSpell.target === 'player') && (
-                  <div className="absolute top-24 right-1/3 -translate-x-1/2 flex gap-2">
-                    {playerSpell.target === 'player' && playerSpell.spellName && (
-                      <span className="text-6xl select-none">{getSpellIcon(playerSpell.spellName)}</span>
-                    )}
-                    {opponentSpell.target === 'player' && opponentSpell.spellName && (
-                      <span className="text-6xl select-none">{getSpellIcon(opponentSpell.spellName)}</span>
-                    )}
-                  </div>
-                )}
+                    <div className="absolute top-24 right-1/3 -translate-x-1/2 flex gap-2">
+                      {playerSpell.target === 'player' && playerSpell.spellName && (
+                        <span className="text-6xl select-none">
+                          {getSpellIcon(playerSpell.spellName)}
+                        </span>
+                      )}
+                      {opponentSpell.target === 'player' && opponentSpell.spellName && (
+                        <span className="text-6xl select-none">
+                          {getSpellIcon(opponentSpell.spellName)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 <img src={getSprite(true)} alt="your wizard" className="object-contain " />
               </div>
               {opponentState !== 'casting' && playerState !== 'casting' && (
@@ -387,7 +437,10 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
           </motion.div>
         </div>
       </div>
-      <div className='italic text-muted-foreground absolute bottom-0 left-0 w-[280px] mx-auto py-4 px-4'>DISCLAIMER: current middle east wizard character is borrowed from another game and used for demo purpose only, it will NOT be part of Wizards and Duels game</div>
+      <div className="italic text-muted-foreground absolute bottom-0 left-0 w-[280px] mx-auto py-4 px-4">
+        DISCLAIMER: current middle east wizard character is borrowed from another game and used for
+        demo purpose only, it will NOT be part of Wizards and Duels game
+      </div>
       <AnimatePresence>
         {(opponentState === 'casting' || playerState === 'casting') && (
           <motion.div

@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils'
 import { ChatMessageItem } from '@/components/chat-message'
-import { useChatScroll } from '@/hooks/use-chat-scroll'
 import { useRealtimeChat } from '@/hooks/use-realtime-chat'
 import { isSpell, type ChatMessage } from '@/lib/message'
 import { useEffect, useMemo, useState } from 'react'
@@ -9,7 +8,7 @@ interface RealtimeChatProps {
   /* Whether the chat is in active typing mode. If false, keyboard shortcuts are ignored */
   active?: boolean;
   roomName: string
-  username: string
+  currentUserId: string
   onMessage?: (messages: string) => void
   onIncomingMessage?: (message: string) => void
   messages?: ChatMessage[]
@@ -19,7 +18,7 @@ interface RealtimeChatProps {
 /**
  * Real-time chat component
  * @param roomName - The name of the room to join. Each room is a unique chat.
- * @param username - The username of the user
+ * @param currentUserId - The ID of the active (those who sends messages) user in this browser seesion
  * @param onMessage - The callback function to handle the messages.
  * @param onIncomingMessage - The callback function to handle the incoming messages.
  * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
@@ -27,22 +26,20 @@ interface RealtimeChatProps {
  */
 export const RealtimeChat = ({
   roomName,
-  username,
+  currentUserId,
   onMessage,
   onIncomingMessage,
   messages: initialMessages = [],
   disablePersistentStorage,
   active = true,
 }: RealtimeChatProps) => {
-  const { containerRef, scrollToBottom } = useChatScroll()
-
   const {
     messages: realtimeMessages,
     sendMessage,
     isConnected,
   } = useRealtimeChat({
     roomName,
-    username,
+    username: currentUserId,
     onIncomingMessage,
     disablePersistentStorage,
   })
@@ -50,7 +47,7 @@ export const RealtimeChat = ({
 
   // Merge real-time messages with initial messages
   const allMessages = useMemo(() => {
-    const mergedMessages = [...initialMessages, ...realtimeMessages]
+    const mergedMessages = [...initialMessages.slice(-100), ...realtimeMessages]
     // Remove duplicates based on message id
     const uniqueMessages = mergedMessages.filter(
       (message, index, self) => index === self.findIndex((m) => m.id === message.id)
@@ -60,11 +57,6 @@ export const RealtimeChat = ({
 
     return sortedMessages
   }, [initialMessages, realtimeMessages])
-
-  useEffect(() => {
-    // Scroll to bottom whenever messages change
-    scrollToBottom()
-  }, [allMessages, scrollToBottom])
 
   useEffect(() => {
     if (!active) return
@@ -107,10 +99,14 @@ export const RealtimeChat = ({
     }
   }, [newMessage, isConnected, sendMessage, onMessage, active])
 
+  useEffect(() => {
+    setNewMessage('')
+  }, [active])
+
   return (
     <div className="flex flex-col h-3/5 w-full h-full bg-background text-foreground antialiased">
       {/* Messages */}
-      <div ref={containerRef} className="flex flex-col justify-end flex-1 overflow-y-hidden">
+      <div className="flex flex-col justify-end flex-1 overflow-y-hidden">
         {' '}
         {allMessages.length === 0 ? (
           <div className="text-center text-sm text-muted-foreground">Let the Duel begin!</div>
@@ -124,7 +120,7 @@ export const RealtimeChat = ({
               <div key={message.id} className="animate-in fade-in slide-in-from-top-4 duration-380">
                 <ChatMessageItem
                   message={message}
-                  isOwnMessage={message.username === username}
+                  isOwnMessage={message.username === currentUserId}
                   showHeader={showHeader}
                 />
               </div>
