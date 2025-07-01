@@ -66,7 +66,11 @@ export function logMessage(
         messageText = `used ${params.amount} force`
         break
       case 'spell-prepared':
-        messageText = `preparing ${params.spellName}`
+        if (params.spellName === 'deflect') {
+        messageText = `!${params.spellName}`
+      } else {
+        messageText = `@${params.spellName}`
+      }
         break
     }
   }
