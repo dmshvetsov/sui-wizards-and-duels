@@ -25,11 +25,56 @@ export function isLog(message: ChatMessage): boolean {
   return message.channel === LOG_CHANNEL
 }
 
-export function logMessage(username: string, text: string): ChatMessage {
+type LogMessageOptions = {
+  event: 'spell-casted',
+  spellName: string
+} | {
+  event: 'force-used'
+  amount: number
+} | {
+  event: 'spell-prepared'
+  spellName: string
+}
+
+function formatSpellMessage(spellName: string): string {
+  switch(spellName) {
+    case 'choke':
+      return `has been choked`
+    case 'throw':
+      return `has been thrown`
+    case 'deflect':
+      return `got deflect protection`
+    case 'arrow':
+      return `got 12 force damage`
+    default:
+      return `[unknow spell]`
+  }
+}
+
+export function logMessage(
+  usernameAffected: string, 
+  params?: LogMessageOptions
+): ChatMessage {
+  let messageText = ''
+  
+  if (params) {
+    switch (params.event) {
+      case 'spell-casted':
+        messageText = formatSpellMessage(params.spellName)
+        break
+      case 'force-used':
+        messageText = `used ${params.amount} force`
+        break
+      case 'spell-prepared':
+        messageText = `preparing ${params.spellName}`
+        break
+    }
+  }
+
   return {
     id: crypto.randomUUID(),
-    text,
-    username,
+    text: messageText,
+    username: usernameAffected,
     channel: LOG_CHANNEL,
     timestamp: new Date().toISOString(),
   }

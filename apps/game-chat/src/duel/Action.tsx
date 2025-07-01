@@ -73,9 +73,9 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         return
       }
       const targetChar = message[0]
-      const target =
+      const targetAddress =
         targetChar === '@' ? duelistCap?.wizard : targetChar === '!' ? duelistCap?.opponent : null
-      if (!target) {
+      if (!targetAddress) {
         // it is a chat message, do nothing
         return
       }
@@ -88,7 +88,10 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         setOpponentState('preparing')
         setDuelLog((prev) => [
           ...prev,
-          logMessage(duelistCap.opponent, `${target === 'player' ? '@' : '!'}${spellName}`),
+          logMessage(duelistCap.opponent, {
+            event: 'spell-prepared',
+            spellName,
+          }),
         ])
         setTimeout(() => {
           SFX.spell.play(spellName)
@@ -96,11 +99,14 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
           setOpponentState('casting')
           setDuelLog((prev) => [
             ...prev,
-            logMessage(duelistCap.opponent, `used ${spellSpec.cost} force`),
-            logMessage(
-              duelistCap.opponent,
-              `cast ${spellName} on ${targetChar === '@' ? 'you' : 'opponent'}`
-            ),
+            logMessage(duelistCap.opponent, {
+              event: 'force-used',
+              amount: spellSpec.cost,
+            }),
+            logMessage(targetAddress, {
+              event: 'spell-casted',
+              spellName,
+            }),
           ])
           setTimeout(() => {
             // TODO: need to handle this state centralized way
@@ -120,7 +126,10 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         setPlayerState('preparing')
         setDuelLog((prev) => [
           ...prev,
-          logMessage(duelistCap.wizard, `${target === 'opponent' ? '@' : '!'}${spellName}`),
+          logMessage(duelistCap.wizard, {
+            event: 'spell-prepared',
+            spellName,
+          }),
         ])
         // SFX.spellPreparing.play()
         setTimeout(() => {
@@ -141,11 +150,14 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
             setPlayerState('ready')
             setDuelLog((prev) => [
               ...prev,
-              logMessage(duelistCap.wizard, `used ${spellSpec.cost} force`),
-              logMessage(
-                duelistCap.wizard,
-                `cast ${spellName} on ${target === 'opponent' ? displayName(duelistCap.opponent) : 'self'}`
-              ),
+              logMessage(duelistCap.wizard, {
+                event: 'force-used',
+                amount: spellSpec.cost,
+              }),
+              logMessage(target === 'opponent' ? duelistCap.opponent : duelistCap.wizard, {
+                event: 'spell-casted',
+                spellName,
+              }),
             ])
           }, SPELL_CAST_ANIMATION_DURATION)
         }, txExecutionSimTimeout)
@@ -165,7 +177,10 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
       SFX.spellPreparing.play()
       setDuelLog((prev) => [
         ...prev,
-        logMessage(duelistCap.wizard, `${target === 'opponent' ? '@' : '!'}${spellName}`),
+        logMessage(duelistCap.wizard, {
+          event: 'spell-prepared',
+          spellName,
+        }),
       ])
 
       const tx = new Transaction()
@@ -178,6 +193,7 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
         target: spellSpec.castMethod,
         arguments: [tx.object(force)],
       })
+      const targetAddress = target === 'opponent' ? duelistCap.opponent : duelistCap.wizard;
       tx.moveCall({
         target: spellSpec.applyMethod,
         arguments:
@@ -185,12 +201,12 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
             ? [
                 tx.object(spell),
                 tx.object(duel.id),
-                tx.pure.address(target === 'opponent' ? duelistCap.opponent : duelistCap.wizard),
+                tx.pure.address(targetAddress),
               ]
             : [
                 tx.object(duel.id),
                 tx.object(spell),
-                tx.pure.address(target === 'opponent' ? duelistCap.opponent : duelistCap.wizard),
+                tx.pure.address(targetAddress),
               ],
       })
 
@@ -210,11 +226,14 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
             }, SPELL_CAST_ANIMATION_DURATION)
             setDuelLog((prev) => [
               ...prev,
-              logMessage(duelistCap.wizard, `used ${spellSpec.cost} force`),
-              logMessage(
-                duelistCap.wizard,
-                `cast ${spellName} on ${target === 'opponent' ? displayName(duelistCap.wizard) : 'self'}`
-              ),
+              logMessage(duelistCap.wizard, {
+                event: 'force-used',
+                amount: spellSpec.cost,
+              }),
+              logMessage(targetAddress, {
+                event: 'spell-casted',
+                spellName,
+              }),
             ])
             toast.success(`Cast spell ${message} successfully! (${Date.now() - start} ms)`)
           },
@@ -222,7 +241,6 @@ export function Action(props: { duel: Duel; duelistCap: DuelistCap; userAccount:
             setPlayerState('ready')
             SFX.spellError.play()
             toast.warning(`Failed to cast spell: ${err}`)
-            setDuelLog((prev) => [...prev, logMessage(duelistCap.wizard, `Spell failed: ${err}`)])
           },
           onSettled: () => {
             console.debug(`[performance] | ${message} spell tx settled in ${Date.now() - start} ms`)
