@@ -2,7 +2,6 @@ import { AuthenticatedComponentProps } from '@/components/Authenticated'
 import { FundWallet } from '@/components/FundWallet'
 import { Loader } from '@/components/Loader'
 import { StakeSelector } from '@/components/StakeSelector'
-import { PrimeTimeMessage } from '@/components/TopLineMessage'
 import { ButtonWithFx } from '@/components/ui/button'
 import { UserAccountMenu } from '@/components/UserAccountMenu'
 import { isDevnetEnv } from '@/lib/config'
@@ -270,7 +269,6 @@ export function WaitRoom({ userAccount }: AuthenticatedComponentProps) {
 
   return (
     <div className="flex flex-col h-screen">
-      <PrimeTimeMessage />
       <div className="flex justify-center gap-8 items-center flex-1">
         <div className="w-[300px]" />
         <div className="flex flex-col items-center justify-center w-[480px]">
